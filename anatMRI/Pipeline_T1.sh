@@ -1,7 +1,7 @@
 #!/bin/bash
-# Last update: 26/06/2018
+# Last update: 26/07/2018
 #Example:
-#./Pipeline_T1.sh -s test_02 -i ~/main/analysis/001_T1.nii.gz -t2 ~/main/analysis/T2_FLAIR.nii.gz --freesurfer
+#./Pipeline_T1.sh --path ~/main/analysis -s Sub_001 -i ~/main/analysis/Orig/1_MPRAGE/__T1_1mm_sag_20180312094206_201.nii.gz -t2 ~/main/analysis/Orig/2_3D_T2w_FLAIR/__T2_FLAIR_1mm_20180312094206_301.nii.gz --subseg
 # fsl_anat -o ~/analysis/anat_T2 -i ~/analysis/T2_FLAIR.nii.gz -t T2 --nononlinreg --nosubcortseg
 #clear
 
@@ -11,7 +11,7 @@ set -e
 # The following is a debugging line (displays all commands as they are executed)
 #set -x
 
-ScriptsDir=$(dirname "$(readlink -f "$0")") #Absolute path where scripts are
+export ScriptsDir=$(dirname "$(readlink -f "$0")") #Absolute path where scripts are
 
 Usage()
 {
@@ -19,7 +19,8 @@ Usage()
   echo " "
   echo "Usage: `basename $0`"
   echo " -i | --IN <T1W Input image>          filename of Input image (for one image only)"
-  echo " -s | --subject <Subject name>        output directory is a subject name folder IN input image directory"
+  echo " --path                               output path"
+  echo " -s | --subject <Subject name>        output directory is a subject name folder in output path directory"
   echo " -t2 | --T2 <T2W Input image>         optional, filename of Input T2W image (for processing of T2 data)"
   echo " --freesurfer                         turn on Freesurfer processing pipeline"
   echo " --subseg                             a flag to do subcortical segmentation by FAST"
@@ -39,6 +40,7 @@ if [ $# -le 4 ] ; then Usage; exit 1; fi
 # default values
 Sub_ID=
 IN_Img=
+Path=
 T2_IN_Img=
 
 T2=no
@@ -48,6 +50,7 @@ do_freesurfer=no
 do_tissue_seg=yes
 
 Opt_args="--clobber"
+
 FAST_t=1  # For FAST: 1 = T1w, 2 = T2w, 3 = PD
 
 # parse arguments
@@ -55,6 +58,10 @@ while [ "$1" != "" ]; do
     case $1 in
         -s | --subject )        shift
                                 Sub_ID=$1
+                                ;;
+
+        --path )                shift
+				                        Path=$1
                                 ;;
 
         -i | --IN )             shift
@@ -104,14 +111,22 @@ done
 
 ### Sanity checking of arguments
 
-if [ X$Sub_ID = X ] && [ X$IN_Img = X ] ; then
-  echo "Both of the compulsory arguments -i and -s MUST be used"
+if [ X$Sub_ID = X ] && [ X$IN_Img = X ] && [ X$Path = X ] ; then
+  echo "All of the compulsory arguments --path, -i and -s MUST be used"
   exit 1;
 fi
 
+#Set fsl_anat options
+if [ $do_Sub_seg = no ] ; then
+  Opt_args="$Opt_args --nosubcortseg"
+fi
+
+Opt_args="$Opt_args -t $FAST_t"
+
+# Setup PATHS
 Sub_ID=${Sub_ID%.nii.gz}
 
-O_DIR=$(dirname "$IN_Img")/${Sub_ID};
+O_DIR=$Path/${Sub_ID};
 if [ ! -d "$O_DIR" ]; then
   mkdir $O_DIR;
 #else
@@ -167,16 +182,24 @@ fi
 
 date
 
+Opt_args="$Opt_args -i $O_DIR/T1/raw/T1_orig.nii.gz"
+Opt_args="$Opt_args -o $O_DIR/T1/temp"
+
 # run fsl_anat
 echo "Queueing fsl_anat for T1w image"
 echo "Command is:"
 echo '***********************************************************************************************'
-echo "fsl_anat -i $O_DIR/T1/raw/T1_orig.nii.gz "$Opt_args" -o $O_DIR/T1/temp"
+#echo "fsl_anat -i $O_DIR/T1/raw/T1_orig.nii.gz "$Opt_args" -o $O_DIR/T1/temp"
+echo "fsl_anat "$Opt_args""
 echo '***********************************************************************************************'
 
-${FSLDIR}/bin/fsl_anat -i $O_DIR/T1/raw/T1_orig.nii.gz "$Opt_args" -o $O_DIR/T1/temp
+#${FSLDIR}/bin/fsl_anat "-i $O_DIR/T1/raw/T1_orig.nii.gz "$Opt_args" -o $O_DIR/T1/temp"
+#${FSLDIR}/bin/fsl_anat ""$Opt_args""
+${ScriptsDir}/FSL_anat.sh ""$Opt_args""
 
 echo $T2
+
+#: <<'COMMENT'
 
 if [[ $T2 == yes ]]; then
     echo "Queueing fsl_anat for T2w image"
@@ -189,9 +212,7 @@ if [[ $T2 == yes ]]; then
 fi
 
 echo "Queueing organizing data structure"
-${ScriptsDir}/move_rename.sh $O_DIR $T2
-
-: <<'COMMENT'
+${ScriptsDir}/move_rename.sh $O_DIR $T2 $do_Sub_seg
 
 if [ $do_tissue_seg = yes ] && [ $T2 = yes ] ; then
     echo "Do multichanel tissue segmentation using FAST"
