@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 06/06/2018
+# Last update: 23/07/2018
 
 # Preprocessing Pipeline for diffusion MRI. Generates the "data" directory that can be used as input to fibre orientation estimation.
 # Stamatios Sotiropoulos, Analysis Group, FMRIB Centre, 2013.
@@ -174,22 +174,22 @@ if [ ! -d "$O_DIR/unlabelled" ]; then mkdir $O_DIR/unlabelled; fi
 #: <<'COMMENT'
 
 echo "Data Handling"
-#${ScriptsDir}/data_copy.sh ${outdir} ${InputImages} ${InputImages2} ${PEdir}
+${ScriptsDir}/data_copy.sh ${outdir} ${InputImages} ${InputImages2} ${PEdir}
 
 echo "Basic Preprocessing"
-#${ScriptsDir}/basic_preproc.sh ${outdir} ${echospacing} ${PEdir} ${b0dist} ${b0maxbval}  ${PIFactor}
+${ScriptsDir}/basic_preproc.sh ${outdir} ${echospacing} ${PEdir} ${b0dist} ${b0maxbval}  ${PIFactor}
 
 echo "Queueing Topup"
-#${ScriptsDir}/run_topup.sh ${outdir}/preprocess/topup
+${ScriptsDir}/run_topup.sh ${outdir}/preprocess/topup
 
 echo "Queueing Eddy"
-#${ScriptsDir}/run_eddy.sh ${outdir}/preprocess/eddy
+${ScriptsDir}/run_eddy.sh ${outdir}/preprocess/eddy
 
-#mv $outdir/preprocess/eddy/eddy_unwarped_images.qc/* $outdir/qc/
-#rm -r $outdir/preprocess/eddy/eddy_unwarped_images.qc
+mv $outdir/preprocess/eddy/eddy_unwarped_images.qc/* $outdir/qc/
+rm -r $outdir/preprocess/eddy/eddy_unwarped_images.qc
 
 echo "Queueing Eddy PostProcessing"
-#ßß${ScriptsDir}/eddy_postproc.sh ${outdir} ${CombineMatched} ${ScriptsDir}
+ßß${ScriptsDir}/eddy_postproc.sh ${outdir} ${CombineMatched} ${ScriptsDir}
 
 if [[ $do_REG == yes ]]; then
     ${ScriptsDir}/diff_reg.sh ${outdir} ${OutputFolder}
