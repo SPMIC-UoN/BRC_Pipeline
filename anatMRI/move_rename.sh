@@ -1,11 +1,12 @@
 #!/bin/bash
-# Last update: 26/06/2018
+# Last update: 26/07/2018
 
 set -e
 echo -e "\n START: registration"
 
 workingdir=$1
 T2_exist=$2
+do_Sub_seg=$3
 
 T1_dir=$workingdir/T1
 
@@ -26,42 +27,44 @@ $FSLDIR/bin/immv $datadir/T1_fast_pve_2  $targdir/sing_chan/T1_pve_WM
 $FSLDIR/bin/immv $datadir/T1_fast_pveseg  $targdir/sing_chan/T1_pveseg
 $FSLDIR/bin/immv $datadir/T1_fast_seg  $targdir/sing_chan/T1_seg
 
-targdir=$T1_dir/seg/sub
-sourcdir=${T1_dir}/temp.anat/first_results
+if [ $do_Sub_seg = yes ] ; then
+  targdir=$T1_dir/seg/sub
+  sourcdir=${T1_dir}/temp.anat/first_results
 
-$FSLDIR/bin/immv $sourcdir/T1_first_all_fast_firstseg  $targdir/T1_subcort_seg
-mv $datadir/T1_vols.txt  $targdir/T1_vols.txt
+  $FSLDIR/bin/immv $sourcdir/T1_first_all_fast_firstseg  $targdir/T1_subcort_seg
+  mv $datadir/T1_vols.txt  $targdir/T1_vols.txt
 
-mv $sourcdir/T1_first-BrStem_first.bvars  $targdir/shape/T1_BrStem.bvars
-mv $sourcdir/T1_first-BrStem_first.vtk  $targdir/shape/T1_BrStem.vtk
-mv $sourcdir/T1_first-L_Accu_first.bvars  $targdir/shape/T1_L_Accu.bvars
-mv $sourcdir/T1_first-R_Accu_first.bvars  $targdir/shape/T1_R_Accu.bvars
-mv $sourcdir/T1_first-L_Accu_first.vtk  $targdir/shape/T1_L_Accu.vtk
-mv $sourcdir/T1_first-R_Accu_first.vtk  $targdir/shape/T1_R_Accu.vtk
-mv $sourcdir/T1_first-L_Amyg_first.bvars  $targdir/shape/T1_L_Amyg.bvars
-mv $sourcdir/T1_first-R_Amyg_first.bvars  $targdir/shape/T1_R_Amyg.bvars
-mv $sourcdir/T1_first-L_Amyg_first.vtk  $targdir/shape/T1_L_Amyg.vtk
-mv $sourcdir/T1_first-R_Amyg_first.vtk  $targdir/shape/T1_R_Amyg.vtk
-mv $sourcdir/T1_first-L_Caud_first.bvars  $targdir/shape/T1_L_Caud.bvars
-mv $sourcdir/T1_first-R_Caud_first.bvars  $targdir/shape/T1_R_Caud.bvars
-mv $sourcdir/T1_first-L_Caud_first.vtk  $targdir/shape/T1_L_Caud.vtk
-mv $sourcdir/T1_first-R_Caud_first.vtk  $targdir/shape/T1_R_Caud.vtk
-mv $sourcdir/T1_first-L_Hipp_first.bvars  $targdir/shape/T1_L_Hipp.bvars
-mv $sourcdir/T1_first-R_Hipp_first.bvars  $targdir/shape/T1_R_Hipp.bvars
-mv $sourcdir/T1_first-L_Hipp_first.vtk  $targdir/shape/T1_L_Hipp.vtk
-mv $sourcdir/T1_first-R_Hipp_first.vtk  $targdir/shape/T1_R_Hipp.vtk
-mv $sourcdir/T1_first-L_Pall_first.bvars  $targdir/shape/T1_L_Pall.bvars
-mv $sourcdir/T1_first-R_Pall_first.bvars  $targdir/shape/T1_R_Pall.bvars
-mv $sourcdir/T1_first-L_Pall_first.vtk  $targdir/shape/T1_L_Pall.vtk
-mv $sourcdir/T1_first-R_Pall_first.vtk  $targdir/shape/T1_R_Pall.vtk
-mv $sourcdir/T1_first-R_Puta_first.bvars  $targdir/shape/T1_R_Puta.bvars
-mv $sourcdir/T1_first-L_Puta_first.bvars  $targdir/shape/T1_L_Puta.bvars
-mv $sourcdir/T1_first-R_Puta_first.vtk  $targdir/shape/T1_R_Puta.vtk
-mv $sourcdir/T1_first-L_Puta_first.vtk  $targdir/shape/T1_L_Puta.vtk
-mv $sourcdir/T1_first-R_Thal_first.bvars  $targdir/shape/T1_R_Thal.bvars
-mv $sourcdir/T1_first-L_Thal_first.bvars  $targdir/shape/T1_L_Thal.bvars
-mv $sourcdir/T1_first-R_Thal_first.vtk  $targdir/shape/T1_R_Thal.vtk
-mv $sourcdir/T1_first-L_Thal_first.vtk  $targdir/shape/T1_L_Thal.vtk
+  mv $sourcdir/T1_first-BrStem_first.bvars  $targdir/shape/T1_BrStem.bvars
+  mv $sourcdir/T1_first-BrStem_first.vtk  $targdir/shape/T1_BrStem.vtk
+  mv $sourcdir/T1_first-L_Accu_first.bvars  $targdir/shape/T1_L_Accu.bvars
+  mv $sourcdir/T1_first-R_Accu_first.bvars  $targdir/shape/T1_R_Accu.bvars
+  mv $sourcdir/T1_first-L_Accu_first.vtk  $targdir/shape/T1_L_Accu.vtk
+  mv $sourcdir/T1_first-R_Accu_first.vtk  $targdir/shape/T1_R_Accu.vtk
+  mv $sourcdir/T1_first-L_Amyg_first.bvars  $targdir/shape/T1_L_Amyg.bvars
+  mv $sourcdir/T1_first-R_Amyg_first.bvars  $targdir/shape/T1_R_Amyg.bvars
+  mv $sourcdir/T1_first-L_Amyg_first.vtk  $targdir/shape/T1_L_Amyg.vtk
+  mv $sourcdir/T1_first-R_Amyg_first.vtk  $targdir/shape/T1_R_Amyg.vtk
+  mv $sourcdir/T1_first-L_Caud_first.bvars  $targdir/shape/T1_L_Caud.bvars
+  mv $sourcdir/T1_first-R_Caud_first.bvars  $targdir/shape/T1_R_Caud.bvars
+  mv $sourcdir/T1_first-L_Caud_first.vtk  $targdir/shape/T1_L_Caud.vtk
+  mv $sourcdir/T1_first-R_Caud_first.vtk  $targdir/shape/T1_R_Caud.vtk
+  mv $sourcdir/T1_first-L_Hipp_first.bvars  $targdir/shape/T1_L_Hipp.bvars
+  mv $sourcdir/T1_first-R_Hipp_first.bvars  $targdir/shape/T1_R_Hipp.bvars
+  mv $sourcdir/T1_first-L_Hipp_first.vtk  $targdir/shape/T1_L_Hipp.vtk
+  mv $sourcdir/T1_first-R_Hipp_first.vtk  $targdir/shape/T1_R_Hipp.vtk
+  mv $sourcdir/T1_first-L_Pall_first.bvars  $targdir/shape/T1_L_Pall.bvars
+  mv $sourcdir/T1_first-R_Pall_first.bvars  $targdir/shape/T1_R_Pall.bvars
+  mv $sourcdir/T1_first-L_Pall_first.vtk  $targdir/shape/T1_L_Pall.vtk
+  mv $sourcdir/T1_first-R_Pall_first.vtk  $targdir/shape/T1_R_Pall.vtk
+  mv $sourcdir/T1_first-R_Puta_first.bvars  $targdir/shape/T1_R_Puta.bvars
+  mv $sourcdir/T1_first-L_Puta_first.bvars  $targdir/shape/T1_L_Puta.bvars
+  mv $sourcdir/T1_first-R_Puta_first.vtk  $targdir/shape/T1_R_Puta.vtk
+  mv $sourcdir/T1_first-L_Puta_first.vtk  $targdir/shape/T1_L_Puta.vtk
+  mv $sourcdir/T1_first-R_Thal_first.bvars  $targdir/shape/T1_R_Thal.bvars
+  mv $sourcdir/T1_first-L_Thal_first.bvars  $targdir/shape/T1_L_Thal.bvars
+  mv $sourcdir/T1_first-R_Thal_first.vtk  $targdir/shape/T1_R_Thal.vtk
+  mv $sourcdir/T1_first-L_Thal_first.vtk  $targdir/shape/T1_L_Thal.vtk
+fi
 
 echo "Do linear registration"
 
