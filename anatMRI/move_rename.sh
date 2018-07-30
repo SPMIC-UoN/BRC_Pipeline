@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 26/07/2018
+# Last update: 30/07/2018
 
 set -e
 echo -e "\n START: registration"
@@ -24,6 +24,7 @@ targdir=$T1_dir/seg/tissue
 $FSLDIR/bin/immv $datadir/T1_fast_pve_0  $targdir/sing_chan/T1_pve_CSF
 $FSLDIR/bin/immv $datadir/T1_fast_pve_1  $targdir/sing_chan/T1_pve_GM
 $FSLDIR/bin/immv $datadir/T1_fast_pve_2  $targdir/sing_chan/T1_pve_WM
+$FSLDIR/bin/fslmaths $targdir/sing_chan/T1_pve_WM -thr 0.5 -bin $targdir/sing_chan/T1_pve_WMseg
 $FSLDIR/bin/immv $datadir/T1_fast_pveseg  $targdir/sing_chan/T1_pveseg
 $FSLDIR/bin/immv $datadir/T1_fast_seg  $targdir/sing_chan/T1_seg
 
@@ -72,7 +73,7 @@ $FSLDIR/bin/immv $datadir/T1_to_MNI_lin  $T1_dir/reg/lin/T1_2_std
 mv $datadir/T1_to_MNI_lin.mat  $T1_dir/reg/lin/T1_2_std.mat
 $FSLDIR/bin/convert_xfm -inverse $T1_dir/reg/lin/T1_2_std.mat -omat $T1_dir/reg/lin/std_2_T1.mat
 mv $datadir/T1_biascorr_to_std_sub.mat  $T1_dir/reg/lin/T1_2_std_sub.mat
-$FSLDIR/bin/immv $datadir/T1_biascorr_to_std_sub  $T1_dir/reg/lin/T1_2_std_sub
+#$FSLDIR/bin/immv $datadir/T1_biascorr_to_std_sub  $T1_dir/reg/lin/T1_2_std_sub
 
 echo "Do non-linear registration"
 
