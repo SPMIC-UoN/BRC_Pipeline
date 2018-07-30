@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 26/07/2018
+# Last update: 30/07/2018
 #Example:
 #./Pipeline_T1.sh --path ~/main/analysis -s Sub_001 -i ~/main/analysis/Orig/1_MPRAGE/__T1_1mm_sag_20180312094206_201.nii.gz -t2 ~/main/analysis/Orig/2_3D_T2w_FLAIR/__T2_FLAIR_1mm_20180312094206_301.nii.gz --subseg
 # fsl_anat -o ~/analysis/anat_T2 -i ~/analysis/T2_FLAIR.nii.gz -t T2 --nononlinreg --nosubcortseg
@@ -194,7 +194,6 @@ echo "fsl_anat "$Opt_args""
 echo '***********************************************************************************************'
 
 #${FSLDIR}/bin/fsl_anat "-i $O_DIR/T1/raw/T1_orig.nii.gz "$Opt_args" -o $O_DIR/T1/temp"
-#${FSLDIR}/bin/fsl_anat ""$Opt_args""
 ${ScriptsDir}/FSL_anat.sh ""$Opt_args""
 
 echo $T2
@@ -205,10 +204,10 @@ if [[ $T2 == yes ]]; then
     echo "Queueing fsl_anat for T2w image"
     echo "Command is:"
     echo '***********************************************************************************************'
-    echo "fsl_anat -i $O_DIR/T2/raw/T2_orig.nii.gz -o $O_DIR/T2/temp -t T2 --nononlinreg --nosubcortseg --noreg --noseg"
+    echo "fsl_anat -i $O_DIR/T2/raw/T2_orig.nii.gz -o $O_DIR/T2/temp -t T2 --nononlinreg --nosubcortseg --noreg --noseg --clobber"
     echo '***********************************************************************************************'
 
-   ${FSLDIR}/bin/fsl_anat  -i $O_DIR/T2/raw/T2_orig.nii.gz -o $O_DIR/T2/temp -t T2 --nononlinreg --nosubcortseg --noreg --noseg
+   ${FSLDIR}/bin/fsl_anat  -i $O_DIR/T2/raw/T2_orig.nii.gz -o $O_DIR/T2/temp -t T2 --nononlinreg --nosubcortseg --noreg --noseg --clobber
 fi
 
 echo "Queueing organizing data structure"
