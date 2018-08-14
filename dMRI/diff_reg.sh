@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 06/06/2018
+# Last update: 14/08/2018
 
 set -e
 echo -e "\n START: registration"
