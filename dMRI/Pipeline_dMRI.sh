@@ -1,10 +1,10 @@
 #!/bin/bash
-# Last update: 23/07/2018
+# Last update: 14/08/2018
 
 # Preprocessing Pipeline for diffusion MRI. Generates the "data" directory that can be used as input to fibre orientation estimation.
 # Stamatios Sotiropoulos, Analysis Group, FMRIB Centre, 2013.
 #Example:
-#./Pipeline_dMRI.sh -i1 ~/analysis/DTI_601.nii.gz -i2 ~/analysis/DTI_701.nii.gz -o ~/analysis/001_Prep -p 2 -e 0.78 -c 2 --reg
+#./Pipeline_dMRI.sh -i1 ~/main/analysis/DTI/001/5_6_Diffusion_MB3_b1k_2k_100dir_b0rev/__DTI_Biobank_2mm_MB3S2_EPI_20180307162159_701.nii.gz -i2 ~/main/analysis/DTI/001/5_6_Diffusion_MB3_b1k_2k_100dir_b0rev/__blip_DTI_Biobank_2mm_MB3S2_EPI_20180307162159_601.nii.gz --path ~/main/analysis -s Sub_001 -p 2 -e 0.78 -c 2
 
 set -e
 
@@ -43,22 +43,25 @@ Usage()
   echo "`basename $0`: Description"
   echo " "
   echo "Usage: `basename $0`"
-  echo " -i1| --in_1 <input image>	     dataLR1@dataLR2@...dataLRN, filenames of input images (For input filenames, if for a LR/RL (AP/PA) pair one of the two files are missing set the entry to EMPTY)"
-  echo " -i2| --in_2 <input image>           dataRL1@dataRL2@...dataRLN, filenames of input images (For input filenames, if for a LR/RL (AP/PA) pair one of the two files are missing set the entry to EMPTY)"
-  echo " -o | --out <output directory>       Output durectory. Please provide absolute path"
-  echo " --qc                                turn on steps that do quality control of dMRI data"
-  echo " --reg                               turn on steps that do registration to standard (FLIRT and FNIRT)"
-  echo " -e | --echo_s <value>               EchoSpacing should be in msecs"
-  echo " -p | --pe_dir <1..2>                PhaseEncodingDir"
-  echo "                                     1 for LR/RL,"
-  echo "                                     2 for AP/PA"
-  echo " -c | --cm_flag <0..2>               CombineMatchedFlag"
-  echo "                                     2 for including in the ouput all volumes uncombined,"
-  echo "                                     1 for including in the ouput and combine only volumes where both LR/RL (or AP/PA) pairs have been acquired,"
-  echo "                                     0 for including (uncombined) single volumes as well"
-  echo " -g | --p_im                         ParallelImaging_Factor, In-plane parallel imaging factor"
-  echo "                                     1 for No_Parallel_Imaging"
-  echo " -h | --help                         help"
+  echo " -i1| --in_1 <input image>	     dataLR(AP)1@dataLR(AP)2@...dataLR(AP)N, filenames of input images (For input filenames,"
+  echo "                                 if for a LR/RL (AP/PA) pair one of the two files are missing set the entry to EMPTY)"
+  echo " -i2| --in_2 <input image>       dataRL(PA)1@dataRL(PA)2@...dataRL(PA)N, filenames of input images (reverse phase encoding direction),"
+  echo "                                 Set to NONE if not available (default)"
+  echo " --path <output directory>       output durectory. Please provide absolute path"
+  echo " -s | --subject <Subject name>   output directory is a subject name folder in output path directory"
+  echo " --qc                            turn on steps that do quality control of dMRI data"
+  echo " --reg                           turn on steps that do registration to standard (FLIRT and FNIRT)"
+  echo " -e | --echo_s <value>           EchoSpacing should be in msecs"
+  echo " -p | --pe_dir <1..2>            PhaseEncodingDir"
+  echo "                                 1 for LR/RL,"
+  echo "                                 2 for AP/PA"
+  echo " -c | --cm_flag <0..2>           CombineMatchedFlag"
+  echo "                                 2 for including in the ouput all volumes uncombined,"
+  echo "                                 1 for including in the ouput and combine only volumes where both LR/RL (or AP/PA) pairs have been acquired,"
+  echo "                                 0 for including (uncombined) single volumes as well"
+  echo " -g | --p_im                     ParallelImaging_Factor, In-plane parallel imaging factor"
+  echo "                                 1 for No_Parallel_Imaging"
+  echo " -h | --help                     help"
 }
 
 # Just give usage if no arguments specified
@@ -66,10 +69,7 @@ if [ $# -eq 0 ] ; then Usage; exit 0; fi
 if [ $# -le 4 ] ; then Usage; exit 1; fi
 
 # default values
-InputImages=
-InputImages2=
-OutputFolder=
-O_DIR=
+InputImages2="NONE"
 echospacing=
 PEdir=
 CombineMatched=
@@ -77,21 +77,25 @@ PIFactor=1
 
 do_QC=no
 do_REG=no
+Apply_Topup=yes
 
 # parse arguments
 while [ "$1" != "" ]; do
     case $1 in
-        -i1 | --in_1 )          shift
-                                InputImages2=$1
+        -s | --subject )        shift
+                                Sub_ID=$1
                                 ;;
 
-        -i2 | --in_2 )          shift
+        -i1 | --in_1 )          shift
                                 InputImages=$1
                                 ;;
 
-        -o | --out )            shift
+        -i2 | --in_2 )          shift
+                                InputImages2=$1
+                                ;;
+
+        --path )                shift
                                 OutputFolder=`make_absolute $1`
-                                O_DIR=$1
                                 ;;
 
         --qc )           	      do_QC=yes
@@ -127,6 +131,17 @@ while [ "$1" != "" ]; do
     shift
 done
 
+### Sanity checking of arguments
+
+if [ X$Sub_ID = X ] && [ X$InputImages = X ] && [ X$OutputFolder = X ] ; then
+  echo "All of the compulsory arguments --path, -i1 and -s MUST be used"
+  exit 1;
+fi
+
+if [ $InputImages2 = "NONE" ] ; then
+    Apply_Topup=no
+fi
+
 OutputFolder=`echo ${OutputFolder} | sed 's/\/$/$/g'`
 
 #if [[ -z "$PIFactor" ]]; then  PIFactor=1; fi
@@ -140,7 +155,7 @@ if [ ${PEdir} -ne 1 ] && [ ${PEdir} -ne 2 ]; then
     exit 1
 fi
 
-outdir=$OutputFolder
+outdir=$OutputFolder/$Sub_ID
 if [ ! -d "$outdir" ]; then
   mkdir $outdir;
 #else
@@ -152,44 +167,58 @@ outdir=${outdir}/analysis;
 if [ ! -d "$outdir" ]; then mkdir $outdir; fi
 
 outdir=${outdir}/dMRI;
-#if [ -d ${outdir} ]; then
-#    rm -rf ${outdir}
-#fi
-#mkdir -p ${outdir}
+if [ -d ${outdir} ]; then
+    rm -rf ${outdir}
+fi
+mkdir -p ${outdir}
 
 echo OutputDir is ${outdir}
 
-if [ ! -d "$O_DIR/raw" ]; then mkdir $O_DIR/raw; fi
-if [ ! -d "$O_DIR/preprocess" ]; then mkdir $O_DIR/preprocess; fi
-if [ ! -d "$O_DIR/preprocess/topup" ]; then mkdir $O_DIR/preprocess/topup; fi
-if [ ! -d "$O_DIR/preprocess/eddy" ]; then mkdir $O_DIR/preprocess/eddy; fi
-if [ ! -d "$O_DIR/processed" ]; then mkdir $O_DIR/processed; fi
-if [ ! -d "$O_DIR/reg" ]; then mkdir $O_DIR/reg; fi
-if [ ! -d "$O_DIR/reg/lin" ]; then mkdir $O_DIR/reg/lin; fi
-if [ ! -d "$O_DIR/reg/nonlin" ]; then mkdir $O_DIR/reg/nonlin; fi
-if [ ! -d "$O_DIR/qc" ]; then mkdir $O_DIR/qc; fi
-if [ ! -d "$O_DIR/log" ]; then mkdir $O_DIR/log; fi
-if [ ! -d "$O_DIR/unlabelled" ]; then mkdir $O_DIR/unlabelled; fi
-
-#: <<'COMMENT'
+if [ ! -d "$outdir/raw" ]; then mkdir $outdir/raw; fi
+if [ ! -d "$outdir/preprocess" ]; then mkdir $outdir/preprocess; fi
+if [ $Apply_Topup = yes ] ; then
+  if [ ! -d "$outdir/preprocess/topup" ]; then mkdir $outdir/preprocess/topup; fi
+fi
+if [ ! -d "$outdir/preprocess/eddy" ]; then mkdir $outdir/preprocess/eddy; fi
+if [ ! -d "$outdir/processed" ]; then mkdir $outdir/processed; fi
+if [ ! -d "$outdir/reg" ]; then mkdir $outdir/reg; fi
+if [ ! -d "$outdir/reg/lin" ]; then mkdir $outdir/reg/lin; fi
+if [ ! -d "$outdir/reg/nonlin" ]; then mkdir $outdir/reg/nonlin; fi
+if [ ! -d "$outdir/qc" ]; then mkdir $outdir/qc; fi
+if [ ! -d "$outdir/log" ]; then mkdir $outdir/log; fi
+if [ ! -d "$outdir/unlabelled" ]; then mkdir $outdir/unlabelled; fi
 
 echo "Data Handling"
-${ScriptsDir}/data_copy.sh ${outdir} ${InputImages} ${InputImages2} ${PEdir}
+${ScriptsDir}/data_copy.sh \
+              --workingdir=${outdir} \
+              --inputimage=${InputImages} \
+              --inputimage2=${InputImages2} \
+              --pedirection=${PEdir} \
+              --applytopup=$Apply_Topup
 
 echo "Basic Preprocessing"
-${ScriptsDir}/basic_preproc.sh ${outdir} ${echospacing} ${PEdir} ${b0dist} ${b0maxbval}  ${PIFactor}
+${ScriptsDir}/basic_preproc.sh \
+              --workingdir=${outdir} \
+              --echospacing=${echospacing} \
+              --pedir=${PEdir} \
+              --b0dist=${b0dist} \
+              --b0maxbval=${b0maxbval} \
+              --pifactor=${PIFactor} \
+              --applytopup=$Apply_Topup
 
-echo "Queueing Topup"
-${ScriptsDir}/run_topup.sh ${outdir}/preprocess/topup
+if [ $Apply_Topup = yes ] ; then
+    echo "Queueing Topup"
+    ${ScriptsDir}/run_topup.sh ${outdir}/preprocess/topup
+fi
 
 echo "Queueing Eddy"
-${ScriptsDir}/run_eddy.sh ${outdir}/preprocess/eddy
+${ScriptsDir}/run_eddy.sh ${outdir}/preprocess/eddy $Apply_Topup
 
 mv $outdir/preprocess/eddy/eddy_unwarped_images.qc/* $outdir/qc/
 rm -r $outdir/preprocess/eddy/eddy_unwarped_images.qc
 
 echo "Queueing Eddy PostProcessing"
-ßß${ScriptsDir}/eddy_postproc.sh ${outdir} ${CombineMatched} ${ScriptsDir}
+${ScriptsDir}/eddy_postproc.sh ${outdir} ${CombineMatched} ${ScriptsDir} $Apply_Topup
 
 if [[ $do_REG == yes ]]; then
     ${ScriptsDir}/diff_reg.sh ${outdir} ${OutputFolder}
