@@ -1,6 +1,6 @@
-# BRC_pipeline
+# BRC Pipeline
 
-The BRC Pipelines scripts are being released for processing MRI data. This procesisng pipeline could be applied to diiferent modalities such as T1w, T2w, dMRI, and resting-state fMRI datasets.
+The BRC Pipeline scripts are being released for processing magnetic resonance imaging (MRI) data. This procesisng pipeline could be applied to diiferent modalities such as T1w/T2w MRI, diffusion MRI, and functional MRI datasets.
 
 For further information, please see:
 
