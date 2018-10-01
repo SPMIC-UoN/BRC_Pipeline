@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 28/09/2018
+# Last update: 01/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -40,11 +40,6 @@ echo "+                                                                        +
 echo "+    START: Spatial Smoothing and Artifact/Physiological Noise Removal   +"
 echo "+                                                                        +"
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-
-if [ -e ${WD} ] ; then
-    ${RUN} rm -r ${WD}
-fi
-mkdir -p $WD
 
 ########################################## DO WORK ##########################################
 
