@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 28/09/2018
+# Last update: 01/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -35,11 +35,6 @@ echo "+                  START: Slice Timing Corection                         +
 echo "+                                                                        +"
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-if [ -e ${WD} ] ; then
-    ${RUN} rm -r ${WD}
-fi
-mkdir -p $WD
-
 ########################################## DO WORK ##########################################
 
 #TR_vol=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
@@ -70,7 +65,7 @@ ${FSLDIR}/bin/fslsplit ${InputfMRI} ${WD}/prevols/vol -t
 
 gunzip ${WD}/prevols/vol*.nii.gz
 
-${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${ScriptsDir}'); run_spm_slice_time_correction('${SPMpath}' , '${WD}/prevols/vol' , 'stc_' , '${method}' , ${RepetitionTime}); exit"
+${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_SCR}'); run_spm_slice_time_correction('${SPMpath}' , '${WD}/prevols/vol' , 'stc_' , '${method}' , ${RepetitionTime}); exit"
 
 ${FSLDIR}/bin/imcp ${WD}/prevols/stc_* ${WD}/postvols/
 
