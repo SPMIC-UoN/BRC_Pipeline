@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 28/09/2018
+# Last update: 01/08/2018
 #Example:
 #./Pipeline_T1.sh --path ~/main/analysis -s Sub_001 -i ~/main/analysis/Orig/1_MPRAGE/__T1_1mm_sag_20180312094206_201.nii.gz -t2 ~/main/analysis/Orig/2_3D_T2w_FLAIR/__T2_FLAIR_1mm_20180312094206_301.nii.gz --subseg
 
