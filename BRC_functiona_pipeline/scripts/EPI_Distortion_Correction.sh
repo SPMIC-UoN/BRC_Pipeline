@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 28/09/2018
+# Last update: 01/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -81,7 +81,7 @@ case $DistortionCorrection in
               --unwarpdir=${UnwarpDir} \
               --topupconfig=${TopupConfig} \
               --gdcoeffs=${GradientDistortionCoeffs} \
-              --outfolder=${WD}
+              --outfolder=${WD} \
               --owarp=${WD}/WarpField \
               --ojacobian=${WD}/Jacobian
 
