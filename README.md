@@ -11,4 +11,4 @@ For further information, please see:
 <!-- References -->
 
 
-[release-install-use]: https://github.com/Washington-University/Pipelines/wiki/v3.4.0-Release-Notes,-Installation,-and-Usage
+[release-install-use]: https://github.com/SPMIC-UoN/BRC_Pipeline/wiki
