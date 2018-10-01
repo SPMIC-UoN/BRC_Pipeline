@@ -1,38 +1,11 @@
 #!/bin/bash
-# Last update: 28/09/2018
+# Last update: 01/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
 # Copyright 2018 University of Nottingham
 #
 set -e
-
-################################################ SUPPORT FUNCTIONS ##################################################
-
-Usage() {
-  echo "`basename $0`: Script to combine warps and affine transforms together and do a single resampling, with specified output resolution"
-  echo " "
-  echo "Usage: `basename $0` --workingdir=<working dir>"
-  echo "             --infmri=<input fMRI 4D image>"
-  echo "             --t1=<input T1w restored image>"
-  echo "             --fmriresout=<output resolution for images, typically the fmri resolution>"
-  echo "             --fmrifolder=<fMRI processing folder>"
-  echo "             --atlasspacedir=<output directory for several resampled images>"
-  echo "             --fmri2structin=<input fMRI to T1w warp>"
-  echo "             --struct2std=<input T1w to MNI warp>"
-  echo "             --owarp=<output fMRI to MNI warp>"
-  echo "             --oiwarp=<output MNI to fMRI warp>"
-  echo "             --motionmatdir=<input motion correcton matrix directory>"
-  echo "             --motionmatprefix=<input motion correcton matrix filename prefix>"
-  echo "             --ofmri=<input fMRI 4D image>"
-  echo "             --freesurferbrainmask=<input FreeSurfer brain mask, nifti format in T1w space>"
-  echo "             --biasfield=<input biasfield image, in T1w space>"
-  echo "             --gdfield=<input warpfield for gradient non-linearity correction>"
-  echo "             --scoutin=<input scout image (EPI pre-sat, before gradient non-linearity distortion correction)>"
-  echo "             --scoutgdcin=<input scout gradient nonlinearity distortion corrected image (EPI pre-sat)>"
-  echo "             --oscout=<output transformed + distortion corrected scout image>"
-  echo "             --ojacobian=<output transformed + distortion corrected Jacobian image>"
-}
 
 # function for parsing options
 getopt1()
