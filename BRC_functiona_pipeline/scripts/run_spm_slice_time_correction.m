@@ -1,6 +1,6 @@
 % Last update: 28/09/2018
 %
-% Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
+% Author: Stefan Pszczolkowski
 %
 % Copyright 2018 University of Nottingham
 %
