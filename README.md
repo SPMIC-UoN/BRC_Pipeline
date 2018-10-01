@@ -4,5 +4,5 @@ The BRC Pipelines scripts are being released for processing MRI data. This proce
 
 For further information, please see:
 
-* The [Release Notes, Installation, and Usage][release-install-use] document
+* The [Release Notes, Installation, and Usage][wiki] document
   for the current release
