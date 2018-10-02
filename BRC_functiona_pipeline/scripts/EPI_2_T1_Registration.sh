@@ -102,7 +102,7 @@ case $DistortionCorrection in
         fi
 
         echo "register undistorted scout image to T1w"
-        ${BRC_FMRI_SCR}/epi_reg_dof --dof=${dof} --epi=${WD}/${ScoutInputFile}_undistorted --t1=${T1wImage} --t1brain=${T1wBrainImage} --wmseg=$WMseg --out=${WD}/${ScoutInputFile}_undistorted2T1w_init
+        ${BRC_FMRI_SCR}/epi_reg_dof.sh --dof=${dof} --epi=${WD}/${ScoutInputFile}_undistorted --t1=${T1wImage} --t1brain=${T1wBrainImage} --wmseg=$WMseg --out=${WD}/${ScoutInputFile}_undistorted2T1w_init
 
         #copy the initial registration into the final affine's filename, as it is pretty good
         cp "${WD}/${ScoutInputFile}_undistorted2T1w_init.mat" "${WD}/fMRI2str.mat"
