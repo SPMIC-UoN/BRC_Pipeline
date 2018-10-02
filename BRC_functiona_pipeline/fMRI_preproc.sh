@@ -290,6 +290,9 @@ if [ ! -d "$fMRIFolder/motioncorrection" ]; then mkdir $fMRIFolder/motioncorrect
 if [ ! -d "$fMRIFolder/reg" ]; then mkdir $fMRIFolder/reg; fi
 if [ ! -d "$fMRIFolder/result" ]; then mkdir $fMRIFolder/result; fi
 
+if [ ! -d "$fMRIFolder/Slice_time_corr" ]; then mkdir $fMRIFolder/Slice_time_corr; fi
+if [ ! -d "$fMRIFolder/Noise_removal" ]; then mkdir $fMRIFolder/Noise_removal; fi
+
 DCFolderName="EPI_Distortion_Correction"
 DCFolder=${fMRIFolder}/${DCFolderName}
 
