@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 28/09/2018
+# Last update: 02/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -20,23 +20,6 @@ set -e
 #  of usefulness of this software for any purpose, and do not assume
 #  any liability for damages, incidental or otherwise, caused by any
 #  use of this document.
-
-################################################ SUPPORT FUNCTIONS ##################################################
-
-Usage()
-{
-  echo "`basename $0`: "
-  echo " "
-  echo "Usage: `basename $0` --infmri=<input fmri data>"
-  echo "             --biasfield=<bias field, already registered to fmri data>"
-  echo "             --jacobian=<jacobian image, already registered to fmri data>"
-  echo "             --brainmask=<brain mask in fmri space>"
-  echo "             --ofmri=<output basename for fmri data>"
-  echo "             --usejacobian=<apply jacobian modulation: true/false>"
-  echo "             [--inscout=<input name for scout image (pre-sat EPI)>]"
-  echo "             [--oscout=<output name for normalized scout image>]"
-  echo "             [--workingdir=<working dir>]"
-}
 
 # function for parsing options
 getopt1()
@@ -94,7 +77,7 @@ fi
 
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "+                                                                        +"
-echo "+                     START: IntensityNormalization                      +"
+echo "+                    START: Intensity Normalization                      +"
 echo "+                                                                        +"
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -116,6 +99,12 @@ fi
 #rm ${InputfMRI}.nii.*
 #${FSLDIR}/bin/imrm ${WD}/rfMRI_temp
 
-echo " "
-echo "END: IntensityNormalization"
-echo " END: `date`"
+echo ""
+echo "                     START: Intensity Normalization"
+echo "                    END: `date`"
+echo "=========================================================================="
+echo "                             ===============                              "
+
+################################################################################################
+## Cleanup
+################################################################################################
