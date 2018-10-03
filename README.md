@@ -17,4 +17,4 @@ See the [Versions.md] file for details on releases[Versions_md].
 
 
 [release-install-use]: https://github.com/SPMIC-UoN/BRC_Pipeline/wiki
-[Versions_md]:https://github.com/SPMIC-UoN/BRC_Pipeline/Versions.md
+[Versions_md]: https://github.com/SPMIC-UoN/BRC_Pipeline/blob/master/Versions.md
