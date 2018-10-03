@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 28/09/2018
+# Last update: 02/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -142,9 +142,22 @@ do
     printf '\n'
 done >> ${EddyFolder}/${NameOffMRI}.bvecs
 
-#${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_SCR}'); extract_slice_specifications('${SliceSpec}' , '${EddyFolder}/slspec.txt'); exit"
+#Standard arguments
+EDDY_arg="--imain=${Eddy_Input} --mask=${BrainMask} --index=${EddyFolder}/index.txt --acqp=$txtfname --bvecs=${EddyFolder}/${NameOffMRI}.bvecs --bvals=${EddyFolder}/${NameOffMRI}.bvals --out=${EddyFolder}/${EddyOut}"
+EDDY_arg="${EDDY_arg} --data_is_shelled --very_verbose --b0_only --dont_mask_output --nvoxhp=1000"
+EDDY_arg="${EDDY_arg} --niter=6 --fwhm=10,10,5,5,0,0 --mporder=${MPOrder} --s2v_niter=10 --s2v_fwhm=0 --s2v_interp=trilinear --s2v_lambda=1 --mbs_niter=20 --mbs_lambda=5 --mbs_ksp=5"
 
-EDDY_arg="--imain=${Eddy_Input} --mask=${BrainMask} --index=${EddyFolder}/index.txt --acqp=$txtfname --bvecs=${EddyFolder}/${NameOffMRI}.bvecs --bvals=${EddyFolder}/${NameOffMRI}.bvals --out=${EddyFolder}/${EddyOut} --data_is_shelled --very_verbose --niter=6 --fwhm=10,10,5,5,0,0 --mporder=${MPOrder} --s2v_niter=10 --s2v_fwhm=0 --s2v_interp=trilinear --s2v_lambda=1 --nvoxhp=1000 --b0_only --dont_mask_output --mbs_niter=20 --mbs_lambda=5 --mbs_ksp=5"
+if [ ! $SliceSpec = "NONE" ] ; then
+    ${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_SCR}'); extract_slice_specifications('${SliceSpec}' , '${EddyFolder}/slspec.txt'); exit"
+
+    if [ -e ${EddyFolder}/slspec.txt ] ; then
+        EDDY_arg="${EDDY_arg} --slspec=${EddyFolder}/slspec.txt"
+    else
+        echo ""
+        echo "WARNING: Slice Timing information does not exist in the json file"
+        echo ""
+    fi
+fi
 
 if [[ ${DCMethod} == "TOPUP" ]]; then
     EDDY_arg="${EDDY_arg} --topup=${DCFolder}/FieldMap/Coefficents"

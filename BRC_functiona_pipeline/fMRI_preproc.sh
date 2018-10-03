@@ -60,6 +60,7 @@ Usage()
   echo "                                           2: If slices were acquired with forward order (0, 1, 2, ...), and"
   echo "                                           3: If slices were acquired with backward order (n, n-1, n-2, ...)"
   echo " --fwhm <value>                       Spatial size (sigma, i.e., half-width) of smoothing, in mm. Set to 0 (default) for no spatial smooting"
+  echo "                                      Non-zero value of this option, automatically enables ICA-AROMA for Artifact/Physiological Noise Removal"
   echo " --tr <value>                         Repetition Time in sec"
   echo " --fmrires <value>                    Target final resolution of fMRI data in mm (default is 2 mm)"
   echo " --printcom                           use 'echo' for just printing everything and not running the commands (default is to run)"
