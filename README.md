@@ -9,7 +9,7 @@ For further information, please see:
 
 ## Versions
 
-See the [Versions.md] file for details on releases[./Versions.md].
+See the [Versions.md] file for details on releases[Versions_md].
 
 
 
@@ -17,3 +17,4 @@ See the [Versions.md] file for details on releases[./Versions.md].
 
 
 [release-install-use]: https://github.com/SPMIC-UoN/BRC_Pipeline/wiki
+[Versions_md]:https://github.com/SPMIC-UoN/BRC_Pipeline/Versions.md
