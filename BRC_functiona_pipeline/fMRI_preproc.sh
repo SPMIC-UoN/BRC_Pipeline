@@ -635,6 +635,7 @@ fi
 if [ $smoothingfwhm -ne 0 ]; then
 
     echo "Spatial Smoothing and Artifact/Physiological Noise Removal"
+
     ${RUN} ${BRC_FMRI_SCR}/Spatial_Smoothing_Noise_Removal.sh \
           --workingdir=${nrFolder} \
           --infmri=${SSNR_Input} \
@@ -669,8 +670,8 @@ if [[ $Do_intensity_norm == yes ]]; then
         In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_func
     elif [[ ${OUT_SPACE} == "std" ]]; then
         In_Nrm_inscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin
-        In_Nrm_brainmask=${OsrFolder}/{$T1wRestoreImageBrain}_mask.${FinalfMRIResolution}
-        In_Nrm_jacobian=${fMRIFolder}/${JacobianOut}_std.${FinalfMRIResolution}
+        In_Nrm_brainmask=${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution}
+        In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
     fi
 
     ${RUN} ${BRC_FMRI_SCR}/Intensity_Normalization.sh \
@@ -686,6 +687,10 @@ if [[ $Do_intensity_norm == yes ]]; then
 
 else
 
+    echo "Not performing Intensity Normalization and Bias Removal"
+
+    ${FSLDIR}/bin/imcp ${nrFolder}/ICA_AROMA_${OUT_SPACE}_space/denoised_func_data_nonaggr ${In_Nrm_Folder}/${NameOffMRI}_nonlin_norm
+    ${FSLDIR}/bin/imcp ${In_Nrm_inscout} ${In_Nrm_Folder}/${NameOffMRI}_SBRef_nonlin_norm
 fi
 
 
