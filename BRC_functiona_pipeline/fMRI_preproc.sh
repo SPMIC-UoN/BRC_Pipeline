@@ -474,6 +474,10 @@ echo "MOTION CORRECTION"
 case $MotionCorrectionType in
 
     MCFLIRT)
+        STC_Input=${mcFolder}/${NameOffMRI}_mc
+        SSNR_motionparam=${mcFolder}/${NameOffMRI}_mc.par
+        fMRI_2_str_Input=${regFolder}/${fMRI2strOutputTransform}
+
         ${RUN} ${BRC_FMRI_SCR}/MotionCorrection.sh \
               --workingdir=${mcFolder} \
               --inputfmri=${gdcFolder}/${NameOffMRI}_gdc \
@@ -486,6 +490,10 @@ case $MotionCorrectionType in
     ;;
 
     EDDY)
+        STC_Input=${EddyFolder}/${EddyOutput}
+        SSNR_motionparam=${EddyFolder}/${EddyOutput}.eddy_parameters
+        fMRI_2_str_Input=${EddyFolder}/${EddyOutput}
+
         ${RUN} ${BRC_FMRI_SCR}/EddyPreprocessing.sh \
               --workingdir=${EddyFolder} \
               --inputfile=${gdcFolder}/${NameOffMRI}_gdc \
@@ -506,13 +514,6 @@ case $MotionCorrectionType in
         echo "UNKNOWN MOTION CORRECTION METHOD: ${MotionCorrectionType}"
         exit 1
 esac
-
-
-if [[ ${MotionCorrectionType} == "MCFLIRT" ]]; then
-    STC_Input=${gdcFolder}/${NameOffMRI}_gdc
-elif [[ ${MotionCorrectionType} == "EDDY" ]]; then
-    STC_Input=${EddyFolder}/${EddyOutput}
-fi
 
 
 if [ $SliceTimingCorrection -ne 0 ]; then
@@ -560,13 +561,6 @@ echo "Check input files"
 echo "Check input files"
 
 echo "One Step Resampling"
-
-if [[ ${MotionCorrectionType} == "MCFLIRT" ]]; then
-    fMRI_2_str_Input=${regFolder}/${fMRI2strOutputTransform}
-else
-    fMRI_2_str_Input=${EddyFolder}/${EddyOutput}
-fi
-
 
 ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --workingdir=${OsrFolder} \
@@ -644,7 +638,7 @@ if [ $smoothingfwhm -ne 0 ]; then
           --fmriname=${NameOffMRI} \
           --fwhm=${smoothingfwhm} \
           --repetitiontime=${RepetitionTime} \
-          --motionparam=${mcFolder}/${NameOffMRI}_mc.par \
+          --motionparam=${SSNR_motionparam} \
           --fmri2structin=${DCFolder}/fMRI2str.mat \
           --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field.nii.gz \
           --motioncorrectiontype=${MotionCorrectionType} \

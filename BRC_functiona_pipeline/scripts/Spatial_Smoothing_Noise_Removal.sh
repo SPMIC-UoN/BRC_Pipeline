@@ -138,35 +138,28 @@ if [ -e ${WD}/ICA_AROMA_${OUT_SPACE}_space ] ; then
 fi
 
 
-if [[ ${MotionCorrectionType} != "MCFLIRT" ]]; then
-    echo "Create a fake motion parameters"
-
-    dimt=`${FSLDIR}/bin/fslval ${InputfMRI} dim4`
-
-    if [ -e ${WD}/${fmriName}_mc.par ] ; then
-        rm ${WD}/${fmriName}_mc.par
-    fi
-
-    for (( i=0; i<=${dimt}; i++ ))
-    do
-
-        if [ $((i%2)) -eq 0 ]; then
-            echo "0.000001 0.000001 0.000001 0.000001 0.000001 0.000001" >> ${WD}/${fmriName}_mc.par
-        else
-            echo "-0.000001 -0.000001 -0.000001 -0.000001 -0.000001 -0.000001" >> ${WD}/${fmriName}_mc.par
-        fi
-#        if (( $i == "${dimt} - 5" )) || (( $i == "${dimt} - 3" )) || (( $i == "${dimt} - 1" )); then
+#if [[ ${MotionCorrectionType} != "MCFLIRT" ]]; then
+#    echo "Create a fake motion parameters"
+#
+#    dimt=`${FSLDIR}/bin/fslval ${InputfMRI} dim4`
+#
+#    if [ -e ${WD}/${fmriName}_mc.par ] ; then
+#        rm ${WD}/${fmriName}_mc.par
+#    fi
+#
+#    for (( i=0; i<=${dimt}; i++ ))
+#    do
+#
+#        if [ $((i%2)) -eq 0 ]; then
 #            echo "0.000001 0.000001 0.000001 0.000001 0.000001 0.000001" >> ${WD}/${fmriName}_mc.par
-#        elif (( $i == "${dimt} - 4" )) || (( $i == "${dimt} - 2" )) || (( $i == "${dimt}" )); then
-#            echo "-0.000001 -0.000001 -0.000001 -0.000001 -0.000001 -0.000001" >> ${WD}/${fmriName}_mc.par
 #        else
-#            echo "0.000000 0.000000 0.000000 0.000000 0.000000 0.000000" >> ${WD}/${fmriName}_mc.par
+#            echo "-0.000001 -0.000001 -0.000001 -0.000001 -0.000001 -0.000001" >> ${WD}/${fmriName}_mc.par
 #        fi
-
-    done
-
-    MotionParam=${WD}/${fmriName}_mc.par
-fi
+#
+#    done
+#
+#    MotionParam=${WD}/${fmriName}_mc.par
+#fi
 
 MC_arg="-in ${WD}/rfMRI_thresh_smooth.nii.gz -out ${WD}/ICA_AROMA_${OUT_SPACE}_space -tr ${RepetitionTime} -mc ${MotionParam} -m ${WD}/${fmriName}_brain_mask.nii.gz"
 
