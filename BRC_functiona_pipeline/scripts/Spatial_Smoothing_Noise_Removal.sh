@@ -172,17 +172,6 @@ fi
 ${RUN} python2.7 ${BRC_FMRI_SCR}/ICA_AROMA/ICA_AROMA.py ""$MC_arg""
 
 
-
-#${RUN} python2.7 ${BRC_FMRI_SCR}/ICA_AROMA/ICA_AROMA.py \
-#            -in ${WD}/rfMRI_thresh_smooth.nii.gz \
-#            -out ${WD}/ICA_AROMA \
-#            -tr ${RepetitionTime} \
-#            -m ${InputfMRIMask}.nii.gz \
-#            -affmat ${fMRI2StructMat} \
-#            "${MC_arg}"
-##            -warp ${Struct2StdWarp} "${MC_arg}"
-##            -mc ${MotionParam} \
-
 echo ""
 echo "      END: Spatial Smoothing and Artifact/Physiological Noise Removal"
 echo "                    END: `date`"
@@ -192,10 +181,6 @@ echo "                             ===============                              
 ################################################################################################
 ## Cleanup
 ################################################################################################
-
-if [ -e ${WD}/${fmriName}_mc.par ] ; then
-    rm ${WD}/${fmriName}_mc.par
-fi
 
 imrm ${WD}/${fmriName}
 imrm ${WD}/${fmriName}_mean

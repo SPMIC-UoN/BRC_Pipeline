@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 02/10/2018
+# Last update: 04/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -80,11 +80,6 @@ echo "+                                                                        +
 echo "+                    START: Intensity Normalization                      +"
 echo "+                                                                        +"
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-
-if [ -e ${WD} ] ; then
-    ${RUN} rm -r ${WD}
-fi
-mkdir -p $WD
 
 ########################################## DO WORK ##########################################
 
