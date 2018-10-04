@@ -1,6 +1,7 @@
 ## Versions
 
 04-Oct-2018 (V1.0.4)
+ - Minor bug to create Intensity_Norm folder is fixed in `fMRI_preproc.sh` function in the `BRC_functiona_pipeline`.
  - Minor bug fixed in `One_Step_Resampling` function in the `BRC_functiona_pipeline`.
  - To reduce the ambiguity, version of the software is added to all pipelines.
 
