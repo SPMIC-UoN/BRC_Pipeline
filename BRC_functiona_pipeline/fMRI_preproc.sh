@@ -569,7 +569,7 @@ ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --scoutgdcin=${gdcFolder}/${ScoutName}_gdc \
       --fmrifolder=${fMRIFolder} \
       --t1=${T1wFolder}/reg/nonlin/T1_2_std_warp \
-      --freesurferbrainmask=${T1wFolder}/preprocess/{$T1wRestoreImageBrain}_mask \
+      --freesurferbrainmask=${T1wFolder}/preprocess/${T1wRestoreImageBrain}_mask \
       --fmriresout=${FinalfMRIResolution} \
       --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
       --fmri2structin=${regFolder}/${fMRI2strOutputTransform} \
