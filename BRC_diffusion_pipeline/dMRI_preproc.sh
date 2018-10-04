@@ -135,8 +135,11 @@ while [ "$1" != "" ]; do
     shift
 done
 
-### Sanity checking of arguments
+${RUN} ${BRCDIR}/Show_version.sh
 
+#=====================================================================================
+###                          Sanity checking of arguments
+#=====================================================================================
 if [ X$Sub_ID = X ] || [ X$InputImages = X ] || [ X$OutputFolder = X ] ; then
     echo ""
     echo "All of the compulsory arguments --path, -i1 and -s MUST be used"

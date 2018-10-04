@@ -106,16 +106,19 @@ while [ "$1" != "" ]; do
     shift
 done
 
-### Sanity checking of arguments
+${RUN} ${BRCDIR}/Show_version.sh
 
+#=====================================================================================
+###                          Sanity checking of arguments
+#=====================================================================================
 if [ X$Sub_ID = X ] && [ X$IN_Img = X ] && [ X$Path = X ] ; then
-  echo "All of the compulsory arguments --path, -i and -s MUST be used"
-  exit 1;
+    echo "All of the compulsory arguments --path, -i and -s MUST be used"
+    exit 1;
 fi
 
 #Set fsl_anat options
 if [ $do_Sub_seg = no ] ; then
-  Opt_args="$Opt_args --nosubcortseg"
+    Opt_args="$Opt_args --nosubcortseg"
 fi
 
 Opt_args="$Opt_args -t $FAST_t"
@@ -125,7 +128,7 @@ Sub_ID=${Sub_ID%.nii.gz}
 
 O_DIR=$Path/${Sub_ID};
 if [ ! -d "$O_DIR" ]; then
-  mkdir $O_DIR;
+    mkdir $O_DIR;
 #else
 #  O_DIR="${O_DIR}_$(date +"%d-%m-%Y_%H-%M")"
 #  mkdir $O_DIR
