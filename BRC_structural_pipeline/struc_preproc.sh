@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 01/08/2018
+# Last update: 08/10/2018
 #Example:
 #./Pipeline_T1.sh --path ~/main/analysis -s Sub_001 -i ~/main/analysis/Orig/1_MPRAGE/__T1_1mm_sag_20180312094206_201.nii.gz -t2 ~/main/analysis/Orig/2_3D_T2w_FLAIR/__T2_FLAIR_1mm_20180312094206_301.nii.gz --subseg
 
@@ -272,9 +272,12 @@ if [[ $do_freesurfer == yes ]]; then
     SUBJECTS_DIR=$O_DIR/T1
     echo "Queueing Freesurfer"
 
-    if [[ $T2 == yes ]]; then
-      recon-all -i $O_DIR/T1/raw/T1_orig.nii.gz -s FS -FLAIR $O_DIR/T2/raw/T2_orig.nii.gz -all
-    else
-      recon-all -i $O_DIR/T1/raw/T1_orig.nii.gz -s FS -all
-    fi
+#    if [[ $T2 == yes ]]; then
+#      recon-all -i $O_DIR/T1/raw/T1_orig.nii.gz -s FS -FLAIR $O_DIR/T2/raw/T2_orig.nii.gz -all
+#    else
+        recon-all -s FS -autorecon2
+
+        recon-all -s FS -autorecon3
+#      recon-all -i $O_DIR/T1/raw/T1_orig.nii.gz -s FS -all
+#    fi
 fi
