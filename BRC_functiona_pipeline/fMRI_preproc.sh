@@ -62,6 +62,8 @@ Usage()
   echo " --fwhm <value>                       Spatial size (sigma, i.e., half-width) of smoothing, in mm. Set to 0 (default) for no spatial smooting"
   echo "                                      Non-zero value of this option, automatically enables ICA-AROMA for Artifact/Physiological Noise Removal"
   echo " --fmrires <value>                    Target final resolution of fMRI data in mm (default is 2 mm)"
+  echo " --tempfilter <value>                 Non-zero value of this option means that one wants to do temporal filtering with High pass filter curoff <value> in Sec"
+  echo "                                      default value is 0, means No Temporal Filtering"
   echo " --printcom                           use 'echo' for just printing everything and not running the commands (default is to run)"
   echo " -h | --help                          help"
 }
@@ -87,6 +89,7 @@ dof=6
 FinalfMRIResolution=2
 SliceTimingCorrection=0
 smoothingfwhm=0
+Temp_Filter_Cutoff=0
 
 opts_DefaultOpt()
 {
@@ -174,7 +177,11 @@ while [ "$1" != "" ]; do
                               SliceTimingCorrection=$1
                               ;;
 
-      --intensitynorm )       Do_intensity_norm=yes
+      --intensitynorm )       Do_intensity_norm="yes"
+                              ;;
+
+      --tempfilter )          shift
+                              Temp_Filter_Cutoff=$1
                               ;;
 
       --fwhm )                shift
@@ -288,6 +295,7 @@ InNormfFolderName="Intensity_norm"
 UnlabeledFolderName="unlabeled"
 processedFolderName="processed"
 figsFolderName="figs"
+tempfiltFolderName="temp_filt"
 
 NameOffMRI="rfMRI"
 T1wImage="T1_biascorr"                                                          #<input T1-weighted image>
@@ -348,12 +356,14 @@ EddyFolder=${fMRIFolder}/${eddyFolderName}
 OsrFolder=${fMRIFolder}/${osrFolderName}
 SE_BF_Folder=${DCFolder}/${sebfFolderName}
 In_Nrm_Folder=${fMRIFolder}/${InNormfFolderName}
+Tmp_Filt_Folder=${fMRIFolder}/${tempfiltFolderName}
 
 mkdir -p $fMRIFolder
 if [ ! -d "$rawFolder" ]; then mkdir $rawFolder; fi
 if [ ! -d "$gdcFolder" ]; then mkdir $gdcFolder; fi
 if [ ! -d "$mcFolder" ]; then mkdir $mcFolder; fi
 if [ ! -d "$regFolder" ]; then mkdir $regFolder; fi
+if [ ! -d "$Tmp_Filt_Folder" ]; then mkdir $Tmp_Filt_Folder; fi
 
 #if [ -e "${fMRIFolder}/Slice_time_corr" ] ; then
 #    ${RUN} rm -r ${fMRIFolder}/Slice_time_corr
@@ -683,6 +693,24 @@ else
 fi
 
 
+if [ $Temp_Filter_Cutoff -ne 0 ]; then
+
+    echo "Temporal Filtering"
+
+    ${RUN} ${BRC_FMRI_SCR}/Temporal_Filtering.sh \
+          --workingdir=${Tmp_Filt_Folder} \
+          --infmri=${In_Nrm_Folder}/${NameOffMRI}_nonlin_norm \
+          --tempfiltercutoff=${Temp_Filter_Cutoff} \
+          --outfmri=${NameOffMRI}_tempfilt
+
+else
+
+    echo "Not performing Temporal Filtering"
+
+    ${FSLDIR}/bin/imcp ${In_Nrm_Folder}/${NameOffMRI}_nonlin_norm ${Tmp_Filt_Folder}/${NameOffMRI}_tempfilt
+fi
+
+
 echo "Organizing the outputs"
 ${RUN} ${BRC_FMRI_SCR}/Data_Organization.sh \
       --workingdir=${rfMRIFolder} \
@@ -716,7 +744,9 @@ ${RUN} ${BRC_FMRI_SCR}/Data_Organization.sh \
       --gdcfoldername=${gdcFolderName} \
       --dcfoldername=${DCFolderName} \
       --oregim=${RegOutput} \
-      --onestresfoldername=${osrFolderName}
+      --onestresfoldername=${osrFolderName} \
+      --tempfiltfoldername=${tempfiltFolderName} \
+      --temfFiltercutoff=${Temp_Filter_Cutoff}
 
 
 END_Time="$(date -u +%s)"
