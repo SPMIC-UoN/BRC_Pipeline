@@ -2,7 +2,7 @@
 
 09-Oct-2018 (V1.0.6)
  - Bug fixed in Intensity Normalization inputs.
- - Run Time is added to the `BRC_functional_pipeline`.
+ - Run Time is added to the `BRC_functional_pipeline` and `BRC_diffusion_pipeline`.
  - Bug fixed in Eddy processing in `BRC_functional_pipeline` project.
  - Extracting TR from the data. Option --tr in `BRC_functional_pipeline` project is deleted.
  - The output results of functional processing are organized in `BRC_functional_pipeline` project.
