@@ -135,7 +135,8 @@ while [ "$1" != "" ]; do
     shift
 done
 
-${RUN} ${BRCDIR}/Show_version.sh
+${RUN} ${BRCDIR}/Show_version.sh --showdiff="no"
+Start_Time="$(date -u +%s)"
 
 #=====================================================================================
 ###                          Sanity checking of arguments
@@ -242,3 +243,12 @@ ${BRC_DMRI_SCR}/eddy_postproc.sh ${outdir} ${CombineMatched} $Apply_Topup
 if [[ $do_REG == yes ]]; then
     ${BRC_DMRI_SCR}/diff_reg.sh ${outdir} $OutputFolder/$Sub_ID
 fi
+
+
+END_Time="$(date -u +%s)"
+
+
+${RUN} ${BRCDIR}/Show_version.sh \
+      --showdiff="yes" \
+      --start=${Start_Time} \
+      --end=${END_Time}
