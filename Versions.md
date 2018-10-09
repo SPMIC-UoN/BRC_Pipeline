@@ -1,7 +1,12 @@
 ## Versions
 
+09-Oct-2018 (V1.0.6)
+ - Bug fixed in Eddy processing in `BRC_functional_pipeline` project.
+ - Extracting TR from the data. Option --tr in `BRC_functional_pipeline` project is deleted.
+ - The output results of functional processing are organized in `BRC_functional_pipeline` project.
+
 08-Oct-2018 (V1.0.5)
- - Bug fixed in running Freesurfer and saving the outputs `BRC_structural_pipeline`.
+ - Bug fixed in running Freesurfer and saving the outputs in `BRC_structural_pipeline`.
 
 04-Oct-2018 (V1.0.4)
  - Minor bug to create Intensity_Norm folder is fixed in `fMRI_preproc.sh` function in the `BRC_functiona_pipeline`.
