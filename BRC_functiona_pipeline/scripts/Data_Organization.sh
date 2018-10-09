@@ -59,6 +59,8 @@ gdcFolderName=`getopt1 "--gdcfoldername" $@`
 DCFolderName=`getopt1 "--dcfoldername" $@`
 RegOutput=`getopt1 "--oregim" $@`
 OneStResFolderName=`getopt1 "--onestresfoldername" $@`
+tempfiltFolderName=`getopt1 "--tempfiltfoldername" $@`
+Temp_Filter_Cutoff=`getopt1 "--temfFiltercutoff" $@`
 
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "+                                                                        +"
@@ -82,6 +84,7 @@ InNormUnlabFolder=${unlabeledFolder}/${InNormfFolderName}
 gdcUnlabFolder=${unlabeledFolder}/${gdcFolderName}
 DcUnlabFolder=${unlabeledFolder}/${DCFolderName}
 OneStResUnlabFolder=${unlabeledFolder}/${OneStResFolderName}
+TemFilUnlabFolder=${unlabeledFolder}/${tempfiltFolderName}
 
 if [ ! -d "$rawFolder" ]; then mkdir $rawFolder; fi
 if [ ! -d "$regFolder" ]; then mkdir $regFolder; fi
@@ -102,7 +105,7 @@ fi
 
 echo "Organizing Reg folder"
 $FSLDIR/bin/imcp ${regUnlabFolder}/${rfMRI2strTransf}.nii.gz ${regFolder}/${rfMRI2strTransf}.nii.gz
-cp ${regUnlabFolder}/${rfMRI2strTransf}.mat ${regFolder}/${rfMRI2strTransf}.mat
+cp ${DcUnlabFolder}/fMRI2str.mat ${regFolder}/${rfMRI2strTransf}.mat
 $FSLDIR/bin/imcp ${regUnlabFolder}/${rfMRI2StandardTransform} ${regFolder}/${NameOffMRI}2std
 $FSLDIR/bin/imcp ${regUnlabFolder}/${Standard2rfMRITransform} ${regFolder}/std2${NameOffMRI}
 
@@ -152,6 +155,10 @@ fi
 if [[ $Do_intensity_norm == yes ]]; then
     processed_rfMRI_file=${InNormUnlabFolder}/${NameOffMRI}_nonlin_norm
     processed_SBRef_file=${InNormUnlabFolder}/${NameOffMRI}_SBRef_nonlin_norm
+fi
+
+if [ $Temp_Filter_Cutoff -ne 0 ]; then
+    processed_rfMRI_file=${TemFilUnlabFolder}/${NameOffMRI}_tempfilt
 fi
 
 $FSLDIR/bin/imcp ${processed_rfMRI_file} ${processedFolder}/${NameOffMRI}
