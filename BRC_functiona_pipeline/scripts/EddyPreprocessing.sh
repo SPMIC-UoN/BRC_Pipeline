@@ -67,10 +67,12 @@ else
     MPOrder=0
 fi
 
+TR_vol=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
+
 #Concatenate SE_PE_POS and SE_PE_NEG to the original data
 if [[ ${DCMethod} == "TOPUP" ]]; then
-    ${FSLDIR}/bin/fslmerge -t ${EddyFolder}/SE_Neg_Pos ${PhaseEncodeOne} ${PhaseEncodeTwo}
-    ${FSLDIR}/bin/fslmerge -t ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos ${InputfMRI} ${EddyFolder}/SE_Neg_Pos
+    ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SE_Neg_Pos ${PhaseEncodeOne} ${PhaseEncodeTwo} $TR_vol
+    ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos ${InputfMRI} ${EddyFolder}/SE_Neg_Pos $TR_vol
     Eddy_Input=${EddyFolder}/${NameOffMRI}_SE_Neg_Pos
 else
     Eddy_Input=${InputfMRI}
@@ -225,6 +227,8 @@ ${FSLDIR}/bin/fslmaths ${EddyFolder}/SBRef_dc -mul 0 -add 1 ${OutFolder}/Jacobia
 
 $FSLDIR/bin/fsl_tsplot -i ${EddyFolder}/eddy_corrected.eddy_movement_rms -t 'Eddy emovement RMS (mm)' -u 1 -w 640 -h 144 -a absolute,relative -o ${EddyFolder}/eddy_movement_rms.png
 $FSLDIR/bin/fsl_tsplot -i ${EddyFolder}/eddy_corrected.eddy_restricted_movement_rms -t 'Eddy restricted movement RMS (mm)' -u 1 -w 640 -h 144 -a absolute,relative -o ${EddyFolder}/eddy_restricted_movement_rms.png
+
+$FSLDIR/bin/fslmodhd ${EddyFolder}/${EddyOut} pixdim4 $TR_vol
 
 echo ""
 echo "           END: Eddy for correcting eddy currents and movements"

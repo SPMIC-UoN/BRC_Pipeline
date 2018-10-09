@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 01/10/2018
+# Last update: 08/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -32,7 +32,6 @@ fMRI2StructMat=`getopt1 "--fmri2structin" $@`
 Struct2StdWarp=`getopt1 "--struct2std" $@`
 InputfMRIMask=`getopt1 "--infmrimask" $@`
 MotionCorrectionType=`getopt1 "--motioncorrectiontype" $@`
-RepetitionTime=`getopt1 "--repetitiontime" $@`
 OUT_SPACE=`getopt1 "--outspace" $@`
 
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
@@ -42,6 +41,8 @@ echo "+                                                                        +
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 ########################################## DO WORK ##########################################
+
+RepetitionTime=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
 
 ${FSLDIR}/bin/imcp ${InputfMRI} ${WD}/${fmriName}
 

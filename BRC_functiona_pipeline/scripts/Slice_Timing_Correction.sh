@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 01/10/2018
+# Last update: 08/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -27,7 +27,7 @@ WD=`getopt1 "--workingdir" $@`
 InputfMRI=`getopt1 "--infmri" $@`
 OutputfMRI=`getopt1 "--ofmri" $@`
 STCMethod=`getopt1 "--stc_method" $@`
-RepetitionTime=`getopt1 "--repetitiontime" $@`
+#RepetitionTime=`getopt1 "--repetitiontime" $@`
 
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "+                                                                        +"
@@ -37,7 +37,8 @@ echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ########################################## DO WORK ##########################################
 
-#TR_vol=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
+RepetitionTime=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
+
 NumFrames=`${FSLDIR}/bin/fslval ${InputfMRI} dim4`
 
 mkdir -p ${WD}/prevols

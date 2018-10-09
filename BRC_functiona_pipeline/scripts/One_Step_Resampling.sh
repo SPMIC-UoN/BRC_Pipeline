@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 01/10/2018
+# Last update: 08/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -40,7 +40,6 @@ MotionMatrixFolder=`getopt1 "--motionmatdir" $@`  # "$9"
 MotionMatrixPrefix=`getopt1 "--motionmatprefix" $@`  # "${10}"
 OutputfMRI=`getopt1 "--ofmri" $@`  # "${11}"
 FreeSurferBrainMask=`getopt1 "--freesurferbrainmask" $@`  # "${12}"
-#BiasField=`getopt1 "--biasfield" $@`  # "${13}"
 GradientDistortionField=`getopt1 "--gdfield" $@`  # "${14}"
 ScoutInput=`getopt1 "--scoutin" $@`  # "${15}"
 ScoutInputgdc=`getopt1 "--scoutgdcin" $@`  # "${15}"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 04/10/2018
+# Last update: 05/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -61,7 +61,6 @@ Usage()
   echo "                                           3: If slices were acquired with backward order (n, n-1, n-2, ...)"
   echo " --fwhm <value>                       Spatial size (sigma, i.e., half-width) of smoothing, in mm. Set to 0 (default) for no spatial smooting"
   echo "                                      Non-zero value of this option, automatically enables ICA-AROMA for Artifact/Physiological Noise Removal"
-  echo " --tr <value>                         Repetition Time in sec"
   echo " --fmrires <value>                    Target final resolution of fMRI data in mm (default is 2 mm)"
   echo " --printcom                           use 'echo' for just printing everything and not running the commands (default is to run)"
   echo " -h | --help                          help"
@@ -175,10 +174,6 @@ while [ "$1" != "" ]; do
                               SliceTimingCorrection=$1
                               ;;
 
-      --tr )                  shift
-                              RepetitionTime=$1
-                              ;;
-
       --intensitynorm )       Do_intensity_norm=yes
                               ;;
 
@@ -247,15 +242,6 @@ if [[ $DistortionCorrection == "GeneralElectricFieldMap" ]] ; then
     fi
 fi
 
-if [ $SliceTimingCorrection -ne 0 ] || [ $smoothingfwhm -ne 0 ]; then
-    if [[ X$RepetitionTime = X ]] ; then
-        echo ""
-        echo "--tr is a compulsory arguments when you select Slice Timing Correction or Spatial Smoothing"
-        echo ""
-        exit 1;
-    fi
-fi
-
 if [[ ${MotionCorrectionType} == "EDDY" ]]; then
     if [[ X$EchoSpacing = X ]] ; then
         echo ""
@@ -298,6 +284,9 @@ eddyFolderName="Eddy"
 osrFolderName="One_Step_Resampling"
 sebfFolderName="Compute_SE_BiasField"
 InNormfFolderName="Intensity_norm"
+UnlabeledFolderName="unlabeled"
+processedFolderName="processed"
+figsFolderName="figs"
 
 NameOffMRI="rfMRI"
 T1wImage="T1_biascorr"                                                          #<input T1-weighted image>
@@ -336,7 +325,8 @@ if [ ! -d "$Path" ]; then
 fi
 
 SubjectFolder="$Path"/analysis
-fMRIFolder=${SubjectFolder}/rfMRI
+rfMRIFolder=${SubjectFolder}/rfMRI
+fMRIFolder=${rfMRIFolder}/unlabeled
 
 if [ ! -e "${SubjectFolder}/anatMRI/T1" ] ; then
     echo ""
@@ -363,7 +353,6 @@ if [ ! -d "$rawFolder" ]; then mkdir $rawFolder; fi
 if [ ! -d "$gdcFolder" ]; then mkdir $gdcFolder; fi
 if [ ! -d "$mcFolder" ]; then mkdir $mcFolder; fi
 if [ ! -d "$regFolder" ]; then mkdir $regFolder; fi
-#if [ ! -d "$fMRIFolder/result" ]; then mkdir $fMRIFolder/result; fi
 
 #if [ -e "${fMRIFolder}/Slice_time_corr" ] ; then
 #    ${RUN} rm -r ${fMRIFolder}/Slice_time_corr
@@ -519,7 +508,7 @@ case $MotionCorrectionType in
               --slspec=${SliceSpec} \
               --output_eddy=${EddyOutput} \
               --outfolder=${DCFolder}
-    ;;
+  ;;
 
     *)
         echo "UNKNOWN MOTION CORRECTION METHOD: ${MotionCorrectionType}"
@@ -533,7 +522,6 @@ if [ $SliceTimingCorrection -ne 0 ]; then
     ${RUN} ${BRC_FMRI_SCR}/Slice_Timing_Correction.sh \
           --workingdir=${stcFolder} \
           --infmri=${STC_Input} \
-          --repetitiontime=${RepetitionTime} \
           --stc_method=${SliceTimingCorrection} \
           --ofmri=${stcFolder}/${NameOffMRI}_stc
 
@@ -543,12 +531,11 @@ else
     ${FSLDIR}/bin/imcp ${STC_Input} ${stcFolder}/${NameOffMRI}_stc
 fi
 
-echo "Check input files"
-echo "Check input files"
-echo "Check input files"
 
 ${RUN} ${BRC_FMRI_SCR}/EPI_2_T1_Registration.sh \
       --workingdir=${DCFolder} \
+      --fmriname=${NameOffMRI} \
+      --subjectfolder=${SubjectFolder} \
       --fmrifolder=${fMRIFolder} \
       --scoutin=${gdcFolder}/${ScoutName}_gdc \
       --t1=${T1wFolder}/preprocess/T1_biascorr \
@@ -557,8 +544,6 @@ ${RUN} ${BRC_FMRI_SCR}/EPI_2_T1_Registration.sh \
       --dof=${dof} \
       --method=${DistortionCorrection} \
       --biascorrection=${BiasCorrection} \
-      --subjectfolder=${SubjectFolder} \
-      --fmriname=${NameOffMRI} \
       --usejacobian=${UseJacobian} \
       --motioncorrectiontype=${MotionCorrectionType} \
       --eddyoutname=${EddyOutput} \
@@ -575,7 +560,7 @@ echo "One Step Resampling"
 
 ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --workingdir=${OsrFolder} \
-      --infmri=${rawFolder}/${OrigTCSName}.nii.gz \
+      --infmri=${stcFolder}/${NameOffMRI}_stc \
       --scoutin=${rawFolder}/${OrigScoutName} \
       --scoutgdcin=${gdcFolder}/${ScoutName}_gdc \
       --fmrifolder=${fMRIFolder} \
@@ -648,7 +633,6 @@ if [ $smoothingfwhm -ne 0 ]; then
           --infmrimask=${SSNR_InputMask} \
           --fmriname=${NameOffMRI} \
           --fwhm=${smoothingfwhm} \
-          --repetitiontime=${RepetitionTime} \
           --motionparam=${SSNR_motionparam} \
           --fmri2structin=${DCFolder}/fMRI2str.mat \
           --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field.nii.gz \
@@ -700,18 +684,41 @@ else
 fi
 
 
-: <<'COMMENT'
+echo "Organizing the outputs"
+${RUN} ${BRC_FMRI_SCR}/Data_Organization.sh \
+      --workingdir=${rfMRIFolder} \
+      --unlabeledfolder=${fMRIFolder} \
+      --nameoffmri=${NameOffMRI} \
+      --rawfoldername=${rawFolderName} \
+      --method=${DistortionCorrection} \
+      --origse_pos_name=${OrigSE_Pos_Name} \
+      --origse_neg_name=${OrigSE_Neg_Name} \
+      --origtcsname=${OrigTCSName} \
+      --origscoutname=${OrigScoutName} \
+      --regfoldername=${regFolderName} \
+      --rfmri2strtransf=${fMRI2strOutputTransform} \
+      --rfmri2stdtransf=${OutputfMRI2StandardTransform} \
+      --std2rfMRItransf=${Standard2OutputfMRITransform} \
+      --mcfoldername=${mcFolderName} \
+      --eddyfoldername=${eddyFolderName} \
+      --motioncorrectiontype=${MotionCorrectionType} \
+      --eddyoutput=${EddyOutput} \
+      --motionmatrixfolder=${MotionMatrixFolder} \
+      --figsfoldername=${figsFolderName} \
+      --processedfoldername=${processedFolderName} \
+      --stc_method=${SliceTimingCorrection} \
+      --stcfoldername=${stcFolderName} \
+      --smoothingfwhm=${smoothingfwhm} \
+      --outspace=${OUT_SPACE} \
+      --nrfoldername=${nrFolderName} \
+      --dointensitynorm=${Do_intensity_norm} \
+      --innormffoldername=${InNormfFolderName} \
+      --scoutname=${ScoutName} \
+      --gdcfoldername=${gdcFolderName} \
+      --dcfoldername=${DCFolderName} \
+      --oregim=${RegOutput} \
+      --onestresfoldername=${osrFolderName}
 
-${RUN} cp -r ${fMRIFolder}/${NameOffMRI}_nonlin_norm.nii.gz ${ResultsFolder}/${NameOffMRI}.nii.gz
-${RUN} cp -r ${mcFolder}/${MovementRegressor}.txt ${ResultsFolder}/${MovementRegressor}.txt
-${RUN} cp -r ${mcFolder}/${MovementRegressor}_dt.txt ${ResultsFolder}/${MovementRegressor}_dt.txt
-${RUN} cp -r ${fMRIFolder}/${NameOffMRI}_SBRef_nonlin_norm.nii.gz ${ResultsFolder}/${NameOffMRI}_SBRef.nii.gz
-${RUN} cp -r ${fMRIFolder}/${JacobianOut}_std.${FinalfMRIResolution}.nii.gz ${ResultsFolder}/${NameOffMRI}_${JacobianOut}.nii.gz
-${RUN} cp -r ${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution}.nii.gz ${ResultsFolder}
-###Add stuff for RMS###
-${RUN} cp -r ${fMRIFolder}/Movement_RelativeRMS.txt ${ResultsFolder}/Movement_RelativeRMS.txt
-${RUN} cp -r ${fMRIFolder}/Movement_AbsoluteRMS.txt ${ResultsFolder}/Movement_AbsoluteRMS.txt
-${RUN} cp -r ${fMRIFolder}/Movement_RelativeRMS_mean.txt ${ResultsFolder}/Movement_RelativeRMS_mean.txt
-${RUN} cp -r ${fMRIFolder}/Movement_AbsoluteRMS_mean.txt ${ResultsFolder}/Movement_AbsoluteRMS_mean.txt
-
+echo ""
 echo "Completed"
+echo ""
