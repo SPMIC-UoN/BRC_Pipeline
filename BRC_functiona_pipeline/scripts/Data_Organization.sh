@@ -166,7 +166,7 @@ fi
 
 
 echo ""
-echo "                   END: Organization of the outputs"
+echo "                     END: Organization of the outputs"
 echo "                    END: `date`"
 echo "=========================================================================="
 echo "                             ===============                              "

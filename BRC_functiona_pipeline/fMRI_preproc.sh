@@ -196,7 +196,8 @@ while [ "$1" != "" ]; do
     shift
 done
 
-${RUN} ${BRCDIR}/Show_version.sh
+${RUN} ${BRCDIR}/Show_version.sh --showdiff="no"
+Start_Time="$(date -u +%s)"
 
 #=====================================================================================
 ###                          Sanity checking of arguments
@@ -617,9 +618,17 @@ OUT_SPACE="func"
 if [[ ${OUT_SPACE} == "func" ]]; then
     SSNR_Input=${stcFolder}/${NameOffMRI}_stc.nii.gz
     SSNR_InputMask=${gdcFolder}/${ScoutName}_gdc_mask.nii.gz
+
+    In_Nrm_inscout=${gdcFolder}/${ScoutName}_gdc
+    In_Nrm_brainmask=${gdcFolder}/${ScoutName}_gdc_mask
+    In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_func
 elif [[ ${OUT_SPACE} == "std" ]]; then
     SSNR_Input=${OsrFolder}/${NameOffMRI}_nonlin.nii.gz
     SSNR_InputMask=${SSNR_Input}_mask.nii.gz
+
+    In_Nrm_inscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin
+    In_Nrm_brainmask=${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution}
+    In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
 fi
 
 
@@ -653,16 +662,6 @@ fi
 if [[ $Do_intensity_norm == yes ]]; then
 
     echo "Intensity Normalization and Bias Removal"
-
-    if [[ ${OUT_SPACE} == "func" ]]; then
-        In_Nrm_inscout=${gdcFolder}/${ScoutName}_gdc
-        In_Nrm_brainmask=${gdcFolder}/${ScoutName}_gdc_mask
-        In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_func
-    elif [[ ${OUT_SPACE} == "std" ]]; then
-        In_Nrm_inscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin
-        In_Nrm_brainmask=${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution}
-        In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
-    fi
 
     ${RUN} ${BRC_FMRI_SCR}/Intensity_Normalization.sh \
           --workingdir=${In_Nrm_Folder} \
@@ -719,6 +718,13 @@ ${RUN} ${BRC_FMRI_SCR}/Data_Organization.sh \
       --oregim=${RegOutput} \
       --onestresfoldername=${osrFolderName}
 
-echo ""
-echo "Completed"
-echo ""
+
+END_Time="$(date -u +%s)"
+
+
+${RUN} ${BRCDIR}/Show_version.sh \
+      --showdiff="yes" \
+      --start=${Start_Time} \
+      --end=${END_Time}
+
+#: <<'COMMENT'
