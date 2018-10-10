@@ -1,6 +1,7 @@
 ## Versions
 
 10-Oct-2018 (V1.0.7)
+ - T1 Bias correction is modified in `BRC_structural_pipeline`.
  - Temporal Filtering is added as an option to the `BRC_diffusion_pipeline`.
 
 09-Oct-2018 (V1.0.6)
