@@ -299,19 +299,19 @@ done
 ### Sanity checking of arguments
 
 if [ X$inputimage = X ] && [ X$anatdir = X ] && [ X"$imagelist" = X ] ; then
-  #echo "One of the compulsory arguments -i, -d or --list MUST be used"
-  echo "One of the compulsory arguments -i or -d MUST be used"
-  exit 1;
+    #echo "One of the compulsory arguments -i, -d or --list MUST be used"
+    echo "One of the compulsory arguments -i or -d MUST be used"
+    exit 1;
 fi
 
 if [ $type != 1 ] ; then
     if [ $do_nonlinreg = yes ] ; then
-	echo "ERROR: Cannot do non-linear registration with non-T1 images, please re-run with --nononlinreg" ;
-	exit 1;
+      	echo "ERROR: Cannot do non-linear registration with non-T1 images, please re-run with --nononlinreg" ;
+      	exit 1;
     fi ;
     if [ $do_subcortseg = yes ] ; then
-	echo "ERROR: Cannot perform subcortical segmentation (with FIRST) on a non-T1 image, please re-run with --nosubcortseg"
-	exit 1;
+      	echo "ERROR: Cannot perform subcortical segmentation (with FIRST) on a non-T1 image, please re-run with --nosubcortseg"
+      	exit 1;
     fi ;
 fi
 
@@ -326,7 +326,7 @@ betopts="-f ${betfparam}"
 # setup output directory (or go to existing one)
 
 if [[ $do_anat_based_on_FS == yes ]]; then
-    do_crop=no
+    do_crop=yes
 fi
 
 mridir=$outputname/FS/mri;
@@ -381,7 +381,7 @@ if [ $multipleimages = yes ] ; then
     im1=`echo $imagelist | sed 's/,/ /g' | awk '{ print $1 }'`;
 
     if [ $FSLDIR/bin/imtest $im1 = 1 ] ; then
-      	# this is a comma separated list of image names
+    	  # this is a comma separated list of image names
       	namelist="`echo ${imagelist} | sed 's/,/ /g'`";
     else
       	# this is a file containing the image names
@@ -394,7 +394,7 @@ if [ $multipleimages = yes ] ; then
       	    exit 1;
         fi
 
-      $FSLDIR/bin/fslmaths $name ${outputname}.anat/${T1}_${num}
+        $FSLDIR/bin/fslmaths $name ${outputname}.anat/${T1}_${num}
     done
 
     echo "Input images are ${namelist}" >> ${outputname}.anat/$LOGFILE
@@ -415,8 +415,6 @@ echo " " >> $LOGFILE
 # now the real work
 
 #### AVERAGING MULTIPLE SCANS
-# required input: list of images linked from the input argument with names ${T1}_[0-9]*
-# output: ${T1}
 if [ $multipleimages = yes ] ; then
     date; echo "Averaging list of input images"
 
@@ -425,8 +423,6 @@ if [ $multipleimages = yes ] ; then
 fi
 
 #### FIXING NEGATIVE RANGE
-# required input: ${T1}
-# output: ${T1}
 minval=`$FSLDIR/bin/fslstats ${T1} -p 0`;
 maxval=`$FSLDIR/bin/fslstats ${T1} -p 100`;
 
@@ -442,8 +438,6 @@ if [ X`echo "if ( $minval < 0 ) { 1 }" | bc -l` = X1 ] ; then
 fi
 
 #### REORIENTATION 2 STANDARD
-# required input: ${T1}
-# output: ${T1} (modified) [ and ${T1}_orig and .mat ]
 if [ $do_reorient = yes ] ; then
     date; echo "Reorienting to standard orientation"
 
@@ -464,9 +458,9 @@ if [ $do_crop = yes ] ; then
     run $FSLDIR/bin/robustfov -i ${T1}_fullfov -r ${T1} -m ${T1}_roi2nonroi.mat | grep [0-9] | tail -1 > ${T1}_roi.log
     # combine this mat file and the one above (if generated)
     if [ $do_reorient = yes ] ; then
-	     run $FSLDIR/bin/convert_xfm -omat ${T1}_nonroi2roi.mat -inverse ${T1}_roi2nonroi.mat
-       run $FSLDIR/bin/convert_xfm -omat ${T1}_orig2roi.mat -concat ${T1}_nonroi2roi.mat ${T1}_orig2std.mat
-       run $FSLDIR/bin/convert_xfm -omat ${T1}_roi2orig.mat -inverse ${T1}_orig2roi.mat
+  	     run $FSLDIR/bin/convert_xfm -omat ${T1}_nonroi2roi.mat -inverse ${T1}_roi2nonroi.mat
+         run $FSLDIR/bin/convert_xfm -omat ${T1}_orig2roi.mat -concat ${T1}_nonroi2roi.mat ${T1}_orig2std.mat
+         run $FSLDIR/bin/convert_xfm -omat ${T1}_roi2orig.mat -inverse ${T1}_orig2roi.mat
     fi
 fi
 
@@ -474,12 +468,12 @@ fi
 ### LESION MASK
 # make appropriate (reoreinted and cropped) lesion mask (or a default blank mask to simplify the code later on)
 if [ $use_lesionmask = yes ] ; then
-  if [ -f ${T1}_orig2std.mat ] ; then transform=${T1}_orig2std.mat ; fi
+    if [ -f ${T1}_orig2std.mat ] ; then transform=${T1}_orig2std.mat ; fi
     if [ -f ${T1}_orig2roi.mat ] ; then transform=${T1}_orig2roi.mat ; fi   # this takes precedence if both exist
 
     if [ X$transform != X ] ; then
-      $FSLDIR/bin/fslmaths lesionmask lesionmask_orig
-      $FSLDIR/bin/flirt -in lesionmask_orig -ref ${T1} -applyxfm -interp nearestneighbour -init ${transform} -out lesionmask
+        $FSLDIR/bin/fslmaths lesionmask lesionmask_orig
+        $FSLDIR/bin/flirt -in lesionmask_orig -ref ${T1} -applyxfm -interp nearestneighbour -init ${transform} -out lesionmask
     fi
 else
     $FSLDIR/bin/fslmaths ${T1} -mul 0 lesionmask
@@ -540,7 +534,7 @@ if [ $do_biasrestore = yes ] ; then
         run $FSLDIR/bin/fslmaths ${T1}_initfast2_brain ${T1}_initfast2_restore
     fi
 
-  # redo fast again to try and improve bias field
+    # redo fast again to try and improve bias field
     run $FSLDIR/bin/fslmaths ${T1}_initfast2_restore -mas lesionmaskinv ${T1}_initfast2_maskedrestore
     run $FSLDIR/bin/fast -o ${T1}_fast -l ${smooth} -b -B -t $type --iter=${niter} --nopve --fixed=0 -v ${T1}_initfast2_maskedrestore
 
@@ -566,7 +560,7 @@ if [ $do_reg = yes ] ; then
     if [ $do_bet != yes ] ; then
         echo "Skipping registration, as it requires a non-brain-extracted input image"
     else
-      date; echo "Registering to standard space (linear)"
+        date; echo "Registering to standard space (linear)"
 
         flirtargs="$flirtargs $nosearch"
         if [ $use_lesionmask = yes ] ; then flirtargs="$flirtargs -inweight lesionmaskinv" ; fi
@@ -591,7 +585,7 @@ if [ $do_reg = yes ] ; then
             run $FSLDIR/bin/fslmaths ${T1}_biascorr_brain_mask -fillh ${T1}_biascorr_brain_mask
 
 #            if [[ $do_anat_based_on_FS == yes ]]; then
-#                run $FSLDIR/bin/fslmaths $mridir/brainmask -thr 0.01 -bin ${T1}_biascorr_brain_mask
+#               run $FSLDIR/bin/fslmaths $mridir/brainmask -thr 0.01 -bin ${T1}_biascorr_brain_mask
 #            fi
 
             run $FSLDIR/bin/fslmaths ${T1}_biascorr -mas ${T1}_biascorr_brain_mask ${T1}_biascorr_brain
@@ -613,9 +607,13 @@ if [[ $do_anat_based_on_FS == yes ]]; then
     run $FSLDIR/bin/imcp ${T1}_biascorr_brain ${T1}_biascorr_brain_tmp
     run $FSLDIR/bin/imcp ${T1}_biascorr_brain_mask ${T1}_biascorr_brain_mask_tmp
 
-    run $FSLDIR/bin/imcp $mridir/brainmask ${T1}_biascorr_brain
+    $FSLDIR/bin/flirt -ref ${T1} -in $mridir/brainmask -omat $mridir/rigid_manToFs.mat -out ${T1}_biascorr_brain -dof 12 -cost normmi -searchcost normmi
+    $FSLDIR/bin/flirt -ref ${T1} -in $mridir/brainmask -out ${T1}_biascorr_brain -init $mridir/rigid_manToFs.mat -applyxfm
+
+#    run $FSLDIR/bin/imcp $mridir/brainmask ${T1}_biascorr_brain
     run $FSLDIR/bin/fslmaths ${T1}_biascorr_brain -thr 0.01 -bin ${T1}_biascorr_brain_mask
 fi
+
 
 #### TISSUE-TYPE SEGMENTATION
 # required input: ${T1}_biascorr ${T1}_biascorr_brain ${T1}_biascorr_brain_mask
@@ -625,7 +623,7 @@ if [ $do_seg = yes ] ; then
 
     run $FSLDIR/bin/fslmaths ${T1}_biascorr_brain -mas lesionmaskinv ${T1}_biascorr_maskedbrain
     run $FSLDIR/bin/fast -o ${T1}_fast -l ${smooth} -b -B -t $type --iter=${niter} ${T1}_biascorr_maskedbrain
-    run $FSLDIR/bin/immv ${T1}_biascorr ${T1}_biascorr_init
+    run $FSLDIR/bin/imcp ${T1}_biascorr ${T1}_biascorr_init
     run $FSLDIR/bin/fslmaths ${T1}_fast_restore ${T1}_biascorr_brain
     # extrapolate bias field and apply to the whole head image
     run $FSLDIR/bin/fslmaths ${T1}_biascorr_brain_mask -mas lesionmaskinv ${T1}_biascorr_brain_mask2
@@ -636,11 +634,11 @@ if [ $do_seg = yes ] ; then
     run $FSLDIR/bin/fslmaths ${T1}_fast_totbias -add 1 ${T1}_fast_totbias
     # run $FSLDIR/bin/fslmaths ${T1}_fast_totbias -sub 1 -mas ${T1}_biascorr_brain_mask2 -dilall -add 1 ${T1}_fast_bias # alternative to fslsmoothfill
 
-#    if [[ $do_anat_based_on_FS == yes ]]; then
-#        run $FSLDIR/bin/immv ${T1}_biascorr_init ${T1}_biascorr
-#    else
+    if [[ $do_anat_based_on_FS == yes ]]; then
+        run $FSLDIR/bin/imcp ${T1}_biascorr_init ${T1}_biascorr
+    else
         run $FSLDIR/bin/fslmaths ${T1}_biascorr_init -div ${T1}_fast_bias ${T1}_biascorr
-#    fi
+    fi
 
     if [ $do_nonlinreg = yes ] ; then
         # regenerate the standard space version with the new bias field correction applied

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 08/10/2018
+# Last update: 09/10/2018
 #Example:
 #./Pipeline_T1.sh --path ~/main/analysis -s Sub_001 -i ~/main/analysis/Orig/1_MPRAGE/__T1_1mm_sag_20180312094206_201.nii.gz -t2 ~/main/analysis/Orig/2_3D_T2w_FLAIR/__T2_FLAIR_1mm_20180312094206_301.nii.gz --subseg
 
@@ -106,7 +106,8 @@ while [ "$1" != "" ]; do
     shift
 done
 
-${RUN} ${BRCDIR}/Show_version.sh
+${RUN} ${BRCDIR}/Show_version.sh --showdiff="no"
+Start_Time="$(date -u +%s)"
 
 #=====================================================================================
 ###                          Sanity checking of arguments
@@ -174,10 +175,12 @@ if [[ $T2 == yes ]]; then
     if [ ! -d "$O_DIR/T2/unlabeled/fsl_anat" ]; then mkdir $O_DIR/T2/unlabeled/fsl_anat; fi
 fi
 
-cp $IN_Img $O_DIR/T1/raw/T1_orig.nii.gz
+
+$FSLDIR/bin/imcp $IN_Img $O_DIR/T1/raw/T1_orig.nii.gz
+
 
 if [[ $T2 == yes ]]; then
-    cp $T2_IN_Img $O_DIR/T2/raw/T2_orig.nii.gz
+    $FSLDIR/bin/imcp $T2_IN_Img $O_DIR/T2/raw/T2_orig.nii.gz
 fi
 
 
@@ -209,8 +212,8 @@ if [[ $do_anat_based_on_FS == yes ]]; then
 
 #    $FSLDIR/bin/immv $mridir/brainmask $mridir/brainmask_fullfov
 #    $FSLDIR/bin/robustfov -i $mridir/brainmask_fullfov -r $mridir/brainmask -m $mridir/brainmask_roi2nonroi.mat | grep [0-9] | tail -1 > $mridir/brainmask_roi.log
-
-    # combine this mat file and the one above (if generated)
+#
+#    # combine this mat file and the one above (if generated)
 #    $FSLDIR/bin/convert_xfm -omat $mridir/brainmask_nonroi2roi.mat -inverse $mridir/brainmask_roi2nonroi.mat
 #    $FSLDIR/bin/convert_xfm -omat $mridir/brainmask_orig2roi.mat -concat $mridir/brainmask_nonroi2roi.mat $mridir/brainmask_orig2std.mat
 #    $FSLDIR/bin/convert_xfm -omat $mridir/brainmask_roi2orig.mat -inverse $mridir/brainmask_orig2roi.mat
@@ -234,6 +237,7 @@ echo '**************************************************************************
 #${FSLDIR}/bin/fsl_anat "-i $O_DIR/T1/raw/T1_orig.nii.gz "$Opt_args" -o $O_DIR/T1/temp"
 ${BRC_SCTRUC_SCR}/FSL_anat.sh ""$Opt_args""
 
+
 if [[ $T2 == yes ]]; then
     echo "Queueing fsl_anat for T2w image"
     echo "Command is:"
@@ -244,8 +248,10 @@ if [[ $T2 == yes ]]; then
    ${FSLDIR}/bin/fsl_anat  -i $O_DIR/T2/raw/T2_orig.nii.gz -o $O_DIR/T2/temp -t T2 --nononlinreg --nosubcortseg --noreg --noseg --clobber
 fi
 
+
 echo "Queueing organizing data structure"
 ${BRC_SCTRUC_SCR}/move_rename.sh $O_DIR $T2 $do_Sub_seg
+
 
 if [ $do_tissue_seg = yes ] && [ $T2 = yes ] ; then
     echo "Do multichanel tissue segmentation using FAST"
@@ -268,6 +274,7 @@ if [ $do_tissue_seg = yes ] && [ $T2 = yes ] ; then
     rm -r $O_DIR/T1/temp
 fi
 
+
 if [[ $do_freesurfer == yes ]]; then
     SUBJECTS_DIR=$O_DIR/T1
     echo "Queueing Freesurfer"
@@ -278,6 +285,20 @@ if [[ $do_freesurfer == yes ]]; then
         recon-all -s FS -autorecon2
 
         recon-all -s FS -autorecon3
+
+        rm -r $O_DIR/T1/fsaverage
 #      recon-all -i $O_DIR/T1/raw/T1_orig.nii.gz -s FS -all
 #    fi
 fi
+
+
+END_Time="$(date -u +%s)"
+
+
+${RUN} ${BRCDIR}/Show_version.sh \
+      --showdiff="yes" \
+      --start=${Start_Time} \
+      --end=${END_Time}
+
+
+#: <<'COMMENT'
