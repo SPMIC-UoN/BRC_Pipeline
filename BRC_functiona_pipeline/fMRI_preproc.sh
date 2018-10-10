@@ -678,6 +678,7 @@ if [[ $Do_intensity_norm == yes ]]; then
           --infmri=${nrFolder}/ICA_AROMA_${OUT_SPACE}_space/denoised_func_data_nonaggr \
           --inscout=${In_Nrm_inscout} \
           --brainmask=${In_Nrm_brainmask} \
+          --biascorrection=${BiasCorrection} \
           --biasfield=${SE_BF_Folder}/${NameOffMRI}2${OUT_SPACE}_sebased_bias \
           --usejacobian=${UseJacobian} \
           --jacobian=${In_Nrm_jacobian} \

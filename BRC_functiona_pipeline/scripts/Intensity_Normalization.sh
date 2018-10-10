@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 04/10/2018
+# Last update: 10/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -53,6 +53,7 @@ OutputfMRI=`getopt1 "--ofmri" $@`
 ScoutInput=`getopt1 "--inscout" $@`
 ScoutOutput=`getopt1 "--oscout" $@`
 UseJacobian=`getopt1 "--usejacobian" $@`
+BiasCorrection=`getopt1 "--biascorrection" $@`
 
 # default parameters
 OutputfMRI=`$FSLDIR/bin/remove_ext $OutputfMRI`
@@ -63,7 +64,7 @@ if [[ $UseJacobian == "true" ]] ; then
 fi
 
 biascom=""
-if [[ "$BiasField" != "" ]] ; then
+if [[ ${BiasCorrection} == "SEBASED" ]] ; then
     biascom="-div $BiasField"
 fi
 
