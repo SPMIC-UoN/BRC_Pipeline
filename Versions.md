@@ -1,6 +1,7 @@
 ## Versions
 
 10-Oct-2018 (V1.0.7)
+ - Bug fixed in input of intensity normalization in `BRC_functional_pipeline`.
  - T1 Bias correction is modified in `BRC_structural_pipeline`.
  - Temporal Filtering is added as an option to the `BRC_diffusion_pipeline`.
 
