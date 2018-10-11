@@ -24,6 +24,7 @@ getopt1()
 # parse arguments
 EddyFolder=`getopt1 "--workingdir" $@`
 InputfMRI=`getopt1 "--inputfile" $@`
+InputSBref=`getopt1 "--inscout" $@`
 NameOffMRI=`getopt1 "--fmriname" $@`
 DCFolder=`getopt1 "--dcfolder" $@`
 DCMethod=`getopt1 "--dcmethod" $@`
@@ -73,9 +74,11 @@ TR_vol=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
 if [[ ${DCMethod} == "TOPUP" ]]; then
     ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SE_Neg_Pos ${PhaseEncodeOne} ${PhaseEncodeTwo} $TR_vol
     ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos ${InputfMRI} ${EddyFolder}/SE_Neg_Pos $TR_vol
-    Eddy_Input=${EddyFolder}/${NameOffMRI}_SE_Neg_Pos
+    ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos ${InputSBref} ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos $TR_vol
+    Eddy_Input=${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos
 else
-    Eddy_Input=${InputfMRI}
+    ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SBref_${NameOffMRI} ${InputSBref} ${InputfMRI} $TR_vol
+    Eddy_Input=${EddyFolder}/SBref_${NameOffMRI}
 fi
 
 if [[ ${DCMethod} == "TOPUP" ]]; then
@@ -210,25 +213,34 @@ $FSLDIR/bin/eddy_cuda  ""$EDDY_arg""
 #          -g ${EddyFolder}/${NameOffMRI}.bvecs
 
 echo "Extract the outputs"
-$FSLDIR/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/PhaseOne_gdc_dc $(( ${dimt} - 2 )) 1
-$FSLDIR/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/PhaseTwo_gdc_dc $(( ${dimt} - 1 )) 1
-$FSLDIR/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/${EddyOut} 0 $(( ${dimt} - 2 ))
-
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/SBRef_dc 0 1
+${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/PhaseOne_gdc_dc $(( ${dimt} - 2 )) 1
+${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/PhaseTwo_gdc_dc $(( ${dimt} - 1 )) 1
+${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/${EddyOut} 1 $(( ${dimt} - 2 ))
 
-${FSLDIR}/bin/imcp ${EddyFolder}/SBRef_dc.nii.gz ${OutFolder}/SBRef_dc.nii.gz
-${FSLDIR}/bin/imcp ${EddyFolder}/PhaseOne_gdc_dc.nii.gz ${OutFolder}/PhaseOne_gdc_dc.nii.gz
-${FSLDIR}/bin/imcp ${EddyFolder}/PhaseTwo_gdc_dc.nii.gz ${OutFolder}/PhaseTwo_gdc_dc.nii.gz
 
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${OutFolder}/WarpField 0 3
 ${FSLDIR}/bin/fslmaths ${OutFolder}/WarpField -mul 0 ${OutFolder}/WarpField
 
+
 ${FSLDIR}/bin/fslmaths ${EddyFolder}/SBRef_dc -mul 0 -add 1 ${OutFolder}/Jacobian
+
 
 $FSLDIR/bin/fsl_tsplot -i ${EddyFolder}/eddy_corrected.eddy_movement_rms -t 'Eddy emovement RMS (mm)' -u 1 -w 640 -h 144 -a absolute,relative -o ${EddyFolder}/eddy_movement_rms.png
 $FSLDIR/bin/fsl_tsplot -i ${EddyFolder}/eddy_corrected.eddy_restricted_movement_rms -t 'Eddy restricted movement RMS (mm)' -u 1 -w 640 -h 144 -a absolute,relative -o ${EddyFolder}/eddy_restricted_movement_rms.png
 
+
 $FSLDIR/bin/fslmodhd ${EddyFolder}/${EddyOut} pixdim4 $TR_vol
+$FSLDIR/bin/fslmodhd ${EddyFolder}/SBRef_dc pixdim4 $TR_vol
+$FSLDIR/bin/fslmodhd ${EddyFolder}/PhaseOne_gdc_dc pixdim4 $TR_vol
+$FSLDIR/bin/fslmodhd ${EddyFolder}/PhaseTwo_gdc_dc pixdim4 $TR_vol
+$FSLDIR/bin/fslmodhd ${OutFolder}/WarpField pixdim4 $TR_vol
+$FSLDIR/bin/fslmodhd ${OutFolder}/Jacobian pixdim4 $TR_vol
+
+
+${FSLDIR}/bin/imcp ${EddyFolder}/SBRef_dc.nii.gz ${OutFolder}/SBRef_dc.nii.gz
+${FSLDIR}/bin/imcp ${EddyFolder}/PhaseOne_gdc_dc.nii.gz ${OutFolder}/PhaseOne_gdc_dc.nii.gz
+${FSLDIR}/bin/imcp ${EddyFolder}/PhaseTwo_gdc_dc.nii.gz ${OutFolder}/PhaseTwo_gdc_dc.nii.gz
 
 echo ""
 echo "           END: Eddy for correcting eddy currents and movements"
@@ -243,5 +255,13 @@ echo "                             ===============                              
 
 ${FSLDIR}/bin/imrm ${EddyFolder}/PhaseOne
 ${FSLDIR}/bin/imrm ${EddyFolder}/PhaseTwo
-${FSLDIR}/bin/imrm ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos
+if [ -e ${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos ] ; then
+    ${FSLDIR}/bin/imrm ${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos
+fi
+if [ -e ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos ] ; then
+    ${FSLDIR}/bin/imrm ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos
+fi
+if [ -e ${EddyFolder}/SBref_${NameOffMRI} ] ; then
+    ${FSLDIR}/bin/imrm ${EddyFolder}/SBref_${NameOffMRI}
+fi
 ${FSLDIR}/bin/imrm ${EddyFolder}/SE_Neg_Pos

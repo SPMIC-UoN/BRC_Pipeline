@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 05/10/2018
+# Last update: 11/10/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -508,6 +508,7 @@ case $MotionCorrectionType in
         ${RUN} ${BRC_FMRI_SCR}/EddyPreprocessing.sh \
               --workingdir=${EddyFolder} \
               --inputfile=${gdcFolder}/${NameOffMRI}_gdc \
+              --inscout=${gdcFolder}/${ScoutName}_gdc \
               --fmriname=${NameOffMRI} \
               --dcmethod=${DistortionCorrection} \
               --dcfolder=${DCFolder} \
@@ -572,7 +573,7 @@ echo "One Step Resampling"
 ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --workingdir=${OsrFolder} \
       --infmri=${stcFolder}/${NameOffMRI}_stc \
-      --scoutin=${rawFolder}/${OrigScoutName} \
+      --scoutin=${rawFolder}/${OrigScoutName} \     this is for converting scout to T1 using generated warp file
       --scoutgdcin=${gdcFolder}/${ScoutName}_gdc \
       --fmrifolder=${fMRIFolder} \
       --t1=${T1wFolder}/reg/nonlin/T1_2_std_warp \
