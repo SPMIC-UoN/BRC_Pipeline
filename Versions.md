@@ -1,5 +1,8 @@
 ## Versions
 
+11-Oct-2018 (V1.0.8)
+ - Eddy inputs and outputs are modified in `BRC_functional_pipeline`.
+
 10-Oct-2018 (V1.0.7)
  - Bug fixed in input of intensity normalization in `BRC_functional_pipeline`.
  - T1 Bias correction is modified in `BRC_structural_pipeline`.
