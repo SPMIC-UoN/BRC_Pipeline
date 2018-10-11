@@ -573,7 +573,7 @@ echo "One Step Resampling"
 ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --workingdir=${OsrFolder} \
       --infmri=${stcFolder}/${NameOffMRI}_stc \
-      --scoutin=${rawFolder}/${OrigScoutName} \     this is for converting scout to T1 using generated warp file
+      --scoutin=${rawFolder}/${OrigScoutName} \
       --scoutgdcin=${gdcFolder}/${ScoutName}_gdc \
       --fmrifolder=${fMRIFolder} \
       --t1=${T1wFolder}/reg/nonlin/T1_2_std_warp \
