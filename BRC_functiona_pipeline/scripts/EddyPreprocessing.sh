@@ -216,7 +216,7 @@ echo "Extract the outputs"
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/SBRef_dc 0 1
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/PhaseOne_gdc_dc $(( ${dimt} - 2 )) 1
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/PhaseTwo_gdc_dc $(( ${dimt} - 1 )) 1
-${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/${EddyOut} 1 $(( ${dimt} - 2 ))
+${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/${EddyOut} 1 $(( ${dimt} - 3 ))
 
 
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${OutFolder}/WarpField 0 3

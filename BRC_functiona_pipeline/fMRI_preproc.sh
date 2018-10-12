@@ -488,6 +488,7 @@ case $MotionCorrectionType in
         STC_Input=${mcFolder}/${NameOffMRI}_mc
         SSNR_motionparam=${mcFolder}/${NameOffMRI}_mc.par
         fMRI_2_str_Input=${regFolder}/${fMRI2strOutputTransform}
+        OSR_Scout_In=${gdcFolder}/${ScoutName}_gdc
 
         ${RUN} ${BRC_FMRI_SCR}/MotionCorrection.sh \
               --workingdir=${mcFolder} \
@@ -504,6 +505,7 @@ case $MotionCorrectionType in
         STC_Input=${EddyFolder}/${EddyOutput}
         SSNR_motionparam=${EddyFolder}/${EddyOutput}.eddy_parameters
         fMRI_2_str_Input=${EddyFolder}/${EddyOutput}
+        OSR_Scout_In=${DCFolder}/SBRef_dc
 
         ${RUN} ${BRC_FMRI_SCR}/EddyPreprocessing.sh \
               --workingdir=${EddyFolder} \
@@ -573,11 +575,11 @@ echo "One Step Resampling"
 ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --workingdir=${OsrFolder} \
       --infmri=${stcFolder}/${NameOffMRI}_stc \
-      --scoutin=${rawFolder}/${OrigScoutName} \     this is for converting scout to T1 using generated warp file
-      --scoutgdcin=${gdcFolder}/${ScoutName}_gdc \
+      --scoutin=${rawFolder}/${OrigScoutName} \
+      --scoutgdcin=${OSR_Scout_In} \
       --fmrifolder=${fMRIFolder} \
-      --t1=${T1wFolder}/reg/nonlin/T1_2_std_warp \
-      --freesurferbrainmask=${T1wFolder}/preprocess/${T1wRestoreImageBrain}_mask \
+      --t12std=${T1wFolder}/reg/nonlin/T1_2_std_warp \
+      --t1brainmask=${T1wFolder}/preprocess/${T1wRestoreImageBrain}_mask \
       --fmriresout=${FinalfMRIResolution} \
       --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
       --fmri2structin=${regFolder}/${fMRI2strOutputTransform} \
@@ -591,6 +593,8 @@ ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --oscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin \
       --ojacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
 
+
+#: <<'COMMENT'
 
 #ResultsFolder=${fMRIFolder}/result
 
