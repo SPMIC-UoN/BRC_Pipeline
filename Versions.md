@@ -1,5 +1,9 @@
 ## Versions
 
+12-Oct-2018 (V1.0.9)
+ - Bug fixed in One-Step-Resampling in `BRC_functional_pipeline`.
+ - Bug fixed in Eddy in `BRC_functional_pipeline`.
+
 11-Oct-2018 (V1.0.8)
  - Eddy inputs and outputs are modified in `BRC_functional_pipeline`.
 
