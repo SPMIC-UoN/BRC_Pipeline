@@ -30,7 +30,7 @@ export MATLABpath="/usr/local/matlab/R2017a/bin"            #TO BE MODIFIED BY U
 export SPMpath="/usr/local/spm12"                           #TO BE MODIFIED BY USER
 
 #ENV VARIABLES FOR BIOBANK
-export BRCDIR="/home/mszam12/main/Scripts"                  #TO BE MODIFIED BY USER
+export BRCDIR="/home/mszam12/main/BRC_Pipeline"                  #TO BE MODIFIED BY USER
 export BRC_SCTRUC_DIR=${BRCDIR}/BRC_structural_pipeline
 export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
 export BRC_FMRI_DIR=${BRCDIR}/BRC_functiona_pipeline
