@@ -29,7 +29,7 @@ if [ $# -eq 0 ] ; then Usage; exit 0; fi
 # parse arguments
 WD=`getopt1 "--workingdir" $@`  # "$1"
 InputfMRI=`getopt1 "--infmri" $@`  # "$2"
-T1wImage=`getopt1 "--t1" $@`  # "$3"
+T1w2StdImage=`getopt1 "--t12std" $@`  # "$3"
 FinalfMRIResolution=`getopt1 "--fmriresout" $@`  # "$4"
 fMRIFolder=`getopt1 "--fmrifolder" $@`
 fMRIToStructuralInput=`getopt1 "--fmri2structin" $@`  # "$6"
@@ -39,7 +39,7 @@ OutputInvTransform=`getopt1 "--oiwarp" $@`
 MotionMatrixFolder=`getopt1 "--motionmatdir" $@`  # "$9"
 MotionMatrixPrefix=`getopt1 "--motionmatprefix" $@`  # "${10}"
 OutputfMRI=`getopt1 "--ofmri" $@`  # "${11}"
-FreeSurferBrainMask=`getopt1 "--freesurferbrainmask" $@`  # "${12}"
+FreeSurferBrainMask=`getopt1 "--t1brainmask" $@`  # "${12}"
 GradientDistortionField=`getopt1 "--gdfield" $@`  # "${14}"
 ScoutInput=`getopt1 "--scoutin" $@`  # "${15}"
 ScoutInputgdc=`getopt1 "--scoutgdcin" $@`  # "${15}"
@@ -54,7 +54,7 @@ echo "+                                                                        +
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 #BiasFieldFile=`basename "$BiasField"`
-T1wImageFile=`basename $T1wImage`
+T1w2StdImageFile=`basename $T1w2StdImage`
 FreeSurferBrainMaskFile=`basename "$FreeSurferBrainMask"`
 MotionMatrixFile=`basename "$MotionMatrixFolder"`
 
@@ -77,22 +77,28 @@ elif [ ${FinalfMRIResolution} = "1" ] ; then
     ResampRefIm=$FSLDIR/data/standard/MNI152_T1_1mm
     ResampRefImMask=${ResampRefIm}_brain_mask
 else
-    ${FSLDIR}/bin/flirt -interp spline -in ${T1wImage} -ref ${T1wImage} -applyisoxfm $FinalfMRIResolution -out ${WD}/${T1wImageFile}.${FinalfMRIResolution}
-    ResampRefIm=${WD}/${T1wImageFile}.${FinalfMRIResolution}
+    ${FSLDIR}/bin/flirt -interp spline -in ${T1w2StdImage} -ref ${T1w2StdImage} -applyisoxfm $FinalfMRIResolution -out ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution}
+    ResampRefIm=${WD}/${T1w2StdImageFile}.${FinalfMRIResolution}
 fi
 
-${FSLDIR}/bin/applywarp --rel --interp=spline -i ${T1wImage} -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${T1wImageFile}.${FinalfMRIResolution}
+${FSLDIR}/bin/applywarp --rel --interp=spline -i ${T1w2StdImage} -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution}
+
+${FSLDIR}/bin/applywarp --rel --interp=nn -i ${FreeSurferBrainMask}.nii.gz -r ${T1w2StdImage} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${T1w2StdImageFile}_mask.nii.gz
+${FSLDIR}/bin/applywarp --rel --interp=nn -i ${FreeSurferBrainMask}.nii.gz -r ${T1w2StdImage} -w ${StructuralToStandard} -o ${WD}/${T1w2StdImageFile}_mask.nii.gz
 
 # Create brain masks in this space from the FreeSurfer output (changing resolution)
-#${FSLDIR}/bin/applywarp --rel --interp=nn -i ${FreeSurferBrainMask}.nii.gz -r ${WD}/${T1wImageFile}.${FinalfMRIResolution} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz
-${FSLDIR}/bin/flirt  -interp nearestneighbour -in ${FreeSurferBrainMask}.nii.gz -ref ${WD}/${T1wImageFile}.${FinalfMRIResolution} -out ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz -omat ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.mat
+#${FSLDIR}/bin/applywarp --rel --interp=nn -i ${FreeSurferBrainMask}.nii.gz -r ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz
+#${FSLDIR}/bin/flirt  -interp nearestneighbour -in ${FreeSurferBrainMask}.nii.gz -ref ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} -out ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz -omat ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.mat
+#${FSLDIR}/bin/flirt  -interp nearestneighbour -in ${WD}/${T1w2StdImageFile}_mask.nii.gz -ref ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} -out ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz -omat ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.mat
+${FSLDIR}/bin/applywarp --rel --interp=nn -i ${WD}/${T1w2StdImageFile}_mask.nii.gz -r ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz
+
 
 ## Create versions of the biasfield (changing resolution)
 #${FSLDIR}/bin/applywarp --rel --interp=spline -i ${BiasField} -r ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${BiasFieldFile}.${FinalfMRIResolution}
 #${FSLDIR}/bin/fslmaths ${WD}/${BiasFieldFile}.${FinalfMRIResolution} -thr 0.1 ${WD}/${BiasFieldFile}.${FinalfMRIResolution}
 
 # Downsample warpfield (fMRI to standard) to increase speed
-${FSLDIR}/bin/convertwarp --relout --rel --warp1=${fMRIToStructuralInput} --warp2=${StructuralToStandard} --ref=${WD}/${T1wImageFile}.${FinalfMRIResolution} --out=${OutputTransform}
+${FSLDIR}/bin/convertwarp --relout --rel --warp1=${fMRIToStructuralInput} --warp2=${StructuralToStandard} --ref=${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} --out=${OutputTransform}
 
 ###Add stuff for RMS###
 ${FSLDIR}/bin/invwarp -w ${OutputTransform} -o ${OutputInvTransform} -r ${ScoutInputgdc}
@@ -115,7 +121,7 @@ if [ -e ${WD}/Movement_AbsoluteRMS_mean.txt ] ; then
 fi
 ###Add stuff for RMS###
 
-#${FSLDIR}/bin/imcp ${WD}/${T1wImageFile}.${FinalfMRIResolution} ${fMRIFolder}/${T1wImageFile}.${FinalfMRIResolution}
+#${FSLDIR}/bin/imcp ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} ${fMRIFolder}/${T1w2StdImageFile}.${FinalfMRIResolution}
 #${FSLDIR}/bin/imcp ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution} ${fMRIFolder}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}
 #${FSLDIR}/bin/imcp ${WD}/${BiasFieldFile}.${FinalfMRIResolution} ${fMRIFolder}/${BiasFieldFile}.${FinalfMRIResolution}
 
@@ -150,10 +156,10 @@ for ((k=0; k < $NumFrames; k++)); do
         ${FSLDIR}/bin/convertwarp --relout --rel --ref=${WD}/prevols/vol${vnum}.nii.gz --warp1=${GradientDistortionField} --postmat=$FSLDIR/etc/flirtsch/ident.mat --out=${WD}/${MotionMatrixFile}/${MotionMatrixPrefix}${vnum}_gdc_warp.nii.gz
     fi
 
-    ${FSLDIR}/bin/convertwarp --relout --rel --ref=${WD}/${T1wImageFile}.${FinalfMRIResolution} --warp1=${WD}/${MotionMatrixFile}/${MotionMatrixPrefix}${vnum}_gdc_warp.nii.gz --warp2=${OutputTransform} --out=${WD}/${MotionMatrixFile}/${MotionMatrixPrefix}${vnum}_all_warp.nii.gz
+    ${FSLDIR}/bin/convertwarp --relout --rel --ref=${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} --warp1=${WD}/${MotionMatrixFile}/${MotionMatrixPrefix}${vnum}_gdc_warp.nii.gz --warp2=${OutputTransform} --out=${WD}/${MotionMatrixFile}/${MotionMatrixPrefix}${vnum}_all_warp.nii.gz
     ${FSLDIR}/bin/fslmaths ${WD}/prevols/vol${vnum}.nii.gz -mul 0 -add 1 ${WD}/prevols/vol${vnum}_mask.nii.gz
-    ${FSLDIR}/bin/applywarp --rel --interp=spline --in=${WD}/prevols/vol${vnum}.nii.gz --warp=${WD}/${MotionMatrixFile}/${MotionMatrixPrefix}${vnum}_all_warp.nii.gz --ref=${WD}/${T1wImageFile}.${FinalfMRIResolution} --out=${WD}/postvols/vol${vnum}.nii.gz
-    ${FSLDIR}/bin/applywarp --rel --interp=nn --in=${WD}/prevols/vol${vnum}_mask.nii.gz --warp=${WD}/${MotionMatrixFile}/${MotionMatrixPrefix}${vnum}_all_warp.nii.gz --ref=${WD}/${T1wImageFile}.${FinalfMRIResolution} --out=${WD}/postvols/vol${vnum}_mask.nii.gz
+    ${FSLDIR}/bin/applywarp --rel --interp=spline --in=${WD}/prevols/vol${vnum}.nii.gz --warp=${WD}/${MotionMatrixFile}/${MotionMatrixPrefix}${vnum}_all_warp.nii.gz --ref=${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} --out=${WD}/postvols/vol${vnum}.nii.gz
+    ${FSLDIR}/bin/applywarp --rel --interp=nn --in=${WD}/prevols/vol${vnum}_mask.nii.gz --warp=${WD}/${MotionMatrixFile}/${MotionMatrixPrefix}${vnum}_all_warp.nii.gz --ref=${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} --out=${WD}/postvols/vol${vnum}_mask.nii.gz
 
     FrameMergeSTRING="${FrameMergeSTRING}${WD}/postvols/vol${vnum}.nii.gz "
     FrameMergeSTRINGII="${FrameMergeSTRINGII}${WD}/postvols/vol${vnum}_mask.nii.gz "
@@ -165,11 +171,11 @@ ${FSLDIR}/bin/fslmerge -tr ${OutputfMRI} $FrameMergeSTRING $TR_vol
 ${FSLDIR}/bin/fslmerge -tr ${OutputfMRI}_mask $FrameMergeSTRINGII $TR_vol
 fslmaths ${OutputfMRI}_mask -Tmin ${OutputfMRI}_mask
 
-${FSLDIR}/bin/applywarp --rel --interp=nn -i ${ScoutInputgdc}_mask.nii.gz -r ${ResampRefImMask} -w ${OutputTransform} -o ${OutputfMRI}_mask
+#${FSLDIR}/bin/applywarp --rel --interp=nn -i ${ScoutInputgdc}_mask.nii.gz -r ${ResampRefImMask} -w ${OutputTransform} -o ${OutputfMRI}_mask
 
 # Combine transformations: gradient non-linearity distortion + fMRI_dc to standard
-${FSLDIR}/bin/convertwarp --relout --rel --ref=${WD}/${T1wImageFile}.${FinalfMRIResolution} --warp1=${GradientDistortionField} --warp2=${OutputTransform} --out=${WD}/Scout_gdc_MNI_warp.nii.gz
-${FSLDIR}/bin/applywarp --rel --interp=spline --in=${ScoutInput} -w ${WD}/Scout_gdc_MNI_warp.nii.gz -r ${WD}/${T1wImageFile}.${FinalfMRIResolution} -o ${ScoutOutput}
+${FSLDIR}/bin/convertwarp --relout --rel --ref=${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} --warp1=${GradientDistortionField} --warp2=${OutputTransform} --out=${WD}/Scout_gdc_MNI_warp.nii.gz
+${FSLDIR}/bin/applywarp --rel --interp=spline --in=${ScoutInput} -w ${WD}/Scout_gdc_MNI_warp.nii.gz -r ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} -o ${ScoutOutput}
 
 # Create spline interpolated version of Jacobian  (T1w space, fMRI resolution)
 ${FSLDIR}/bin/convertwarp --relout --rel --ref=${fMRIToStructuralInput} --warp1=${GradientDistortionField} --warp2=${fMRIToStructuralInput} -o ${WD}/gdc_dc_warp --jacobian=${WD}/gdc_dc_jacobian
@@ -177,7 +183,7 @@ ${FSLDIR}/bin/convertwarp --relout --rel --ref=${fMRIToStructuralInput} --warp1=
 ${FSLDIR}/bin/fslmaths ${WD}/gdc_dc_jacobian -Tmean ${WD}/gdc_dc_jacobian
 
 #and resample it to MNI space
-${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/gdc_dc_jacobian -r ${WD}/${T1wImageFile}.${FinalfMRIResolution} -w ${StructuralToStandard} -o ${JacobianOut}
+${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/gdc_dc_jacobian -r ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} -w ${StructuralToStandard} -o ${JacobianOut}
 
 if [[ $MotionCorrectionType == "MCFLIRT" ]]; then
     ###Add stuff for RMS###

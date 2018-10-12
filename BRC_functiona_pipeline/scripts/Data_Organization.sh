@@ -135,18 +135,21 @@ echo "Organizing Processed folder"
 if [[ ${MotionCorrectionType} == "EDDY" ]]; then
     processed_rfMRI_file=${EddyUnlabFolder}/${EddyOutput}
     processed_SBRef_file=${DcUnlabFolder}/SBRef_dc
-    processed_SBRef2str_file=${regUnlabFolder}/${RegOutput}
 elif [[ ${MotionCorrectionType} == "MCFLIRT" ]]; then
     processed_rfMRI_file=${mcUnlabFolder}/${NameOffMRI}_mc
     processed_SBRef_file=${gdcUnlabFolder}/${ScoutName}_gdc
 fi
 
-processed_rfMRI2std_file=${OneStResUnlabFolder}/${NameOffMRI}_nonlin
-processed_rfMRI_mask=${gdcUnlabFolder}/${ScoutName}_gdc_mask
-
 if [ $SliceTimingCorrection -ne 0 ]; then
     processed_rfMRI_file=${StcUnlabFolder}/${NameOffMRI}_stc
 fi
+
+processed_rfMRI2std_file=${OneStResUnlabFolder}/${NameOffMRI}_nonlin
+processed_rfMRI_mask=${gdcUnlabFolder}/${ScoutName}_gdc_mask
+
+
+
+
 
 if [ $smoothingfwhm -ne 0 ]; then
     processed_rfMRI_file=${nrUnlabFolder}/ICA_AROMA_${OUT_SPACE}_space/denoised_func_data_nonaggr
@@ -160,6 +163,9 @@ fi
 if [ $Temp_Filter_Cutoff -ne 0 ]; then
     processed_rfMRI_file=${TemFilUnlabFolder}/${NameOffMRI}_tempfilt
 fi
+
+
+
 
 $FSLDIR/bin/imcp ${processed_rfMRI_file} ${processedFolder}/${NameOffMRI}
 

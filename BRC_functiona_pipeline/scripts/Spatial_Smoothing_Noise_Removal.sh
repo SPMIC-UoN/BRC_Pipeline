@@ -126,7 +126,9 @@ echo "spatial size: ${ssize}"
 # by only averaging a voxel with local voxels which have similar intensity
 echo "Nonlinear filtering to reduce noise using 3D smmoothing, local median filter"
 echo "determine the smoothing area from 1 secondary image"
-${FSLDIR}/bin/susan ${WD}/${fmriName} $thresholdpdifft $ssize 3 1 1 ${WD}/${fmriName}_mean $thresholdpdifft ${WD}/${fmriName}_thresh_smooth
+
+#${FSLDIR}/bin/susan ${WD}/${fmriName} $thresholdpdifft $ssize 3 1 1 ${WD}/${fmriName}_mean $thresholdpdifft ${WD}/${fmriName}_thresh_smooth
+${FSLDIR}/bin/imcp ${WD}/${fmriName} ${WD}/${fmriName}_thresh_smooth
 
 # 3 means 3D smoothing
 # 1 says to use a local median filter
