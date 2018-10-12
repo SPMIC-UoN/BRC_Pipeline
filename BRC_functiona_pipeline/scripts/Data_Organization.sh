@@ -50,7 +50,6 @@ processedFolderName=`getopt1 "--processedfoldername" $@`
 SliceTimingCorrection=`getopt1 "--stc_method" $@`
 stcFolderName=`getopt1 "--stcfoldername" $@`
 smoothingfwhm=`getopt1 "--smoothingfwhm" $@`
-OUT_SPACE=`getopt1 "--outspace" $@`
 nrFolderName=`getopt1 "--nrfoldername" $@`
 Do_intensity_norm=`getopt1 "--dointensitynorm" $@`
 InNormfFolderName=`getopt1 "--innormffoldername" $@`
@@ -152,7 +151,7 @@ processed_rfMRI_mask=${gdcUnlabFolder}/${ScoutName}_gdc_mask
 
 
 if [ $smoothingfwhm -ne 0 ]; then
-    processed_rfMRI_file=${nrUnlabFolder}/ICA_AROMA_${OUT_SPACE}_space/denoised_func_data_nonaggr
+    processed_rfMRI_file=${nrUnlabFolder}/ICA_AROMA/denoised_func_data_nonaggr
 fi
 
 if [[ $Do_intensity_norm == yes ]]; then

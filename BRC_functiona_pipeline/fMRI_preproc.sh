@@ -566,6 +566,52 @@ ${RUN} ${BRC_FMRI_SCR}/EPI_2_T1_Registration.sh \
       --ojacobian=${regFolder}/${JacobianOut}
 
 
+#OUT_SPACE="std"
+OUT_SPACE="func"
+
+
+if [[ ${OUT_SPACE} == "func" ]]; then
+    SSNR_Input=${stcFolder}/${NameOffMRI}_stc.nii.gz
+
+    In_Nrm_inscout=${gdcFolder}/${ScoutName}_gdc
+    In_Nrm_brainmask=${gdcFolder}/${ScoutName}_gdc_mask
+    In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_func
+#elif [[ ${OUT_SPACE} == "std" ]]; then
+#    SSNR_Input=${OsrFolder}/${NameOffMRI}_nonlin.nii.gz
+#
+#    In_Nrm_inscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin
+#    In_Nrm_brainmask=${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution}
+#    In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
+fi
+
+
+if [ $smoothingfwhm -ne 0 ]; then
+
+    echo "Spatial Smoothing and Artifact/Physiological Noise Removal"
+
+    ${RUN} ${BRC_FMRI_SCR}/Spatial_Smoothing_Noise_Removal.sh \
+          --workingdir=${nrFolder} \
+          --infmri=${stcFolder}/${NameOffMRI}_stc \
+          --fmriname=${NameOffMRI} \
+          --fwhm=${smoothingfwhm} \
+          --motionparam=${SSNR_motionparam} \
+          --fmri2structin=${DCFolder}/fMRI2str.mat \
+          --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field.nii.gz \
+          --motioncorrectiontype=${MotionCorrectionType}
+
+    ${FSLDIR}/bin/imcp ${nrFolder}/ICA_AROMA/mask ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr_mask
+
+else
+
+    echo "Not performing Spatial Smoothing and Artifact/Physiological Noise Removal"
+    mkdir ${nrFolder}/ICA_AROMA
+    ${FSLDIR}/bin/imcp ${SSNR_Input} ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr
+    ${FSLDIR}/bin/imcp ${SSNR_InputMask} ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr_mask
+fi
+
+#: <<'COMMENT'
+
+
 echo "Check input files"
 echo "Check input files"
 echo "Check input files"
@@ -593,8 +639,6 @@ ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --oscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin \
       --ojacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
 
-
-#: <<'COMMENT'
 
 #ResultsFolder=${fMRIFolder}/result
 
@@ -626,65 +670,17 @@ then
 fi
 
 
-#OUT_SPACE="std"
-OUT_SPACE="func"
-
-
-if [[ ${OUT_SPACE} == "func" ]]; then
-    SSNR_Input=${stcFolder}/${NameOffMRI}_stc.nii.gz
-    SSNR_InputMask=${gdcFolder}/${ScoutName}_gdc_mask.nii.gz
-
-    In_Nrm_inscout=${gdcFolder}/${ScoutName}_gdc
-    In_Nrm_brainmask=${gdcFolder}/${ScoutName}_gdc_mask
-    In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_func
-elif [[ ${OUT_SPACE} == "std" ]]; then
-    SSNR_Input=${OsrFolder}/${NameOffMRI}_nonlin.nii.gz
-    SSNR_InputMask=${SSNR_Input}_mask.nii.gz
-
-    In_Nrm_inscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin
-    In_Nrm_brainmask=${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution}
-    In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
-fi
-
-
-if [ $smoothingfwhm -ne 0 ]; then
-
-    echo "Spatial Smoothing and Artifact/Physiological Noise Removal"
-
-    ${RUN} ${BRC_FMRI_SCR}/Spatial_Smoothing_Noise_Removal.sh \
-          --workingdir=${nrFolder} \
-          --infmri=${SSNR_Input} \
-          --infmrimask=${SSNR_InputMask} \
-          --fmriname=${NameOffMRI} \
-          --fwhm=${smoothingfwhm} \
-          --motionparam=${SSNR_motionparam} \
-          --fmri2structin=${DCFolder}/fMRI2str.mat \
-          --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field.nii.gz \
-          --motioncorrectiontype=${MotionCorrectionType} \
-          --outspace=${OUT_SPACE}
-
-    ${FSLDIR}/bin/imcp ${nrFolder}/ICA_AROMA_${OUT_SPACE}_space/mask ${nrFolder}/ICA_AROMA_${OUT_SPACE}_space/denoised_func_data_nonaggr_mask
-
-else
-
-    echo "Not performing Spatial Smoothing and Artifact/Physiological Noise Removal"
-    mkdir ${nrFolder}/ICA_AROMA_${OUT_SPACE}_space
-    ${FSLDIR}/bin/imcp ${SSNR_Input} ${nrFolder}/ICA_AROMA_${OUT_SPACE}_space/denoised_func_data_nonaggr
-    ${FSLDIR}/bin/imcp ${SSNR_InputMask} ${nrFolder}/ICA_AROMA_${OUT_SPACE}_space/denoised_func_data_nonaggr_mask
-fi
-
-
 if [[ $Do_intensity_norm == yes ]]; then
 
     echo "Intensity Normalization and Bias Removal"
 
     ${RUN} ${BRC_FMRI_SCR}/Intensity_Normalization.sh \
           --workingdir=${In_Nrm_Folder} \
-          --infmri=${nrFolder}/ICA_AROMA_${OUT_SPACE}_space/denoised_func_data_nonaggr \
+          --infmri=${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr \
           --inscout=${In_Nrm_inscout} \
           --brainmask=${In_Nrm_brainmask} \
           --biascorrection=${BiasCorrection} \
-          --biasfield=${SE_BF_Folder}/${NameOffMRI}2${OUT_SPACE}_sebased_bias \
+          --biasfield=${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias \
           --usejacobian=${UseJacobian} \
           --jacobian=${In_Nrm_jacobian} \
           --ofmri=${NameOffMRI}_nonlin_norm \
@@ -694,7 +690,7 @@ else
 
     echo "Not performing Intensity Normalization and Bias Removal"
 
-    ${FSLDIR}/bin/imcp ${nrFolder}/ICA_AROMA_${OUT_SPACE}_space/denoised_func_data_nonaggr ${In_Nrm_Folder}/${NameOffMRI}_nonlin_norm
+    ${FSLDIR}/bin/imcp ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr ${In_Nrm_Folder}/${NameOffMRI}_nonlin_norm
     ${FSLDIR}/bin/imcp ${In_Nrm_inscout} ${In_Nrm_Folder}/${NameOffMRI}_SBRef_nonlin_norm
 fi
 
@@ -742,7 +738,6 @@ ${RUN} ${BRC_FMRI_SCR}/Data_Organization.sh \
       --stc_method=${SliceTimingCorrection} \
       --stcfoldername=${stcFolderName} \
       --smoothingfwhm=${smoothingfwhm} \
-      --outspace=${OUT_SPACE} \
       --nrfoldername=${nrFolderName} \
       --dointensitynorm=${Do_intensity_norm} \
       --innormffoldername=${InNormfFolderName} \

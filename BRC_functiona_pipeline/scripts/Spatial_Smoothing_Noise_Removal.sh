@@ -30,9 +30,7 @@ MotionParam=`getopt1 "--motionparam" $@`
 fmriName=`getopt1 "--fmriname" $@`
 fMRI2StructMat=`getopt1 "--fmri2structin" $@`
 Struct2StdWarp=`getopt1 "--struct2std" $@`
-InputfMRIMask=`getopt1 "--infmrimask" $@`
 MotionCorrectionType=`getopt1 "--motioncorrectiontype" $@`
-OUT_SPACE=`getopt1 "--outspace" $@`
 
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "+                                                                        +"
@@ -127,8 +125,10 @@ echo "spatial size: ${ssize}"
 echo "Nonlinear filtering to reduce noise using 3D smmoothing, local median filter"
 echo "determine the smoothing area from 1 secondary image"
 
-#${FSLDIR}/bin/susan ${WD}/${fmriName} $thresholdpdifft $ssize 3 1 1 ${WD}/${fmriName}_mean $thresholdpdifft ${WD}/${fmriName}_thresh_smooth
+#${FSLDIR}/bin/susan ${WD}/${fmriName} $thresholdpdifft $ssize 3 1 1 ${WD}/${fmriName}_mean $thresholdpdifft ${WD}/${fmriName}_thresh_smooth_Susan
 ${FSLDIR}/bin/imcp ${WD}/${fmriName} ${WD}/${fmriName}_thresh_smooth
+#${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -kernel gauss $ssize -fmean ${WD}/${fmriName}_thresh_smooth_fslmaths
+
 
 # 3 means 3D smoothing
 # 1 says to use a local median filter
@@ -136,8 +136,8 @@ ${FSLDIR}/bin/imcp ${WD}/${fmriName} ${WD}/${fmriName}_thresh_smooth
 # prefiltered_func_data_smooth is the output image
 
 
-if [ -e ${WD}/ICA_AROMA_${OUT_SPACE}_space ] ; then
-    ${RUN} rm -r ${WD}/ICA_AROMA_${OUT_SPACE}_space
+if [ -e ${WD}/ICA_AROMA ] ; then
+    ${RUN} rm -r ${WD}/ICA_AROMA
 fi
 
 
@@ -164,12 +164,7 @@ fi
 #    MotionParam=${WD}/${fmriName}_mc.par
 #fi
 
-MC_arg="-in ${WD}/rfMRI_thresh_smooth.nii.gz -out ${WD}/ICA_AROMA_${OUT_SPACE}_space -tr ${RepetitionTime} -mc ${MotionParam} -m ${WD}/${fmriName}_brain_mask.nii.gz"
-
-
-if [[ ${OUT_SPACE} == "func" ]]; then
-    MC_arg="${MC_arg} -affmat ${fMRI2StructMat} -warp ${Struct2StdWarp}"
-fi
+MC_arg="-in ${WD}/rfMRI_thresh_smooth.nii.gz -out ${WD}/ICA_AROMA -tr ${RepetitionTime} -mc ${MotionParam} -m ${WD}/${fmriName}_brain_mask.nii.gz -affmat ${fMRI2StructMat} -warp ${Struct2StdWarp}"
 
 
 ${RUN} python2.7 ${BRC_FMRI_SCR}/ICA_AROMA/ICA_AROMA.py ""$MC_arg""
