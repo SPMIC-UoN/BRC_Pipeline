@@ -143,38 +143,19 @@ if [ $SliceTimingCorrection -ne 0 ]; then
     processed_rfMRI_file=${StcUnlabFolder}/${NameOffMRI}_stc
 fi
 
+
+processed_rfMRI_file=${TemFilUnlabFolder}/${NameOffMRI}_tempfilt
 processed_rfMRI2std_file=${OneStResUnlabFolder}/${NameOffMRI}_nonlin
-processed_rfMRI_mask=${gdcUnlabFolder}/${ScoutName}_gdc_mask
-
-
-
-
-
-if [ $smoothingfwhm -ne 0 ]; then
-    processed_rfMRI_file=${nrUnlabFolder}/ICA_AROMA/denoised_func_data_nonaggr
-fi
-
-if [[ $Do_intensity_norm == yes ]]; then
-    processed_rfMRI_file=${InNormUnlabFolder}/${NameOffMRI}_nonlin_norm
-    processed_SBRef_file=${InNormUnlabFolder}/${NameOffMRI}_SBRef_nonlin_norm
-fi
-
-if [ $Temp_Filter_Cutoff -ne 0 ]; then
-    processed_rfMRI_file=${TemFilUnlabFolder}/${NameOffMRI}_tempfilt
-fi
-
-
+processed_SBRef_file=${InNormUnlabFolder}/${NameOffMRI}_SBRef_nonlin_norm
+processed_SBRef2str_file=${DcUnlabFolder}/SBRef_dc
+processed_SBRef2std_file=${OneStResUnlabFolder}/${NameOffMRI}_SBRef_nonlin
 
 
 $FSLDIR/bin/imcp ${processed_rfMRI_file} ${processedFolder}/${NameOffMRI}
-
-if [ ! X$processed_SBRef_file = X ] ; then
-    $FSLDIR/bin/imcp ${processed_SBRef_file} ${processedFolder}/SBref
-fi
-
-if [ ! X$processed_rfMRI_mask = X ] ; then
-    $FSLDIR/bin/imcp ${processed_rfMRI_mask} ${processedFolder}/SBref_mask
-fi
+$FSLDIR/bin/imcp ${processed_rfMRI2std_file} ${processedFolder}/${NameOffMRI}2std
+$FSLDIR/bin/imcp ${processed_SBRef_file} ${processedFolder}/SBref
+$FSLDIR/bin/imcp ${processed_SBRef2str_file} ${processedFolder}/SBref2str
+$FSLDIR/bin/imcp ${processed_SBRef2std_file} ${processedFolder}/SBref2std
 
 
 echo ""

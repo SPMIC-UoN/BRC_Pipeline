@@ -457,15 +457,15 @@ echo "EPI Distortion Correction"
 if [ ! $DistortionCorrection = "NONE" ] ; then
     echo "Performing EPI Distortion Correction"
 
-    ${RUN} ${BRC_FMRI_SCR}/EPI_Distortion_Correction.sh \
-           --workingdir=${DCFolder} \
-           --scoutin=${gdcFolder}/${ScoutName}_gdc \
-           --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
-           --SEPhasePos=${SpinEchoPhaseEncodePositive} \
-           --echospacing=${EchoSpacing} \
-           --unwarpdir=${UnwarpDir} \
-           --gdcoeffs=${GradientDistortionCoeffs} \
-           --method=${DistortionCorrection}
+#    ${RUN} ${BRC_FMRI_SCR}/EPI_Distortion_Correction.sh \
+#           --workingdir=${DCFolder} \
+#           --scoutin=${gdcFolder}/${ScoutName}_gdc \
+#           --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
+#           --SEPhasePos=${SpinEchoPhaseEncodePositive} \
+#           --echospacing=${EchoSpacing} \
+#           --unwarpdir=${UnwarpDir} \
+#           --gdcoeffs=${GradientDistortionCoeffs} \
+#           --method=${DistortionCorrection}
 else
     echo "NOT Performing EPI Distortion Correction"
 
@@ -505,23 +505,23 @@ case $MotionCorrectionType in
         STC_Input=${EddyFolder}/${EddyOutput}
         SSNR_motionparam=${EddyFolder}/${EddyOutput}.eddy_parameters
         fMRI_2_str_Input=${EddyFolder}/${EddyOutput}
-        OSR_Scout_In=${DCFolder}/SBRef_dc
+        OSR_Scout_In=${EddyFolder}/SBRef_dc
 
-        ${RUN} ${BRC_FMRI_SCR}/EddyPreprocessing.sh \
-              --workingdir=${EddyFolder} \
-              --inputfile=${gdcFolder}/${NameOffMRI}_gdc \
-              --inscout=${gdcFolder}/${ScoutName}_gdc \
-              --fmriname=${NameOffMRI} \
-              --dcmethod=${DistortionCorrection} \
-              --dcfolder=${DCFolder} \
-              --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
-              --SEPhasePos=${SpinEchoPhaseEncodePositive} \
-              --unwarpdir=${UnwarpDir} \
-              --echospacing=${EchoSpacing} \
-              --slice2vol=${Slice2Volume} \
-              --slspec=${SliceSpec} \
-              --output_eddy=${EddyOutput} \
-              --outfolder=${DCFolder}
+#        ${RUN} ${BRC_FMRI_SCR}/EddyPreprocessing.sh \
+#              --workingdir=${EddyFolder} \
+#              --inputfile=${gdcFolder}/${NameOffMRI}_gdc \
+#              --inscout=${gdcFolder}/${ScoutName}_gdc \
+#              --fmriname=${NameOffMRI} \
+#              --dcmethod=${DistortionCorrection} \
+#              --dcfolder=${DCFolder} \
+#              --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
+#              --SEPhasePos=${SpinEchoPhaseEncodePositive} \
+#              --unwarpdir=${UnwarpDir} \
+#              --echospacing=${EchoSpacing} \
+#              --slice2vol=${Slice2Volume} \
+#              --slspec=${SliceSpec} \
+#              --output_eddy=${EddyOutput} \
+#              --outfolder=${DCFolder}
   ;;
 
     *)
@@ -533,11 +533,11 @@ esac
 if [ $SliceTimingCorrection -ne 0 ]; then
 
     echo "Slice Timing Correction"
-    ${RUN} ${BRC_FMRI_SCR}/Slice_Timing_Correction.sh \
-          --workingdir=${stcFolder} \
-          --infmri=${STC_Input} \
-          --stc_method=${SliceTimingCorrection} \
-          --ofmri=${stcFolder}/${NameOffMRI}_stc
+#    ${RUN} ${BRC_FMRI_SCR}/Slice_Timing_Correction.sh \
+#          --workingdir=${stcFolder} \
+#          --infmri=${STC_Input} \
+#          --stc_method=${SliceTimingCorrection} \
+#          --ofmri=${stcFolder}/${NameOffMRI}_stc
 
 else
 
@@ -546,58 +546,39 @@ else
 fi
 
 
-${RUN} ${BRC_FMRI_SCR}/EPI_2_T1_Registration.sh \
-      --workingdir=${DCFolder} \
-      --fmriname=${NameOffMRI} \
-      --subjectfolder=${SubjectFolder} \
-      --fmrifolder=${fMRIFolder} \
-      --scoutin=${gdcFolder}/${ScoutName}_gdc \
-      --t1=${T1wFolder}/preprocess/T1_biascorr \
-      --t1brain=${T1wFolder}/preprocess/${T1wRestoreImageBrain} \
-      --wmseg=$wmseg \
-      --dof=${dof} \
-      --method=${DistortionCorrection} \
-      --biascorrection=${BiasCorrection} \
-      --usejacobian=${UseJacobian} \
-      --motioncorrectiontype=${MotionCorrectionType} \
-      --eddyoutname=${EddyOutput} \
-      --oregim=${regFolder}/${RegOutput} \
-      --owarp=${regFolder}/${fMRI2strOutputTransform} \
-      --ojacobian=${regFolder}/${JacobianOut}
-
-
-#OUT_SPACE="std"
-OUT_SPACE="func"
-
-
-if [[ ${OUT_SPACE} == "func" ]]; then
-    SSNR_Input=${stcFolder}/${NameOffMRI}_stc.nii.gz
-
-    In_Nrm_inscout=${gdcFolder}/${ScoutName}_gdc
-    In_Nrm_brainmask=${gdcFolder}/${ScoutName}_gdc_mask
-    In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_func
-#elif [[ ${OUT_SPACE} == "std" ]]; then
-#    SSNR_Input=${OsrFolder}/${NameOffMRI}_nonlin.nii.gz
-#
-#    In_Nrm_inscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin
-#    In_Nrm_brainmask=${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution}
-#    In_Nrm_jacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
-fi
+#${RUN} ${BRC_FMRI_SCR}/EPI_2_T1_Registration.sh \
+#      --workingdir=${DCFolder} \
+#      --fmriname=${NameOffMRI} \
+#      --subjectfolder=${SubjectFolder} \
+#      --fmrifolder=${fMRIFolder} \
+#      --scoutin=${gdcFolder}/${ScoutName}_gdc \
+#      --t1=${T1wFolder}/preprocess/T1_biascorr \
+#      --t1brain=${T1wFolder}/preprocess/${T1wRestoreImageBrain} \
+#      --wmseg=$wmseg \
+#      --dof=${dof} \
+#      --method=${DistortionCorrection} \
+#      --biascorrection=${BiasCorrection} \
+#      --usejacobian=${UseJacobian} \
+#      --motioncorrectiontype=${MotionCorrectionType} \
+#      --eddyoutname=${EddyOutput} \
+#      --oregim=${regFolder}/${RegOutput} \
+#      --owarp=${regFolder}/${fMRI2strOutputTransform} \
+#      --ojacobian=${regFolder}/${JacobianOut}
 
 
 if [ $smoothingfwhm -ne 0 ]; then
 
     echo "Spatial Smoothing and Artifact/Physiological Noise Removal"
 
-    ${RUN} ${BRC_FMRI_SCR}/Spatial_Smoothing_Noise_Removal.sh \
-          --workingdir=${nrFolder} \
-          --infmri=${stcFolder}/${NameOffMRI}_stc \
-          --fmriname=${NameOffMRI} \
-          --fwhm=${smoothingfwhm} \
-          --motionparam=${SSNR_motionparam} \
-          --fmri2structin=${DCFolder}/fMRI2str.mat \
-          --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field.nii.gz \
-          --motioncorrectiontype=${MotionCorrectionType}
+#    ${RUN} ${BRC_FMRI_SCR}/Spatial_Smoothing_Noise_Removal.sh \
+#          --workingdir=${nrFolder} \
+#          --infmri=${stcFolder}/${NameOffMRI}_stc \
+#          --fmriname=${NameOffMRI} \
+#          --fwhm=${smoothingfwhm} \
+#          --motionparam=${SSNR_motionparam} \
+#          --fmri2structin=${DCFolder}/fMRI2str.mat \
+#          --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field.nii.gz \
+#          --motioncorrectiontype=${MotionCorrectionType}
 
     ${FSLDIR}/bin/imcp ${nrFolder}/ICA_AROMA/mask ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr_mask
 
@@ -605,39 +586,25 @@ else
 
     echo "Not performing Spatial Smoothing and Artifact/Physiological Noise Removal"
     mkdir ${nrFolder}/ICA_AROMA
-    ${FSLDIR}/bin/imcp ${SSNR_Input} ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr
-    ${FSLDIR}/bin/imcp ${SSNR_InputMask} ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr_mask
+    ${FSLDIR}/bin/imcp ${stcFolder}/${NameOffMRI}_stc ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr
 fi
 
-#: <<'COMMENT'
-
-
-echo "Check input files"
-echo "Check input files"
-echo "Check input files"
 
 echo "One Step Resampling"
 
-${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
-      --workingdir=${OsrFolder} \
-      --infmri=${stcFolder}/${NameOffMRI}_stc \
-      --scoutin=${rawFolder}/${OrigScoutName} \
-      --scoutgdcin=${OSR_Scout_In} \
-      --fmrifolder=${fMRIFolder} \
-      --t12std=${T1wFolder}/reg/nonlin/T1_2_std_warp \
-      --t1brainmask=${T1wFolder}/preprocess/${T1wRestoreImageBrain}_mask \
-      --fmriresout=${FinalfMRIResolution} \
-      --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
-      --fmri2structin=${regFolder}/${fMRI2strOutputTransform} \
-      --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field \
-      --motioncorrectiontype=${MotionCorrectionType} \
-      --motionmatdir=${mcFolder}/${MotionMatrixFolder} \
-      --motionmatprefix=${MotionMatrixPrefix} \
-      --owarp=${regFolder}/${OutputfMRI2StandardTransform} \
-      --oiwarp=${regFolder}/${Standard2OutputfMRITransform} \
-      --ofmri=${OsrFolder}/${NameOffMRI}_nonlin \
-      --oscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin \
-      --ojacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
+#${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
+#      --workingdir=${OsrFolder} \
+#      --scoutgdcin=${OSR_Scout_In} \
+#      --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
+#      --t12std=${T1wFolder}/reg/nonlin/T1_2_std_warp \
+#      --t1brainmask=${T1wFolder}/preprocess/${T1wRestoreImageBrain}_mask \
+#      --fmriresout=${FinalfMRIResolution} \
+#      --fmri2structin=${regFolder}/${fMRI2strOutputTransform} \
+#      --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field \
+#      --oscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin \
+#      --owarp=${regFolder}/${OutputfMRI2StandardTransform} \
+#      --oiwarp=${regFolder}/${Standard2OutputfMRITransform} \
+#      --ojacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
 
 
 #ResultsFolder=${fMRIFolder}/result
@@ -670,28 +637,39 @@ then
 fi
 
 
+if [[ ${MotionCorrectionType} == "MCFLIRT" ]] ; then
+    if [[ ${DistortionCorrection} == "TOPUP" ]] ; then
+        In_Norm_Scout_In=${DCFolder}/FieldMap/SBRef_dc
+    else
+        In_Norm_Scout_In=${gdcFolder}/${ScoutName}_gdc
+    fi
+elif [[ ${MotionCorrectionType} == "EDDY" ]] ; then
+    In_Norm_Scout_In=${EddyFolder}/SBRef_dc
+fi
+
+
 if [[ $Do_intensity_norm == yes ]]; then
 
     echo "Intensity Normalization and Bias Removal"
 
-    ${RUN} ${BRC_FMRI_SCR}/Intensity_Normalization.sh \
-          --workingdir=${In_Nrm_Folder} \
-          --infmri=${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr \
-          --inscout=${In_Nrm_inscout} \
-          --brainmask=${In_Nrm_brainmask} \
-          --biascorrection=${BiasCorrection} \
-          --biasfield=${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias \
-          --usejacobian=${UseJacobian} \
-          --jacobian=${In_Nrm_jacobian} \
-          --ofmri=${NameOffMRI}_nonlin_norm \
-          --oscout=${NameOffMRI}_SBRef_nonlin_norm
+#    ${RUN} ${BRC_FMRI_SCR}/Intensity_Normalization.sh \
+#          --workingdir=${In_Nrm_Folder} \
+#          --infmri=${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr \
+#          --inscout=${In_Norm_Scout_In} \
+#          --brainmask=${gdcFolder}/${ScoutName}_gdc_mask \
+#          --biascorrection=${BiasCorrection} \
+#          --biasfield=${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias \
+#          --usejacobian=${UseJacobian} \
+#          --jacobian=${OsrFolder}/${JacobianOut}_func \
+#          --ofmri=${NameOffMRI}_nonlin_norm \
+#          --oscout=${NameOffMRI}_SBRef_nonlin_norm
 
 else
 
     echo "Not performing Intensity Normalization and Bias Removal"
 
     ${FSLDIR}/bin/imcp ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr ${In_Nrm_Folder}/${NameOffMRI}_nonlin_norm
-    ${FSLDIR}/bin/imcp ${In_Nrm_inscout} ${In_Nrm_Folder}/${NameOffMRI}_SBRef_nonlin_norm
+    ${FSLDIR}/bin/imcp ${OSR_Scout_In} ${In_Nrm_Folder}/${NameOffMRI}_SBRef_nonlin_norm
 fi
 
 
@@ -711,6 +689,21 @@ else
 
     ${FSLDIR}/bin/imcp ${In_Nrm_Folder}/${NameOffMRI}_nonlin_norm ${Tmp_Filt_Folder}/${NameOffMRI}_tempfilt
 fi
+
+
+echo "Apply the final registration"
+#${RUN} ${BRC_FMRI_SCR}/Apply_Registration.sh \
+#      --workingdir=${OsrFolder} \
+#      --infmri=${Tmp_Filt_Folder}/${NameOffMRI}_tempfilt \
+#      --scoutgdcin=${OSR_Scout_In} \
+#      --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
+#      --t12std=${T1wFolder}/reg/nonlin/T1_2_std_warp \
+#      --fmriresout=${FinalfMRIResolution} \
+#      --owarp=${regFolder}/${OutputfMRI2StandardTransform} \
+#      --motioncorrectiontype=${MotionCorrectionType} \
+#      --motionmatdir=${mcFolder}/${MotionMatrixFolder} \
+#      --motionmatprefix=${MotionMatrixPrefix} \
+#      --ofmri=${OsrFolder}/${NameOffMRI}_nonlin
 
 
 echo "Organizing the outputs"
