@@ -1,5 +1,10 @@
 ## Versions
 
+15-Oct-2018 (V1.1.0)
+ - The order of the pipeline is modified and One Step Resampling is moved to the last step in `BRC_functional_pipeline`.
+ - The output files are modified `BRC_functional_pipeline`.
+ - One Step Resampling strategy, inputs and outputs are modified `BRC_functional_pipeline`.
+
 12-Oct-2018 (V1.0.9)
  - Spatial smoothing strategy is midified in `BRC_functional_pipeline`.
  - Bug fixed in One-Step-Resampling in `BRC_functional_pipeline`.
