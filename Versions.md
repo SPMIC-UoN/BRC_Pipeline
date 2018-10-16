@@ -1,5 +1,8 @@
 ## Versions
 
+16-Oct-2018 (V1.1.1)
+ - Minor bug fixed in generation of brain mask in functional space in `BRC_functional_pipeline`.
+
 15-Oct-2018 (V1.1.0)
  - The order of the pipeline is modified and One Step Resampling is moved to the last step in `BRC_functional_pipeline`.
  - The output files are modified `BRC_functional_pipeline`.
