@@ -627,7 +627,7 @@ then
         ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/${NameOffMRI}_dropouts.nii.gz -r ${OsrFolder}/${NameOffMRI}_SBRef_nonlin -w ${T1wFolder}/reg/nonlin/T1_2_std_warp_field -o ${SE_BF_Folder}/${NameOffMRI}2std_dropouts.nii.gz
 
         ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/${NameOffMRI}2std_sebased_bias -r ${gdcFolder}/${ScoutName}_gdc -w ${regFolder}/${Standard2OutputfMRITransform} -o ${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias.nii.gz
-        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias.nii.gz -mas ${gdcFolder}/${ScoutName}_gdc_mask ${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias.nii.gz
+        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias.nii.gz -mas ${OSR_Scout_In}_mask ${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias.nii.gz
     fi
 
     if [[ $UseJacobian == "true" ]] ; then
@@ -656,7 +656,7 @@ if [[ $Do_intensity_norm == yes ]]; then
           --workingdir=${In_Nrm_Folder} \
           --infmri=${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr \
           --inscout=${In_Norm_Scout_In} \
-          --brainmask=${gdcFolder}/${ScoutName}_gdc_mask \
+          --brainmask=${OSR_Scout_In}_mask \
           --biascorrection=${BiasCorrection} \
           --biasfield=${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias \
           --usejacobian=${UseJacobian} \

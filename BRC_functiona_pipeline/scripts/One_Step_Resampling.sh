@@ -90,7 +90,6 @@ ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${fMRIToStructuralInput} --warp
 ${FSLDIR}/bin/invwarp -w ${OutputTransform} -o ${OutputInvTransform} -r ${ScoutInputgdc}
 ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${WD}/${T1wBrainMaskFile}.${FinalfMRIResolution}.nii.gz -r ${ScoutInputgdc} -w ${OutputInvTransform} -o ${ScoutInputgdc}_mask.nii.gz
 
-
 ${FSLDIR}/bin/convertwarp --relout --rel --ref=${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} --warp1=${GradientDistortionField} --warp2=${OutputTransform} --out=${WD}/Scout_gdc_MNI_warp.nii.gz
 #${FSLDIR}/bin/applywarp --rel --interp=spline --in=${ScoutInput} -w ${WD}/Scout_gdc_MNI_warp.nii.gz -r ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} -o ${ScoutOutput}
 ${FSLDIR}/bin/applywarp --rel --interp=spline --in=${ScoutInputgdc} -w ${WD}/Scout_gdc_MNI_warp.nii.gz -r ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} -o ${ScoutOutput}
