@@ -43,20 +43,6 @@ echo "+         START: Eddy for correcting eddy currents and movements         +
 echo "+                                                                        +"
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-echo "EddyFolder: $EddyFolder"
-echo "InputfMRI: $InputfMRI"
-echo "NameOffMRI: $NameOffMRI"
-echo "DCFolder: $DCFolder"
-echo "DCMethod: $DCMethod"
-echo "EddyOut: $EddyOut"
-echo "PhaseEncodeOne: $PhaseEncodeOne"
-echo "PhaseEncodeTwo: $PhaseEncodeTwo"
-echo "UnwarpDir: $UnwarpDir"
-echo "EchoSpacing: $EchoSpacing"
-echo "Slice2Volume:$Slice2Volume"
-echo "SliceSpec:$SliceSpec"
-echo "OutFolder:$OutFolder"
-
 if [ -e ${EddyFolder} ] ; then
     ${RUN} rm -r ${EddyFolder}
 fi
@@ -169,20 +155,23 @@ if [[ ${DCMethod} == "TOPUP" ]]; then
 fi
 
 $FSLDIR/bin/eddy_cuda  ""$EDDY_arg""
-#        \
+
 #        --imain=${Eddy_Input} \
 #        --mask=${BrainMask} \
 #        --index=${EddyFolder}/index.txt \
 #        --acqp=$txtfname \
 #        --bvecs=${EddyFolder}/${NameOffMRI}.bvecs \
 #        --bvals=${EddyFolder}/${NameOffMRI}.bvals \
-#        --out=${EddyFolder}/${EddyOut} \
-#        --data_is_shelled \
-#        --very_verbose \
-#        --niter=1 \
 #        --fwhm=10 \
-#        --mporder=${MPOrder} \
+#        --topup=${DCFolder}/FieldMap/Coefficents \
+#        --out=${EddyFolder}/${EddyOut} \
 #        --s2v_niter=10 \
+#        --very_verbose \
+#
+#
+#        --data_is_shelled \
+#        --niter=1 \
+#        --mporder=${MPOrder} \
 #        --s2v_fwhm=0 \
 #        --s2v_interp=trilinear \
 #        --s2v_lambda=1 \
@@ -194,7 +183,7 @@ $FSLDIR/bin/eddy_cuda  ""$EDDY_arg""
 #        --mbs_ksp=5
 #         ""${TOPUP_arg}""
 #        --slspec=${EddyFolder}/slspec.txt \
-
+#
 #--niter=10 \
 #--fwhm=10,10,5,5,0,0,0 \
 

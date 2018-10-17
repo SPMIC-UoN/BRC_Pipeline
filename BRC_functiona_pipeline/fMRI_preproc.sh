@@ -56,9 +56,21 @@ Usage()
   echo " --intensitynorm                      If one wants to do intensity normalization"
   echo " --stcmethod <method>                 Slice timing correction method"
   echo "                                           0: NONE (default value),"
-  echo "                                           1: If the slices were acquired with interleaved order (0, 2, 4 ... 1, 3, 5 ...),"
-  echo "                                           2: If slices were acquired with forward order (0, 1, 2, ...), and"
-  echo "                                           3: If slices were acquired with backward order (n, n-1, n-2, ...)"
+  echo "                                           1: (SPM) If the slices were acquired with interleaved order (0, 2, 4 ... 1, 3, 5 ...),"
+  echo "                                           2: (SPM) If slices were acquired with forward order (0, 1, 2, ...),"
+  echo "                                           3: (SPM) If slices were acquired with backward order (n, n-1, n-2, ...),"
+  echo "                                           4: (FSL) If slices were acquired from the bottom of the brain,"
+  echo "                                           5: (FSL) If slices were acquired from the top of the brain to the bottom,"
+  echo "                                           6: (FSL) If the slices were acquired with interleaved order (0, 2, 4 ... 1, 3, 5 ...),"
+  echo "                                           7: (FSL) If slices were not acquired in regular order you will need to use a slice order file or a slice timings file."
+  echo "                                                    If a slice order file is to be used, create a text file with a single number on each line, "
+  echo "                                                    where the first line states which slice was acquired first, the second line states which slice was acquired second, etc."
+  echo "                                                    The first slice is numbered 1 not 0."
+  echo "                                                    The file path should be specified using --slstiming"
+  echo "                                           8: (FSL) If a slice timings file is to be used, put one value (ie for each slice) on each line of a text file."
+  echo "                                                    The units are in TRs, with 0.5 corresponding to no shift. Therefore a sensible range of values will be between 0 and 1."
+  echo "                                                    The file path should be specified using --slstiming"
+  echo " --slstiming <file path>              file path of a single-column custom interleave order/timing file"
   echo " --fwhm <value>                       Spatial size (sigma, i.e., half-width) of smoothing, in mm. Set to 0 (default) for no spatial smooting"
   echo "                                      Non-zero value of this option, automatically enables ICA-AROMA for Artifact/Physiological Noise Removal"
   echo " --fmrires <value>                    Target final resolution of fMRI data in mm (default is 2 mm)"
@@ -85,6 +97,7 @@ Do_intensity_norm="no"
 GradientDistortionCoeffs="NONE"
 DistortionCorrection="NONE"
 BiasCorrection="NONE"
+SliceTimingFile="NONE"
 dof=6
 FinalfMRIResolution=2
 SliceTimingCorrection=0
@@ -175,6 +188,10 @@ while [ "$1" != "" ]; do
 
       --stcmethod )           shift
                               SliceTimingCorrection=$1
+                              ;;
+
+      --slstiming )           shift
+                              SliceTimingFile=$1
                               ;;
 
       --intensitynorm )       Do_intensity_norm="yes"
@@ -537,7 +554,8 @@ if [ $SliceTimingCorrection -ne 0 ]; then
           --workingdir=${stcFolder} \
           --infmri=${STC_Input} \
           --stc_method=${SliceTimingCorrection} \
-          --ofmri=${stcFolder}/${NameOffMRI}_stc
+          --ofmri=${stcFolder}/${NameOffMRI}_stc \
+          --slicetimingfile=${SliceTimingFile}
 
 else
 

@@ -27,7 +27,7 @@ WD=`getopt1 "--workingdir" $@`
 InputfMRI=`getopt1 "--infmri" $@`
 OutputfMRI=`getopt1 "--ofmri" $@`
 STCMethod=`getopt1 "--stc_method" $@`
-#RepetitionTime=`getopt1 "--repetitiontime" $@`
+SliceTimingFile=`getopt1 "--slicetimingfile" $@`
 
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "+                                                                        +"
@@ -57,20 +57,45 @@ case $STCMethod in
         method='backward'
     ;;
 
+    4)
+        Stc_args=""
+    ;;
+
+    5)
+        Stc_args="--down"
+    ;;
+
+    6)
+        Stc_args="--odd"
+    ;;
+
+    7)
+        Stc_args="--ocustom=${SliceTimingFile}"
+    ;;
+
+    8)
+        Stc_args="--tcustom=${SliceTimingFile}"
+    ;;
+
     *)
         echo "UNKNOWN SLICE TIMING CORRECTION METHOD: ${STCMethod}"
         exit 1
 esac
 
-${FSLDIR}/bin/fslsplit ${InputfMRI} ${WD}/prevols/vol -t
+if [ "$STCMethod" -le 3 ]; then
+    ${FSLDIR}/bin/fslsplit ${InputfMRI} ${WD}/prevols/vol -t
 
-gunzip ${WD}/prevols/vol*.nii.gz
+    gunzip ${WD}/prevols/vol*.nii.gz
 
-${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_SCR}'); run_spm_slice_time_correction('${SPMpath}' , '${WD}/prevols/vol' , 'stc_' , '${method}' , ${RepetitionTime}); exit"
+    ${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_SCR}'); run_spm_slice_time_correction('${SPMpath}' , '${WD}/prevols/vol' , 'stc_' , '${method}' , ${RepetitionTime}); exit"
 
-${FSLDIR}/bin/imcp ${WD}/prevols/stc_* ${WD}/postvols/
+    ${FSLDIR}/bin/imcp ${WD}/prevols/stc_* ${WD}/postvols/
 
-${FSLDIR}/bin/fslmerge -tr ${OutputfMRI} ${WD}/postvols/stc_* $RepetitionTime
+    ${FSLDIR}/bin/fslmerge -tr ${OutputfMRI} ${WD}/postvols/stc_* $RepetitionTime
+else
+    ${FSLDIR}/bin/slicetimer -i ${InputfMRI} -o ${OutputfMRI} -r ${RepetitionTime} --verbose $Stc_args
+fi
+
 
 echo ""
 echo "                       END: Slice Timing Corection"
