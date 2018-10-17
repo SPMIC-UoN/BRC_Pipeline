@@ -2,6 +2,7 @@
 
 17-Oct-2018 (V1.1.2)
  - Slice to volume movement correction is added to the `BRC_diffusion_pipeline`.
+ - Using `--slspec` option, the `BRC_diffusion_pipeline`, the pipeline can extract SliceTiming information from the dMRI DICOM file.
 
 16-Oct-2018 (V1.1.1)
  - Minor bug fixed in generation of brain mask in functional space in `BRC_functional_pipeline`.
