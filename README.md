@@ -9,7 +9,7 @@ For further information, please see:
 
 ## Versions
 
-* See the [Versions.md][Versions_md] file for details on releases.
+* See the [versions history][Versions_md] page for details on releases.
 
 
 
