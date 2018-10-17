@@ -1,6 +1,7 @@
 ## Versions
 
 17-Oct-2018 (V1.1.2)
+ - New Slice Timing Correction methods based on the FSL are added to the `BRC_functional_pipeline`.
  - Slice to volume movement correction is added to the `BRC_diffusion_pipeline`.
  - Using `--slspec` option, the `BRC_diffusion_pipeline`, the pipeline can extract SliceTiming information from the dMRI DICOM file.
 
