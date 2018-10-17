@@ -1,81 +1,141 @@
 #!/bin/bash
-# Last update: 28/09/2018
+# Last update: 02/10/2018
 
+# Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
+#
+# Copyright 2018 University of Nottingham
+#
 set -e
-echo -e "\n START: eddy"
 
-workingdir=$1
-Apply_Topup=$2
-do_QC=$3
-qcdir=$4
+# function for parsing options
+getopt1()
+{
+    sopt="$1"
+    shift 1
 
-topupdir=`dirname ${workingdir}`/topup
+    for fn in $@ ; do
+        if [ `echo $fn | grep -- "^${sopt}=" | wc -w` -gt 0 ] ; then
+            echo $fn | sed "s/^${sopt}=//"
+            return 0
+        fi
+    done
+}
+
+# parse arguments
+WD=`getopt1 "--workingdir" $@`
+Apply_Topup=`getopt1 "--applytopup" $@`
+do_QC=`getopt1 "--doqc" $@`
+qcdir=`getopt1 "--qcdir" $@`
+Slice2Volume=`getopt1 "--slice2vol" $@`
+topupFolder=`getopt1 "--topupdir" $@`
+SliceSpec=`getopt1 "--slspec" $@`
+
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo "+                                                                        +"
+echo "+         START: Eddy for correcting eddy currents and movements         +"
+echo "+                                                                        +"
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+if [[ $Slice2Volume == yes ]]; then
+    MPOrder=4
+else
+    MPOrder=0
+fi
 
 if [ $Apply_Topup = yes ] ; then
-    ${FSLDIR}/bin/imcp ${topupdir}/nodif_brain_mask ${workingdir}/
+    ${FSLDIR}/bin/imcp ${topupFolder}/nodif_brain_mask ${WD}/
 else
     echo "Running BET on the Pos b0"
-    ${FSLDIR}/bin/fslroi ${workingdir}/Pos_b0 ${workingdir}/Pos_b01 0 1
-    ${FSLDIR}/bin/bet ${workingdir}/Pos_b01 ${workingdir}/nodif_brain -m -f 0.2
+    ${FSLDIR}/bin/fslroi ${WD}/Pos_b0 ${WD}/Pos_b01 0 1
+    ${FSLDIR}/bin/bet ${WD}/Pos_b01 ${WD}/nodif_brain -m -f 0.2
 fi
 
 #if [ "x$CUDA_HOME" = "x" ] ; then   #No CUDA installed, run OPEMP version
-#    nice ${FSLDIR}/bin/eddy_openmp --imain=${workingdir}/Pos_Neg --mask=${workingdir}/nodif_brain_mask --index=${workingdir}/index.txt --acqp=${workingdir}/acqparams.txt --bvecs=${workingdir}/Pos_Neg.bvecs --bvals=${workingdir}/Pos_Neg.bvals --fwhm=0 --topup=${topupdir}/topup_Pos_Neg_b0 --out=${workingdir}/eddy_unwarped_images --flm=quadratic -v #--resamp=lsr #--session=${workingdir}/series_index.txt
+#    nice ${FSLDIR}/bin/eddy_openmp --imain=${WD}/Pos_Neg --mask=${WD}/nodif_brain_mask --index=${WD}/index.txt --acqp=${WD}/acqparams.txt --bvecs=${WD}/Pos_Neg.bvecs --bvals=${WD}/Pos_Neg.bvals --fwhm=0 --topup=${topupdir}/topup_Pos_Neg_b0 --out=${WD}/eddy_unwarped_images --flm=quadratic -v #--resamp=lsr #--session=${WD}/series_index.txt
 #else
+
 if [ $Apply_Topup = yes ] ; then
-    ${FSLDIR}/bin/eddy_cuda --imain=${workingdir}/Pos_Neg \
-                            --mask=${workingdir}/nodif_brain_mask \
-                            --index=${workingdir}/index.txt \
-                            --acqp=${workingdir}/acqparams.txt \
-                            --bvecs=${workingdir}/Pos_Neg.bvecs \
-                            --bvals=${workingdir}/Pos_Neg.bvals \
-                            --fwhm=0 \
-                            --topup=${topupdir}/topup_Pos_Neg_b0 \
-                            --out=${workingdir}/eddy_unwarped_images \
-                            --flm=quadratic \
-                            --cnr_maps \
-                            --repol \
-                            --s2v_niter=0 \
-                            -v
+    imain_arg=${WD}/Pos_Neg
+    bvecs_arg=${WD}/Pos_Neg.bvecs
+    bvals_arg=${WD}/Pos_Neg.bvals
+    b_arg=${WD}/Pos_Neg.bvals
+    g_arg=${WD}/Pos_Neg.bvecs
 else
-    ${FSLDIR}/bin/eddy_cuda --imain=${workingdir}/Pos \
-                            --mask=${workingdir}/nodif_brain_mask \
-                            --index=${workingdir}/index.txt \
-                            --acqp=${workingdir}/acqparams.txt \
-                            --bvecs=${workingdir}/Pos.bvec \
-                            --bvals=${workingdir}/Pos.bval \
-                            --fwhm=0 \
-                            --out=${workingdir}/eddy_unwarped_images \
-                            --flm=quadratic \
-                            --cnr_maps \
-                            --repol \
-                            --s2v_niter=0 \
-                            -v
+    imain_arg=${WD}/Pos
+    bvecs_arg=${WD}/Pos.bvec
+    bvals_arg=${WD}/Pos.bval
+    b_arg=${WD}/Pos.bval
+    g_arg=${WD}/Pos.bvec
 fi
+
+EDDY_arg="--imain=${imain_arg} --mask=${WD}/nodif_brain_mask --index=${WD}/index.txt --acqp=${WD}/acqparams.txt --bvecs=${bvecs_arg} --bvals=${bvals_arg} --out=${WD}/eddy_unwarped_images"
+EDDY_arg="${EDDY_arg} --fwhm=0 --flm=quadratic --cnr_maps --repol --s2v_niter=0 -v"
+EDDY_arg="${EDDY_arg} --mporder=${MPOrder} --s2v_niter=10 --s2v_fwhm=0 --s2v_interp=trilinear --s2v_lambda=1"
+
+if [ ! $SliceSpec = "NONE" ] ; then
+    ${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_SCR}'); extract_slice_specifications('${SliceSpec}' , '${WD}/slspec.txt'); exit"
+
+    if [ -e ${WD}/slspec.txt ] ; then
+        EDDY_arg="${EDDY_arg} --slspec=${WD}/slspec.txt"
+    else
+        echo ""
+        echo "WARNING: Slice Timing information does not exist in the json file"
+        echo ""
+    fi
+fi
+
+if [ $Apply_Topup = yes ] ; then
+    EDDY_arg="${EDDY_arg} --topup=${topupFolder}/topup_Pos_Neg_b0"
+fi
+
+$FSLDIR/bin/eddy_cuda  ""$EDDY_arg""
+
+#if [ $Apply_Topup = yes ] ; then
+#    ${FSLDIR}/bin/eddy_cuda --imain=${WD}/Pos_Neg \
+#                            --mask=${WD}/nodif_brain_mask \
+#                            --index=${WD}/index.txt \
+#                            --acqp=${WD}/acqparams.txt \
+#                            --bvecs=${WD}/Pos_Neg.bvecs \
+#                            --bvals=${WD}/Pos_Neg.bvals \
+#                            --fwhm=0 \
+#                            --topup=${topupFolder}/topup_Pos_Neg_b0 \
+#                            --out=${WD}/eddy_unwarped_images \
+#                            --flm=quadratic \
+#                            --cnr_maps \
+#                            --repol \
+#                            --s2v_niter=0 \
+#                            -v
+#else
+#    ${FSLDIR}/bin/eddy_cuda --imain=${WD}/Pos \
+#                            --mask=${WD}/nodif_brain_mask \
+#                            --index=${WD}/index.txt \
+#                            --acqp=${WD}/acqparams.txt \
+#                            --bvecs=${WD}/Pos.bvec \
+#                            --bvals=${WD}/Pos.bval \
+#                            --fwhm=0 \
+#                            --out=${WD}/eddy_unwarped_images \
+#                            --flm=quadratic \
+#                            --cnr_maps \
+#                            --repol \
+#                            --s2v_niter=0 \
+#                            -v
+#fi
 
 
   #fi
 
 if [ $do_QC = yes ] ; then
-    if [ $Apply_Topup = yes ] ; then
-        eddy_quad ${workingdir}/eddy_unwarped_images \
-                  -idx ${workingdir}/index.txt \
-                  -par ${workingdir}/acqparams.txt \
-                  -m ${workingdir}/nodif_brain_mask \
-                  -b ${workingdir}/Pos_Neg.bvals \
-                  -g ${workingdir}/Pos_Neg.bvecs
-    else
-        eddy_quad ${workingdir}/eddy_unwarped_images \
-                  -idx ${workingdir}/index.txt \
-                  -par ${workingdir}/acqparams.txt \
-                  -m ${workingdir}/nodif_brain_mask \
-                  -b ${workingdir}/Pos.bval \
-                  -g ${workingdir}/Pos.bvec
-    fi
+
+    eddy_quad ${WD}/eddy_unwarped_images \
+              -idx ${WD}/index.txt \
+              -par ${WD}/acqparams.txt \
+              -m ${WD}/nodif_brain_mask \
+              -b ${b_arg} \
+              -g ${g_arg}
 
 
-    mv ${workingdir}/eddy_unwarped_images.qc/* $qcdir/
-    rm -r ${workingdir}/eddy_unwarped_images.qc
+    mv ${WD}/eddy_unwarped_images.qc/* $qcdir/
+    rm -r ${WD}/eddy_unwarped_images.qc
 fi
 
 echo -e "\n END: eddy"

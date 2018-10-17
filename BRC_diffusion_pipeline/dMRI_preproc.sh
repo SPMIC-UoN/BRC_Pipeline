@@ -55,16 +55,19 @@ Usage()
   echo " -s | --subject <Subject name>   output directory is a subject name folder in output path directory"
   echo " --qc                            turn on steps that do quality control of dMRI data"
   echo " --reg                           turn on steps that do registration to standard (FLIRT and FNIRT)"
+  echo " --slice2vol                     If one wants to do slice-to-volome motion correction"
+  echo " --slspec <json path>            Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
+  echo "                                 slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction"
   echo " -e | --echo_s <value>           EchoSpacing should be in msecs"
   echo " -p | --pe_dir <1..2>            PhaseEncodingDir"
-  echo "                                 1 for LR/RL,"
-  echo "                                 2 for AP/PA"
+  echo "                                      1 for LR/RL,"
+  echo "                                      2 for AP/PA"
   echo " -c | --cm_flag <0..2>           CombineMatchedFlag"
-  echo "                                 2 for including in the ouput all volumes uncombined,"
-  echo "                                 1 for including in the ouput and combine only volumes where both LR/RL (or AP/PA) pairs have been acquired,"
-  echo "                                 0 for including (uncombined) single volumes as well"
+  echo "                                      2 for including in the ouput all volumes uncombined,"
+  echo "                                      1 for including in the ouput and combine only volumes where both LR/RL (or AP/PA) pairs have been acquired,"
+  echo "                                      0 for including (uncombined) single volumes as well"
   echo " -g | --p_im                     ParallelImaging_Factor, In-plane parallel imaging factor"
-  echo "                                 1 for No_Parallel_Imaging"
+  echo "                                      1 for No_Parallel_Imaging"
   echo " -h | --help                     help"
 }
 
@@ -74,6 +77,8 @@ if [ $# -le 4 ] ; then Usage; exit 1; fi
 
 # default values
 InputImages2="NONE"
+Slice2Volume="no"
+SliceSpec="NONE"
 echospacing=
 PEdir=
 CombineMatched=
@@ -106,6 +111,13 @@ while [ "$1" != "" ]; do
                                 ;;
 
         --reg )           	    do_REG=yes
+                                ;;
+
+        --slice2vol )           Slice2Volume=yes
+                                ;;
+
+        --slspec )              shift
+                                SliceSpec=$1
                                 ;;
 
         -e | --echo_s )         shift
@@ -183,45 +195,82 @@ if [ ! -e "${outdir}/anatMRI/T1" ] ; then
     exit;
 fi
 
+#=====================================================================================
+###                                Naming Conventions
+#=====================================================================================
+
+rawFolderName="raw"
+preprocessedFolderName="preprocess"
+topupFolderName="topup"
+eddyFolderName="eddy"
+processedFolderName="processed"
+regFolderName="reg"
+linregFolderName="lin"
+nonlinregFolderName="nonlin"
+qcFolderName="qc"
+logFolderName="log"
+unlabelFolderName="unlabelled"
+
+
+#=====================================================================================
+###                                  Setup PATHS
+#=====================================================================================
+
 if [ ! -d "$outdir" ]; then mkdir $outdir; fi
 
-outdir=${outdir}/dMRI;
-if [ -d ${outdir} ]; then
-    rm -rf ${outdir}
+dMRIFolder=${outdir}/dMRI;
+
+rawFolder=${dMRIFolder}/${rawFolderName}
+preprocessedFolder=${dMRIFolder}/${preprocessedFolderName}
+topupFolder=${preprocessedFolder}/${topupFolderName}
+eddyFolder=${preprocessedFolder}/${eddyFolderName}
+processedFolder=${dMRIFolder}/${processedFolderName}
+regFolder=${dMRIFolder}/${regFolderName}
+linregFolder=${regFolder}/${linregFolderName}
+nonlinregFolder=${regFolder}/${nonlinregFolderName}
+qcFolder=${dMRIFolder}/${qcFolderName}
+logFolder=${dMRIFolder}/${logFolderName}
+unlabelFolder=${dMRIFolder}/${unlabelFolderName}
+
+
+if [ -d ${dMRIFolder} ]; then
+    rm -rf ${dMRIFolder}
 fi
-mkdir -p ${outdir}
+mkdir -p ${dMRIFolder}
 
-echo OutputDir is ${outdir}
+echo OutputDir is ${dMRIFolder}
 
-if [ ! -d "$outdir/raw" ]; then mkdir $outdir/raw; fi
-if [ ! -d "$outdir/preprocess" ]; then mkdir $outdir/preprocess; fi
+if [ ! -d ${rawFolder} ]; then mkdir ${rawFolder}; fi
+if [ ! -d ${preprocessedFolder} ]; then mkdir ${preprocessedFolder}; fi
 if [ $Apply_Topup = yes ] ; then
-    if [ ! -d "$outdir/preprocess/topup" ]; then mkdir $outdir/preprocess/topup; fi
+    if [ ! -d ${topupFolder} ]; then mkdir ${topupFolder}; fi
 fi
-if [ ! -d "$outdir/preprocess/eddy" ]; then mkdir $outdir/preprocess/eddy; fi
-if [ ! -d "$outdir/processed" ]; then mkdir $outdir/processed; fi
+if [ ! -d ${eddyFolder} ]; then mkdir ${eddyFolder}; fi
+if [ ! -d ${processedFolder} ]; then mkdir ${processedFolder}; fi
 if [ $do_REG = yes ] ; then
-    if [ ! -d "$outdir/reg" ]; then mkdir $outdir/reg; fi
-    if [ ! -d "$outdir/reg/lin" ]; then mkdir $outdir/reg/lin; fi
-    if [ ! -d "$outdir/reg/nonlin" ]; then mkdir $outdir/reg/nonlin; fi
+    if [ ! -d ${regFolder} ]; then mkdir ${regFolder}; fi
+    if [ ! -d ${linregFolder} ]; then mkdir ${linregFolder}; fi
+    if [ ! -d ${nonlinregFolder} ]; then mkdir ${nonlinregFolder}; fi
 fi
 if [ $do_QC = yes ] ; then
-    if [ ! -d "$outdir/qc" ]; then mkdir $outdir/qc; fi
+    if [ ! -d ${qcFolder} ]; then mkdir ${qcFolder}; fi
 fi
-if [ ! -d "$outdir/log" ]; then mkdir $outdir/log; fi
-if [ ! -d "$outdir/unlabelled" ]; then mkdir $outdir/unlabelled; fi
+if [ ! -d ${logFolder} ]; then mkdir ${logFolder}; fi
+if [ ! -d ${unlabelled} ]; then mkdir ${unlabelled}; fi
+
 
 echo "Data Handling"
 ${BRC_DMRI_SCR}/data_copy.sh \
-              --workingdir=${outdir} \
+              --workingdir=${dMRIFolder} \
               --inputimage=${InputImages} \
               --inputimage2=${InputImages2} \
               --pedirection=${PEdir} \
               --applytopup=$Apply_Topup
 
+
 echo "Basic Preprocessing"
 ${BRC_DMRI_SCR}/basic_preproc.sh \
-              --workingdir=${outdir} \
+              --workingdir=${dMRIFolder} \
               --echospacing=${echospacing} \
               --pedir=${PEdir} \
               --b0dist=${b0dist} \
@@ -229,19 +278,30 @@ ${BRC_DMRI_SCR}/basic_preproc.sh \
               --pifactor=${PIFactor} \
               --applytopup=$Apply_Topup
 
+
 if [ $Apply_Topup = yes ] ; then
     echo "Queueing Topup"
-    ${BRC_DMRI_SCR}/run_topup.sh ${outdir}/preprocess/topup
+    ${BRC_DMRI_SCR}/run_topup.sh ${topupFolder}
 fi
 
+
 echo "Queueing Eddy"
-${BRC_DMRI_SCR}/run_eddy.sh ${outdir}/preprocess/eddy $Apply_Topup $do_QC ${outdir}/qc
+${BRC_DMRI_SCR}/run_eddy.sh \
+      --workingdir=${eddyFolder} \
+      --applytopup=$Apply_Topup \
+      --doqc=$do_QC \
+      --qcdir=${qcFolder} \
+      --topupdir=${topupFolder} \
+      --slice2vol=${Slice2Volume} \
+      --slspec=${SliceSpec}
+
+
 
 echo "Queueing Eddy PostProcessing"
-${BRC_DMRI_SCR}/eddy_postproc.sh ${outdir} ${CombineMatched} $Apply_Topup
+${BRC_DMRI_SCR}/eddy_postproc.sh ${dMRIFolder} ${CombineMatched} $Apply_Topup
 
 if [[ $do_REG == yes ]]; then
-    ${BRC_DMRI_SCR}/diff_reg.sh ${outdir} $OutputFolder/$Sub_ID
+    ${BRC_DMRI_SCR}/diff_reg.sh ${dMRIFolder} $OutputFolder/$Sub_ID
 fi
 
 
