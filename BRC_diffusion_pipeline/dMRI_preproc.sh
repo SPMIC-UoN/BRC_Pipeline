@@ -8,7 +8,7 @@
 
 # Preprocessing Pipeline for diffusion MRI. Generates the "data" directory that can be used as input to fibre orientation estimation.
 #Example:
-#./Pipeline_dMRI.sh -i1 ~/main/analysis/DTI/001/5_6_Diffusion_MB3_b1k_2k_100dir_b0rev/__DTI_Biobank_2mm_MB3S2_EPI_20180307162159_701.nii.gz -i2 ~/main/analysis/DTI/001/5_6_Diffusion_MB3_b1k_2k_100dir_b0rev/__blip_DTI_Biobank_2mm_MB3S2_EPI_20180307162159_601.nii.gz --path ~/main/analysis -s Sub_001 -p 2 -e 0.78 -c 2
+#./dMRI_preproc.sh -i1 ~/main/analysis/DTI/001/5_6_Diffusion_MB3_b1k_2k_100dir_b0rev/__DTI_Biobank_2mm_MB3S2_EPI_20180307162159_701.nii.gz -i2 ~/main/analysis/DTI/001/5_6_Diffusion_MB3_b1k_2k_100dir_b0rev/__blip_DTI_Biobank_2mm_MB3S2_EPI_20180307162159_601.nii.gz --path ~/main/analysis -s Sub_001 -p 2 -e 0.78 -c 2 --slice2vol --slspec ~/main/analysis/Orig/3_4_dMRI_b_1k_2k_100dir_b0rev/__DTI_Biobank_2mm_MB3S2_EPI_20180312094206_501.json
 
 set -e
 
@@ -44,6 +44,8 @@ make_absolute()
 
 Usage()
 {
+  echo " "
+  echo " "
   echo "`basename $0`: Description"
   echo " "
   echo "Usage: `basename $0`"
@@ -63,12 +65,14 @@ Usage()
   echo "                                      1 for LR/RL,"
   echo "                                      2 for AP/PA"
   echo " -c | --cm_flag <0..2>           CombineMatchedFlag"
-  echo "                                      2 for including in the ouput all volumes uncombined,"
-  echo "                                      1 for including in the ouput and combine only volumes where both LR/RL (or AP/PA) pairs have been acquired,"
+  echo "                                      2 for including in the output all volumes uncombined,"
+  echo "                                      1 for including in the output and combine only volumes where both LR/RL (or AP/PA) pairs have been acquired,"
   echo "                                      0 for including (uncombined) single volumes as well"
   echo " -g | --p_im                     ParallelImaging_Factor, In-plane parallel imaging factor"
   echo "                                      1 for No_Parallel_Imaging"
   echo " -h | --help                     help"
+  echo " "
+  echo " "
 }
 
 # Just give usage if no arguments specified

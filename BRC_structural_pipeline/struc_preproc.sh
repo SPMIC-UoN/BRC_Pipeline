@@ -11,6 +11,8 @@ set -e
 
 Usage()
 {
+  echo " "
+  echo " "
   echo "`basename $0`: Description"
   echo " "
   echo "Usage: `basename $0`"
@@ -27,6 +29,8 @@ Usage()
   echo " -ft | --FAST_t <type>            (fsl_anat arg) specify the type of image (choose one of T1 T2 PD - default is T1)"
   echo " --betfparam                      (fsl_anat arg) specify f parameter for BET (only used if not running non-linear reg and also wanting brain extraction done)"
   echo " -h | --help                      help"
+  echo " "
+  echo " "
 }
 
 # Just give usage if no arguments specified
