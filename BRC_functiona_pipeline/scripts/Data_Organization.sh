@@ -35,6 +35,7 @@ DistortionCorrection=`getopt1 "--method" $@`
 
 regFolderName=`getopt1 "--regfoldername" $@`
 rfMRI2strTransf=`getopt1 "--rfmri2strtransf" $@`
+Str2rfMRITransf=`getopt1 "--str2rfmritransf" $@`
 rfMRI2StandardTransform=`getopt1 "--rfmri2stdtransf" $@`
 Standard2rfMRITransform=`getopt1 "--std2rfMRItransf" $@`
 
@@ -104,6 +105,7 @@ fi
 
 echo "Organizing Reg folder"
 $FSLDIR/bin/imcp ${regUnlabFolder}/${rfMRI2strTransf}.nii.gz ${regFolder}/${rfMRI2strTransf}.nii.gz
+$FSLDIR/bin/imcp ${regUnlabFolder}/${Str2rfMRITransf}.nii.gz ${regFolder}/${Str2rfMRITransf}.nii.gz
 cp ${DcUnlabFolder}/fMRI2str.mat ${regFolder}/${rfMRI2strTransf}.mat
 $FSLDIR/bin/imcp ${regUnlabFolder}/${rfMRI2StandardTransform} ${regFolder}/${NameOffMRI}2std
 $FSLDIR/bin/imcp ${regUnlabFolder}/${Standard2rfMRITransform} ${regFolder}/std2${NameOffMRI}

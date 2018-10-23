@@ -29,6 +29,7 @@ getopt1()
 WD=`getopt1 "--workingdir" $@`
 fMRIFolder=`getopt1 "--fmrifolder" $@`
 ScoutInputName=`getopt1 "--scoutin" $@`
+ScoutReference=`getopt1 "--scoutrefin" $@`
 T1wImage=`getopt1 "--t1" $@`
 T1wBrainImage=`getopt1 "--t1brain" $@`
 WMseg=`getopt1 "--wmseg" $@`
@@ -39,6 +40,7 @@ SubjectFolder=`getopt1 "--subjectfolder" $@`
 UseJacobian=`getopt1 "--usejacobian" $@`
 RegOutput=`getopt1 "--oregim" $@`
 OutputTransform=`getopt1 "--owarp" $@`
+OutputInvTransform=`getopt1 "--oinwarp" $@`
 JacobianOut=`getopt1 "--ojacobian" $@`
 MotionCorrectionType=`getopt1 "--motioncorrectiontype" $@`
 EddyOutput=`getopt1 "--eddyoutname" $@`
@@ -187,6 +189,8 @@ if [[ $MotionCorrectionType == "EDDY" ]]; then
 else
     ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${ScoutInputName} -r ${T1wImage}.nii.gz -w ${WD}/fMRI2str.nii.gz -o ${WD}/${ScoutInputFile}_undistorted2T1w
 fi
+
+${FSLDIR}/bin/invwarp -w ${WD}/fMRI2str.nii.gz -o ${OutputInvTransform} -r ${ScoutReference}
 
 # resample fieldmap jacobian with new registration
 ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/Jacobian.nii.gz -r ${T1wImage} --premat=${WD}/fMRI2str.mat -o ${WD}/Jacobian2T1w.nii.gz
