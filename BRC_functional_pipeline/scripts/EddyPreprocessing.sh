@@ -57,15 +57,15 @@ fi
 TR_vol=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
 
 #Concatenate SE_PE_POS and SE_PE_NEG to the original data
-if [[ ${DCMethod} == "TOPUP" ]]; then
+#if [[ ${DCMethod} == "TOPUP" ]]; then
     ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SE_Neg_Pos ${PhaseEncodeOne} ${PhaseEncodeTwo} $TR_vol
     ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos ${InputfMRI} ${EddyFolder}/SE_Neg_Pos $TR_vol
     ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos ${InputSBref} ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos $TR_vol
     Eddy_Input=${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos
-else
-    ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SBref_${NameOffMRI} ${InputSBref} ${InputfMRI} $TR_vol
-    Eddy_Input=${EddyFolder}/SBref_${NameOffMRI}
-fi
+#else
+#    ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SBref_${NameOffMRI} ${InputSBref} ${InputfMRI} $TR_vol
+#    Eddy_Input=${EddyFolder}/SBref_${NameOffMRI}
+#fi
 
 if [[ ${DCMethod} == "TOPUP" ]]; then
     BrainMask=$DCFolder/FieldMap/Magnitude_brain_mask.nii.gz
@@ -250,7 +250,7 @@ fi
 if [ -e ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos ] ; then
     ${FSLDIR}/bin/imrm ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos
 fi
-if [ -e ${EddyFolder}/SBref_${NameOffMRI} ] ; then
-    ${FSLDIR}/bin/imrm ${EddyFolder}/SBref_${NameOffMRI}
-fi
+#if [ -e ${EddyFolder}/SBref_${NameOffMRI} ] ; then
+#    ${FSLDIR}/bin/imrm ${EddyFolder}/SBref_${NameOffMRI}
+#fi
 ${FSLDIR}/bin/imrm ${EddyFolder}/SE_Neg_Pos
