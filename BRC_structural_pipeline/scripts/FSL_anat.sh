@@ -326,7 +326,6 @@ betopts="-f ${betfparam}"
 # setup output directory (or go to existing one)
 
 if [ $do_anat_based_on_FS = yes ]; then
-    echo "test_1"
     do_crop=yes
 fi
 
@@ -605,7 +604,6 @@ else
 fi
 
 if [ $do_anat_based_on_FS = yes ]; then
-    echo "test_2"
     run $FSLDIR/bin/imcp ${T1}_biascorr_brain ${T1}_biascorr_brain_tmp
     run $FSLDIR/bin/imcp ${T1}_biascorr_brain_mask ${T1}_biascorr_brain_mask_tmp
 
@@ -637,7 +635,6 @@ if [ $do_seg = yes ] ; then
     # run $FSLDIR/bin/fslmaths ${T1}_fast_totbias -sub 1 -mas ${T1}_biascorr_brain_mask2 -dilall -add 1 ${T1}_fast_bias # alternative to fslsmoothfill
 
     if [ $do_anat_based_on_FS = yes ]; then
-        echo "test_3"
         run $FSLDIR/bin/imcp ${T1}_biascorr_init ${T1}_biascorr
     else
         run $FSLDIR/bin/fslmaths ${T1}_biascorr_init -div ${T1}_fast_bias ${T1}_biascorr
