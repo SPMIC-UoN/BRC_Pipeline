@@ -1,7 +1,7 @@
 #!/bin/bash
 # Last update: 09/10/2018
 #Example:
-#./Pipeline_T1.sh --path ~/main/analysis -s Sub_001 -i ~/main/analysis/Orig/1_MPRAGE/__T1_1mm_sag_20180312094206_201.nii.gz -t2 ~/main/analysis/Orig/2_3D_T2w_FLAIR/__T2_FLAIR_1mm_20180312094206_301.nii.gz --subseg
+#./struc_preproc.sh --path ~/main/analysis -s Sub_002 -i ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180307_Ingenia/NIFTI/1_MPRAGE/__T1_1mm_sag_20180307162159_201.nii.gz -t2 ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180307_Ingenia/NIFTI/2_3D_T2w_FLAIR/__T2_FLAIR_1mm_20180307162159_301.nii.gz --subseg
 
 # -e  Exit immediately if a command exits with a non-zero status.
 set -e
@@ -21,7 +21,7 @@ Usage()
   echo " -s | --subject <Subject name>    output directory is a subject name folder in output path directory"
   echo " -t2 <T2W Input image>            optional, filename of Input T2W image (for processing of T2 data)"
   echo " --freesurfer                     turn on Freesurfer processing pipeline"
-  echo " --subseg                         a flag to do subcortical segmentation by FAST"
+  echo " --subseg                         a flag to do subcortical segmentation by FIRST"
   echo " --qc                             a flag to do quality control of T1 data"
   echo " --strongbias                     (fsl_anat arg) used for images with very strong bias fields"
   echo " --noreg                          (fsl_anat arg) turn off steps that do registration to standard (FLIRT and FNIRT)"

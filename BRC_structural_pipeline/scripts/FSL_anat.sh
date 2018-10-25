@@ -325,7 +325,8 @@ betopts="-f ${betfparam}"
 
 # setup output directory (or go to existing one)
 
-if [[ $do_anat_based_on_FS == yes ]]; then
+if [ $do_anat_based_on_FS = yes ]; then
+    echo "test_1"
     do_crop=yes
 fi
 
@@ -584,7 +585,7 @@ if [ $do_reg = yes ] ; then
             run $FSLDIR/bin/applywarp --interp=nn --in=$FSLDIR/data/standard/MNI152_${T1}_2mm_brain_mask --ref=${T1}_biascorr -w MNI_to_${T1}_nonlin_field -o ${T1}_biascorr_brain_mask
             run $FSLDIR/bin/fslmaths ${T1}_biascorr_brain_mask -fillh ${T1}_biascorr_brain_mask
 
-#            if [[ $do_anat_based_on_FS == yes ]]; then
+#            if [ $do_anat_based_on_FS = yes ]; then
 #               run $FSLDIR/bin/fslmaths $mridir/brainmask -thr 0.01 -bin ${T1}_biascorr_brain_mask
 #            fi
 
@@ -603,7 +604,8 @@ else
     fi
 fi
 
-if [[ $do_anat_based_on_FS == yes ]]; then
+if [ $do_anat_based_on_FS = yes ]; then
+    echo "test_2"
     run $FSLDIR/bin/imcp ${T1}_biascorr_brain ${T1}_biascorr_brain_tmp
     run $FSLDIR/bin/imcp ${T1}_biascorr_brain_mask ${T1}_biascorr_brain_mask_tmp
 
@@ -612,8 +614,8 @@ if [[ $do_anat_based_on_FS == yes ]]; then
 
 #    run $FSLDIR/bin/imcp $mridir/brainmask ${T1}_biascorr_brain
     run $FSLDIR/bin/fslmaths ${T1}_biascorr_brain -thr 0.01 -bin ${T1}_biascorr_brain_mask
+    run $FSLDIR/bin/fslmaths ${T1}_biascorr -mas ${T1}_biascorr_brain_mask ${T1}_biascorr_brain
 fi
-
 
 #### TISSUE-TYPE SEGMENTATION
 # required input: ${T1}_biascorr ${T1}_biascorr_brain ${T1}_biascorr_brain_mask
@@ -634,7 +636,8 @@ if [ $do_seg = yes ] ; then
     run $FSLDIR/bin/fslmaths ${T1}_fast_totbias -add 1 ${T1}_fast_totbias
     # run $FSLDIR/bin/fslmaths ${T1}_fast_totbias -sub 1 -mas ${T1}_biascorr_brain_mask2 -dilall -add 1 ${T1}_fast_bias # alternative to fslsmoothfill
 
-    if [[ $do_anat_based_on_FS == yes ]]; then
+    if [ $do_anat_based_on_FS = yes ]; then
+        echo "test_3"
         run $FSLDIR/bin/imcp ${T1}_biascorr_init ${T1}_biascorr
     else
         run $FSLDIR/bin/fslmaths ${T1}_biascorr_init -div ${T1}_fast_bias ${T1}_biascorr
@@ -645,7 +648,6 @@ if [ $do_seg = yes ] ; then
         run $FSLDIR/bin/applywarp -i ${T1}_biascorr -w ${T1}_to_MNI_nonlin_field -r $FSLDIR/data/standard/MNI152_${T1}_2mm -o ${T1}_to_MNI_nonlin --interp=spline
     fi
 fi
-
 
 #### SKULL-CONSTRAINED BRAIN VOLUME ESTIMATION (only done if registration turned on, and segmentation done, and it is a T1 image)
 # required inputs: ${T1}_biascorr
