@@ -8,7 +8,7 @@
 # Preprocessing Pipeline for resting-state fMRI. Generates the "data" directory that can be used as input to fibre orientation estimation.
 # Ali-Reza Mohammadi-Nejad, SPMIC, Queens Medical Centre, School of Medicine, University of Nottingham, 2018.
 #Example:
-#./Pipeline_fMRI.sh --path ~/main/analysis --subject Sub_001 --fmripath ~/main/analysis/Orig/5_rfMRI_2.4mm_MB4_TR1.45_400vols/__rs-fmri_singleMB4_20180312094206_601.nii.gz --fmapmag NONE --fmapphase NONE --fmapgeneralelectric NONE --echodiff NONE --SEPhaseNeg ~/main/analysis/Orig/7_8_rfMRI_SEsinglevol_rev/__rs-fmri_SE_MB4_20180312094206_801.nii.gz --SEPhasePos ~/main/analysis/Orig/7_8_rfMRI_SEsinglevol_rev/__rs-fmri_SE_MB4_rev_20180312094206_901.nii.gz --echospacing 0.00058 --unwarpdir y- --dcmethod TOPUP --biascorrection SEBASED --fmrires 2 --mctype MCFLIRT --stcmethod 1
+#./fMRI_preproc.sh --path ~/main/analysis --subject Sub_003 --fmripath ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180522_GE/NIFTI/5_rfMRI_2.4mm3_TR3.5_200vols/__resting_state_fMRI_96x2.4mm_20180522141148_8.nii.gz --echospacing 0.00058 --unwarpdir y- --dcmethod NONE --fmrires 3 --mctype EDDY --slice2vol --slspec ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180522_GE/NIFTI/5_rfMRI_2.4mm3_TR3.5_200vols/__resting_state_fMRI_96x2.4mm_20180522141148_8.json --stcmethod 6 --fwhm 3 --intensitynorm
 
 #clear
 
@@ -775,6 +775,8 @@ END_Time="$(date -u +%s)"
 ${RUN} ${BRCDIR}/Show_version.sh \
       --showdiff="yes" \
       --start=${Start_Time} \
-      --end=${END_Time}
+      --end=${END_Time} \
+      --subject=${Subject} \
+      --type=3
 
 #: <<'COMMENT'
