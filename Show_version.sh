@@ -25,6 +25,8 @@ getopt1()
 ShowDiff=`getopt1 "--showdiff" $@`
 SEC1=`getopt1 "--start" $@`
 SEC2=`getopt1 "--end" $@`
+Sub_ID=`getopt1 "--subject" $@`
+Type=`getopt1 "--type" $@`
 
 this_tools_dir=$(dirname "${BASH_SOURCE[0]}")
 product_file="${this_tools_dir}/product.txt"
@@ -55,6 +57,27 @@ fi
 #fi
 
 if [[ ${ShowDiff} == "yes" ]]; then
+    echo "                           Subject: $Sub_ID"
+
+    case $Type in
+
+        1)
+            echo "                     Type of Analysis: Structural"
+        ;;
+
+        2)
+            echo "                     Type of Analysis: Diffusion"
+        ;;
+
+        3)
+            echo "                     Type of Analysis: Functional"
+        ;;
+
+        4)
+            echo "                 Type of Analysis: Group Functional"
+        ;;
+    esac
+
 		DIFFSEC=`expr ${SEC2} - ${SEC1}`
 
 		echo "                 End Time: `date`"

@@ -315,4 +315,6 @@ END_Time="$(date -u +%s)"
 ${RUN} ${BRCDIR}/Show_version.sh \
       --showdiff="yes" \
       --start=${Start_Time} \
-      --end=${END_Time}
+      --end=${END_Time} \
+      --subject=${Sub_ID} \
+      --type=2
