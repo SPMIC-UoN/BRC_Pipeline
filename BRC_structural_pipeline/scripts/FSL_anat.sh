@@ -454,7 +454,7 @@ fi
 if [ $do_crop = yes ] ; then
     date; echo "Automatically cropping the image"
 
-    head_offset=5
+    head_offset=6
     run $FSLDIR/bin/immv ${T1} ${T1}_fullfov
 
     head_top=`${FSLDIR}/bin/robustfov -i ${T1}_fullfov | grep -v Final | head -n 1 | awk '{print $5}'`

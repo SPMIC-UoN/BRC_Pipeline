@@ -38,8 +38,10 @@ if [ $do_Sub_seg = yes ] ; then
 
   mv $datadir/T1_vols.txt  $targdir/T1_vols.txt
 
-  mv $sourcdir/T1_first-BrStem_first.bvars  $targdir/shape/T1_BrStem.bvars
-  mv $sourcdir/T1_first-BrStem_first.vtk  $targdir/shape/T1_BrStem.vtk
+  if [ -e $sourcdir/T1_first-BrStem_first.bvars ] ; then
+      mv $sourcdir/T1_first-BrStem_first.bvars  $targdir/shape/T1_BrStem.bvars
+      mv $sourcdir/T1_first-BrStem_first.vtk  $targdir/shape/T1_BrStem.vtk
+  fi
   mv $sourcdir/T1_first-L_Accu_first.bvars  $targdir/shape/T1_L_Accu.bvars
   mv $sourcdir/T1_first-R_Accu_first.bvars  $targdir/shape/T1_R_Accu.bvars
   mv $sourcdir/T1_first-L_Accu_first.vtk  $targdir/shape/T1_L_Accu.vtk
