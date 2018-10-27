@@ -9,6 +9,7 @@ set -e
 #export ScriptsDir=$(dirname "$(readlink -f "$0")") #Absolute path where scripts are
 #source ${ScriptsDir}/init_vars.sh
 
+
 Usage()
 {
   echo " "
@@ -38,17 +39,17 @@ if [ $# -eq 0 ] ; then Usage; exit 0; fi
 if [ $# -le 4 ] ; then Usage; exit 1; fi
 
 # default values
-Sub_ID=
-IN_Img=
-Path=
-T2_IN_Img=
+Sub_ID=""
+IN_Img=""
+Path=""
+T2_IN_Img=""
 
-T2=no
-do_Sub_seg=no
-do_QC=no
-do_freesurfer=no
-do_tissue_seg=yes
-do_anat_based_on_FS=yes
+T2="no"
+do_Sub_seg="no"
+do_QC="no"
+do_freesurfer="no"
+do_tissue_seg="yes"
+do_anat_based_on_FS="yes"
 
 Opt_args="--clobber"
 
@@ -133,7 +134,7 @@ Sub_ID=${Sub_ID%.nii.gz}
 
 O_DIR=$Path/${Sub_ID};
 if [ ! -d "$O_DIR" ]; then
-    mkdir $O_DIR;
+    mkdir -p $O_DIR;
 #else
 #  O_DIR="${O_DIR}_$(date +"%d-%m-%Y_%H-%M")"
 #  mkdir $O_DIR
@@ -183,12 +184,12 @@ fi
 $FSLDIR/bin/imcp $IN_Img $O_DIR/T1/raw/T1_orig.nii.gz
 
 
-if [[ $T2 == yes ]]; then
+if [[ $T2 == "yes" ]]; then
     $FSLDIR/bin/imcp $T2_IN_Img $O_DIR/T2/raw/T2_orig.nii.gz
 fi
 
 
-if [[ $do_anat_based_on_FS == yes ]]; then
+if [[ $do_anat_based_on_FS == "yes" ]]; then
     date; echo "Intensity normalization, Bias correction, Brain Extraction"
 
     if [ -d $O_DIR/T1/FS ] ; then
@@ -241,8 +242,7 @@ echo '**************************************************************************
 #${FSLDIR}/bin/fsl_anat "-i $O_DIR/T1/raw/T1_orig.nii.gz "$Opt_args" -o $O_DIR/T1/temp"
 ${BRC_SCTRUC_SCR}/FSL_anat.sh ""$Opt_args""
 
-
-if [[ $T2 == yes ]]; then
+if [[ $T2 == "yes" ]]; then
     echo "Queueing fsl_anat for T2w image"
     echo "Command is:"
     echo '***********************************************************************************************'
@@ -257,7 +257,7 @@ echo "Queueing organizing data structure"
 ${BRC_SCTRUC_SCR}/move_rename.sh $O_DIR $T2 $do_Sub_seg
 
 
-if [ $do_tissue_seg = yes ] && [ $T2 = yes ] ; then
+if [ $do_tissue_seg = "yes" ] && [ $T2 = "yes" ] ; then
     echo "Do multichanel tissue segmentation using FAST"
 
     if [ ! -d "$O_DIR/T1/temp" ]; then mkdir $O_DIR/T1/temp; fi
@@ -279,7 +279,7 @@ if [ $do_tissue_seg = yes ] && [ $T2 = yes ] ; then
 fi
 
 
-if [[ $do_freesurfer == yes ]]; then
+if [[ $do_freesurfer == "yes" ]]; then
     SUBJECTS_DIR=$O_DIR/T1
     echo "Queueing Freesurfer"
 
@@ -302,7 +302,9 @@ END_Time="$(date -u +%s)"
 ${RUN} ${BRCDIR}/Show_version.sh \
       --showdiff="yes" \
       --start=${Start_Time} \
-      --end=${END_Time}
+      --end=${END_Time} \
+      --subject=${Sub_ID} \
+      --type=1
 
 
 #: <<'COMMENT'

@@ -454,8 +454,16 @@ fi
 if [ $do_crop = yes ] ; then
     date; echo "Automatically cropping the image"
 
+    head_offset=5
     run $FSLDIR/bin/immv ${T1} ${T1}_fullfov
-    run $FSLDIR/bin/robustfov -i ${T1}_fullfov -r ${T1} -m ${T1}_roi2nonroi.mat | grep [0-9] | tail -1 > ${T1}_roi.log
+
+    head_top=`${FSLDIR}/bin/robustfov -i ${T1}_fullfov | grep -v Final | head -n 1 | awk '{print $5}'`
+    run $FSLDIR/bin/robustfov -i ${T1}_fullfov -r ${T1} -m ${T1}_roi2nonroi.mat --debug | grep [0-9] | tail -1 > ${T1}_roi.log
+
+    corrected_head_top=`echo "scale=0; ${head_top%%.*} - $head_offset" | bc`
+    replace ${head_top%%.*} ${corrected_head_top} -- ${T1}_roi2nonroi.mat
+    ${FSLDIR}/bin/fslroi ${T1}_fullfov ${T1} 0 -1 0 -1 $corrected_head_top 170
+
     # combine this mat file and the one above (if generated)
     if [ $do_reorient = yes ] ; then
   	     run $FSLDIR/bin/convert_xfm -omat ${T1}_nonroi2roi.mat -inverse ${T1}_roi2nonroi.mat
