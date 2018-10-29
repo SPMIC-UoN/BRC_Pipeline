@@ -20,7 +20,7 @@ Usage()
   echo " -i | --input <T1W image>         Full path of the input image (for one image only)"
   echo " --path <full path>               output path"
   echo " -s | --subject <Subject name>    output directory is a subject name folder in output path directory"
-  echo " -t2 <T2W image>                  optional, full path of the input T2W image (for processing of T2 data)"
+  echo " -t2 <T2W image>                  Full path of the input T2W image (for processing of T2 data)"
   echo " --freesurfer                     turn on Freesurfer processing pipeline"
   echo " --subseg                         a flag to do subcortical segmentation by FIRST"
   echo " --qc                             a flag to do quality control of T1 data"
