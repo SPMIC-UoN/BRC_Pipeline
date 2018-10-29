@@ -44,11 +44,11 @@ RepetitionTime=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
 
 ${FSLDIR}/bin/imcp ${InputfMRI} ${WD}/${fmriName}
 
-# take the motion corrected functional data and calculate the mean across time - mean_func
-#echo "calculate the mean across time ..."
+echo "calculate the mean across time ..."
 ${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -Tmean ${WD}/${fmriName}_mean
 
 # Perform bet2 on the mean_func data, use a threshold of .3 (.225 used for anatomical)
+echo "Perform bet2 on the mean_func data ..."
 ${FSLDIR}/bin/bet2 ${WD}/${fmriName}_mean ${WD}/${fmriName}_brain -f 0.3 -n -m
 
 # Perform bet2 on the mean_func data, use a threshold of .3 (.225 used for anatomical)
@@ -56,15 +56,16 @@ ${FSLDIR}/bin/bet2 ${WD}/${fmriName}_mean ${WD}/${fmriName}_brain -f 0.3 -n -m
 #${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_mean -thr 1 -bin ${WD}/${fmriName}_mask
 
 # Mask the motion corrected functional data with the mask to create the masked (bet) motion corrected functional data
-${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -mas ${WD}/${fmriName}_brain_mask ${WD}/${fmriName}
+echo "Mask the input functional data ..."
+${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -mas ${WD}/${fmriName}_brain_mask ${WD}/${fmriName}_bet
 
 # Calculate the difference between the 98th and 2nd percentile (the region between the tails) and use that range as a threshold minimum on the prefiltered, motion corrected, masked functional data - so we are eliminating
 # intensities outside that are below 2nd percentile, and above 98th percentile.
 
 # Use fslstats to output the 2nd and 98th percentile
 echo "Calculate the 98th and 2nd percentile ..."
-lowerp=`${FSLDIR}/bin/fslstats ${WD}/${fmriName} -p 2`
-upperp=`${FSLDIR}/bin/fslstats ${WD}/${fmriName} -p 98`
+lowerp=`${FSLDIR}/bin/fslstats ${WD}/${fmriName}_bet -p 2`
+upperp=`${FSLDIR}/bin/fslstats ${WD}/${fmriName}_bet -p 98`
 BBTHRESH=10       # Brain background threshold
 
 # The brain/background threshold (to distinguish between brain and background is 10% - so we divide by 10)
@@ -72,33 +73,29 @@ BBTHRESH=10       # Brain background threshold
 # brain activation and not noise or something else!
 thresholdp=`echo "scale=6; (${upperp} - ${lowerp}) / ${BBTHRESH}" | bc`
 
-#echo "lowerp: $lowerp"
-#echo "upperp: $upperp"
-#echo "BBTHRESH: $BBTHRESH"
-#echo "thresholdp: $thresholdp"
-
 # Use fslmaths to threshold the brain extracted data based on the highpass filter above
+echo "threshold the brain extracted data based on the highpass filter ..."
 # use "mask" as a binary mask, and Tmin to specify we want the minimum across time
-#${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -thr $thresholdp -Tmin -bin ${WD}/${fmriName}_mask -odt char
+${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_bet -thr $thresholdp -Tmin -bin ${WD}/${fmriName}_mask -odt char
 
 # Take the motion corrected functional data, and using "mask" as a mask (the -k option)
 # output the 50th percentile (the mean?)
 # We will need this later to calculate the intensity scaling factor
-#meanintensity=`${FSLDIR}/bin/fslstats ${WD}/${fmriName} -k ${WD}/${fmriName}_mask -p 50`
-#echo "meanintensity: $meanintensity"
+meanintensity=`${FSLDIR}/bin/fslstats ${WD}/${fmriName} -k ${WD}/${fmriName}_mask -p 50`
+echo "meanintensity: $meanintensity"
 
 # IM NOT SURE WHAT WE DO WITH THIS?
 # difF is a spatial filtering option that specifies maximum filtering of all voxels
 # I don't completely understand why we would filter one image with itself...
-#${FSLDIR}/bin/fslmaths ${WD}/func_mask -dilF ${WD}/func_mask_dilF
+${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_mask -dilF ${WD}/${fmriName}_mask
 
 # We are now masking the motion corrected functional data with the mask to produce
 # functional data that is motion corrected and thresholded based on the highpass filter
-#${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -mas ${WD}/${fmriName}_mask ${WD}/${fmriName}_thresh
+${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -mas ${WD}/${fmriName}_mask ${WD}/${fmriName}_thresh
 
 # We now take this functional data that is motion corrected, high pass filtered, and
 # create a "mean_func" image that is the mean across time (Tmean)
-${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -Tmean ${WD}/${fmriName}_mean
+${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_thresh -Tmean ${WD}/${fmriName}_mean
 
 # To run susan, FSLs tool for noise reduction, we need a brightness threshold.  Here is how to calculate:
 # After thresholding, the values in the image are between $upperp-lowerp and $thresholdp
@@ -109,7 +106,8 @@ ${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -Tmean ${WD}/${fmriName}_mean
 echo "calculate brightness threshold"
 uppert=`echo "scale=6; ${upperp} - ${lowerp}" | bc`
 
-thresholdpdifft=`echo "scale=8; ${uppert} - ${thresholdp}" | bc`
+#thresholdpdifft=`echo "scale=8; ${uppert} - ${thresholdp}" | bc`
+thresholdpdifft=`echo "scale=8; (${meanintensity} - ${lowerp}) * 0.75" | bc`
 
 echo "brightness threshold: ${thresholdpdifft}"
 
@@ -125,8 +123,8 @@ echo "spatial size: ${ssize}"
 echo "Nonlinear filtering to reduce noise using 3D smmoothing, local median filter"
 echo "determine the smoothing area from 1 secondary image"
 
-#${FSLDIR}/bin/susan ${WD}/${fmriName} $thresholdpdifft $ssize 3 1 1 ${WD}/${fmriName}_mean $thresholdpdifft ${WD}/${fmriName}_thresh_smooth_Susan
-${FSLDIR}/bin/imcp ${WD}/${fmriName} ${WD}/${fmriName}_thresh_smooth
+${FSLDIR}/bin/susan ${WD}/${fmriName}_thresh $thresholdpdifft $ssize 3 1 1 ${WD}/${fmriName}_mean $thresholdpdifft ${WD}/${fmriName}_thresh_smooth_Susan
+#${FSLDIR}/bin/imcp ${WD}/${fmriName} ${WD}/${fmriName}_thresh_smooth
 #${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -kernel gauss $ssize -fmean ${WD}/${fmriName}_thresh_smooth_fslmaths
 
 
