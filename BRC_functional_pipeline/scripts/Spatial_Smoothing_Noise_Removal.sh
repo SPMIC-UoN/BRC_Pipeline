@@ -123,7 +123,7 @@ echo "spatial size: ${ssize}"
 echo "Nonlinear filtering to reduce noise using 3D smmoothing, local median filter"
 echo "determine the smoothing area from 1 secondary image"
 
-${FSLDIR}/bin/susan ${WD}/${fmriName}_thresh $thresholdpdifft $ssize 3 1 1 ${WD}/${fmriName}_mean $thresholdpdifft ${WD}/${fmriName}_thresh_smooth_Susan
+${FSLDIR}/bin/susan ${WD}/${fmriName}_thresh $thresholdpdifft $ssize 3 1 1 ${WD}/${fmriName}_mean $thresholdpdifft ${WD}/${fmriName}_thresh_smooth
 #${FSLDIR}/bin/imcp ${WD}/${fmriName} ${WD}/${fmriName}_thresh_smooth
 #${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -kernel gauss $ssize -fmean ${WD}/${fmriName}_thresh_smooth_fslmaths
 
