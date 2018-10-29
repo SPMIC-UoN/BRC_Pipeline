@@ -16,14 +16,17 @@
 #                                         #
 ###########################################
 
-#SETUP FSL
-export FSLDIR="/usr/local/fsl"                              #TO BE MODIFIED BY USER
-. $FSLDIR/etc/fslconf/fsl.sh
+# Setup FSL (if not already done so in the running environment)
+# Uncomment the following 2 lines (remove the leading #) and correct the FSLDIR setting for your setup
+#export FSLDIR="/usr/local/fsl"                              #TO BE MODIFIED BY USER
+#. $FSLDIR/etc/fslconf/fsl.sh
 export FSLCONFDIR=${FSLDIR}/config
 export FSLOUTPUTTYPE="NIFTI_GZ"
 
-#SETUP FREESURFER
-export FREESURFER_HOME="/usr/local/freesurfer"              #TO BE MODIFIED BY USER
+# Setup FreeSurfer (if not already done so in the running environment)
+# Uncomment the following 2 lines (remove the leading #) and correct the FREESURFER_HOME setting for your setup
+#export FREESURFER_HOME="/usr/local/freesurfer"              #TO BE MODIFIED BY USER
+#source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
 #SETUP MATLAB
 export MATLABpath="/usr/local/matlab/R2017a/bin"            #TO BE MODIFIED BY USER
@@ -34,6 +37,8 @@ export BRCDIR="/home/mszam12/main/BRC_Pipeline"                  #TO BE MODIFIED
 export BRC_SCTRUC_DIR=${BRCDIR}/BRC_structural_pipeline
 export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
 export BRC_FMRI_DIR=${BRCDIR}/BRC_functional_pipeline
+export BRC_FMRI_GP_DIR=${BRCDIR}/BRC_func_group_analysis
 export BRC_SCTRUC_SCR=${BRC_SCTRUC_DIR}/scripts
 export BRC_DMRI_SCR=${BRC_DMRI_DIR}/scripts
 export BRC_FMRI_SCR=${BRC_FMRI_DIR}/scripts
+export BRC_FMRI_GP_SCR=${BRC_FMRI_GP_DIR}/scripts
