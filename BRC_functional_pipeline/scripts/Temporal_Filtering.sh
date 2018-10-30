@@ -36,14 +36,20 @@ echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 RepetitionTime=`${FSLDIR}/bin/fslval ${Input_fMRI} pixdim4 | cut -d " " -f 1`
 
+${FSLDIR}/bin/fslmaths ${Input_fMRI} -Tmean ${WD}/tempMean
 
 hp_sigma_sec=`echo "scale=6; (($Temp_Filter_Cutoff / 2.0))" | bc`
 hp_sigma_vol=`echo "scale=6; (($hp_sigma_sec / $RepetitionTime))" | bc`
 
-fslmaths ${Input_fMRI} -bptf $hp_sigma_vol -1 ${WD}/${OutfMRI}
+${FSLDIR}/bin/fslmaths ${Input_fMRI} -bptf $hp_sigma_vol -1 -add ${WD}/tempMean  ${WD}/${OutfMRI}
 
 echo ""
 echo "                         END: Temporal Filtering"
 echo "                    END: `date`"
 echo "=========================================================================="
 echo "                             ===============                              "
+
+################################################################################################
+## Cleanup
+################################################################################################
+${FSLDIR}/bin/imrm ${WD}/tempMean
