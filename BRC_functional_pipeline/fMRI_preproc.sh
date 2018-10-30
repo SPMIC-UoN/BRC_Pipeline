@@ -605,13 +605,12 @@ if [ $smoothingfwhm -ne 0 ]; then
           --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field.nii.gz \
           --motioncorrectiontype=${MotionCorrectionType}
 
-    ${FSLDIR}/bin/imcp ${nrFolder}/ICA_AROMA/mask ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr_mask
-
 else
 
     echo "Not performing Spatial Smoothing and Artifact/Physiological Noise Removal"
     mkdir ${nrFolder}/ICA_AROMA
     ${FSLDIR}/bin/imcp ${stcFolder}/${NameOffMRI}_stc ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr
+    ${FSLDIR}/bin/imcp ${OSR_Scout_In}_mask ${nrFolder}/${fmriName}_mask
 fi
 
 
@@ -686,15 +685,15 @@ if [[ $Do_intensity_norm == yes ]]; then
           --biasfield=${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias \
           --usejacobian=${UseJacobian} \
           --jacobian=${OsrFolder}/${JacobianOut}_func \
-          --ofmri=${NameOffMRI}_nonlin_norm \
-          --oscout=${NameOffMRI}_SBRef_nonlin_norm
+          --ofmri=${NameOffMRI}_intnorm \
+          --oscout=SBRef_intnorm
 
 else
 
     echo "Not performing Intensity Normalization and Bias Removal"
 
-    ${FSLDIR}/bin/imcp ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr ${In_Nrm_Folder}/${NameOffMRI}_nonlin_norm
-    ${FSLDIR}/bin/imcp ${OSR_Scout_In} ${In_Nrm_Folder}/${NameOffMRI}_SBRef_nonlin_norm
+    ${FSLDIR}/bin/imcp ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr ${In_Nrm_Folder}/${NameOffMRI}_intnorm
+    ${FSLDIR}/bin/imcp ${OSR_Scout_In} ${In_Nrm_Folder}/SBRef_intnorm
 fi
 
 
@@ -704,7 +703,7 @@ if [ $Temp_Filter_Cutoff -ne 0 ]; then
 
     ${RUN} ${BRC_FMRI_SCR}/Temporal_Filtering.sh \
           --workingdir=${Tmp_Filt_Folder} \
-          --infmri=${In_Nrm_Folder}/${NameOffMRI}_nonlin_norm \
+          --infmri=${In_Nrm_Folder}/${NameOffMRI}_intnorm \
           --tempfiltercutoff=${Temp_Filter_Cutoff} \
           --outfmri=${NameOffMRI}_tempfilt
 
@@ -712,7 +711,7 @@ else
 
     echo "Not performing Temporal Filtering"
 
-    ${FSLDIR}/bin/imcp ${In_Nrm_Folder}/${NameOffMRI}_nonlin_norm ${Tmp_Filt_Folder}/${NameOffMRI}_tempfilt
+    ${FSLDIR}/bin/imcp ${In_Nrm_Folder}/${NameOffMRI}_intnorm ${Tmp_Filt_Folder}/${NameOffMRI}_tempfilt
 fi
 
 
