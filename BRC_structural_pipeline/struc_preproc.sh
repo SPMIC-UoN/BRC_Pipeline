@@ -215,14 +215,6 @@ if [[ $do_anat_based_on_FS == "yes" ]]; then
 
     $FSLDIR/bin/imcp $mridir/brainmask $O_DIR/T1/preprocess/T1_brain_norm
 
-#    $FSLDIR/bin/immv $mridir/brainmask $mridir/brainmask_fullfov
-#    $FSLDIR/bin/robustfov -i $mridir/brainmask_fullfov -r $mridir/brainmask -m $mridir/brainmask_roi2nonroi.mat | grep [0-9] | tail -1 > $mridir/brainmask_roi.log
-#
-#    # combine this mat file and the one above (if generated)
-#    $FSLDIR/bin/convert_xfm -omat $mridir/brainmask_nonroi2roi.mat -inverse $mridir/brainmask_roi2nonroi.mat
-#    $FSLDIR/bin/convert_xfm -omat $mridir/brainmask_orig2roi.mat -concat $mridir/brainmask_nonroi2roi.mat $mridir/brainmask_orig2std.mat
-#    $FSLDIR/bin/convert_xfm -omat $mridir/brainmask_roi2orig.mat -inverse $mridir/brainmask_orig2roi.mat
-
     Opt_args="$Opt_args --anatbasedFS"
     Opt_args="$Opt_args -i $mridir/T1.nii.gz"
 else
@@ -241,6 +233,7 @@ echo '**************************************************************************
 
 #${FSLDIR}/bin/fsl_anat "-i $O_DIR/T1/raw/T1_orig.nii.gz "$Opt_args" -o $O_DIR/T1/temp"
 ${BRC_SCTRUC_SCR}/FSL_anat.sh ""$Opt_args""
+
 
 if [[ $T2 == "yes" ]]; then
     echo "Queueing fsl_anat for T2w image"

@@ -461,7 +461,9 @@ if [ $do_crop = yes ] ; then
     run $FSLDIR/bin/robustfov -i ${T1}_fullfov -r ${T1} -m ${T1}_roi2nonroi.mat --debug | grep [0-9] | tail -1 > ${T1}_roi.log
 
     corrected_head_top=`echo "scale=0; ${head_top%%.*} - $head_offset" | bc`
-    replace ${head_top%%.*} ${corrected_head_top} -- ${T1}_roi2nonroi.mat
+    #replace ${head_top%%.*} ${corrected_head_top} -- ${T1}_roi2nonroi.mat
+    tmp=$(<${T1}_roi2nonroi.mat)
+    echo "${tmp//${head_top%%.*}/${corrected_head_top}}" > ${T1}_roi2nonroi.mat
     ${FSLDIR}/bin/fslroi ${T1}_fullfov ${T1} 0 -1 0 -1 $corrected_head_top 170
 
     # combine this mat file and the one above (if generated)
@@ -471,7 +473,6 @@ if [ $do_crop = yes ] ; then
          run $FSLDIR/bin/convert_xfm -omat ${T1}_roi2orig.mat -inverse ${T1}_orig2roi.mat
     fi
 fi
-
 
 ### LESION MASK
 # make appropriate (reoreinted and cropped) lesion mask (or a default blank mask to simplify the code later on)
