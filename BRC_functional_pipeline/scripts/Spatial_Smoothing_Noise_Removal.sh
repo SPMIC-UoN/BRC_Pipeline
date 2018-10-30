@@ -133,36 +133,15 @@ ${FSLDIR}/bin/susan ${WD}/${fmriName}_thresh $thresholdpdifft $ssize 3 1 1 ${WD}
 # 1 says that we determine the smoothing area from 1 secondary image, "mean_func" and then we use the same brightness threshold for the secondary image.
 # prefiltered_func_data_smooth is the output image
 
+${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_thresh_smooth -mas ${WD}/${fmriName}_mask ${WD}/${fmriName}_thresh_smooth
+
 
 if [ -e ${WD}/ICA_AROMA ] ; then
     ${RUN} rm -r ${WD}/ICA_AROMA
 fi
 
 
-#if [[ ${MotionCorrectionType} != "MCFLIRT" ]]; then
-#    echo "Create a fake motion parameters"
-#
-#    dimt=`${FSLDIR}/bin/fslval ${InputfMRI} dim4`
-#
-#    if [ -e ${WD}/${fmriName}_mc.par ] ; then
-#        rm ${WD}/${fmriName}_mc.par
-#    fi
-#
-#    for (( i=0; i<=${dimt}; i++ ))
-#    do
-#
-#        if [ $((i%2)) -eq 0 ]; then
-#            echo "0.000001 0.000001 0.000001 0.000001 0.000001 0.000001" >> ${WD}/${fmriName}_mc.par
-#        else
-#            echo "-0.000001 -0.000001 -0.000001 -0.000001 -0.000001 -0.000001" >> ${WD}/${fmriName}_mc.par
-#        fi
-#
-#    done
-#
-#    MotionParam=${WD}/${fmriName}_mc.par
-#fi
-
-MC_arg="-in ${WD}/rfMRI_thresh_smooth.nii.gz -out ${WD}/ICA_AROMA -tr ${RepetitionTime} -mc ${MotionParam} -m ${WD}/${fmriName}_brain_mask.nii.gz -affmat ${fMRI2StructMat} -warp ${Struct2StdWarp}"
+MC_arg="-in ${WD}/${fmriName}_thresh_smooth.nii.gz -out ${WD}/ICA_AROMA -tr ${RepetitionTime} -mc ${MotionParam} -m ${WD}/${fmriName}_mask.nii.gz -affmat ${fMRI2StructMat} -warp ${Struct2StdWarp}"
 
 
 ${RUN} python2.7 ${BRC_FMRI_SCR}/ICA_AROMA/ICA_AROMA.py ""$MC_arg""
@@ -178,5 +157,8 @@ echo "                             ===============                              
 ## Cleanup
 ################################################################################################
 
-imrm ${WD}/${fmriName}
-imrm ${WD}/${fmriName}_mean
+${FSLDIR}/bin/imrm ${WD}/${fmriName}
+${FSLDIR}/bin/imrm ${WD}/${fmriName}_bet
+${FSLDIR}/bin/imrm ${WD}/${fmriName}_mean
+${FSLDIR}/bin/imrm ${WD}/${fmriName}_thresh
+${FSLDIR}/bin/imrm ${WD}/${fmriName}_brain_mask
