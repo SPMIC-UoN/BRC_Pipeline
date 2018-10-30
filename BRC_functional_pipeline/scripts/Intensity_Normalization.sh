@@ -85,10 +85,10 @@ echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ########################################## DO WORK ##########################################
 
 # Run intensity normalisation, with bias field correction and optional jacobian modulation, for the main fmri timeseries and the scout images (pre-saturation images)
-${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRI}_mask -thr 0 -ing 10000 ${WD}/${OutputfMRI} -odt float
+${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -thr 0 -ing 10000 ${WD}/${OutputfMRI} -odt float
 
 if [ X${ScoutInput} != X ] ; then
-    ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRI}_mask -thr 0 -ing 10000 ${WD}/${ScoutOutput} -odt float
+    ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -thr 0 -ing 10000 ${WD}/${ScoutOutput} -odt float
 fi
 
 #Basic Cleanup
