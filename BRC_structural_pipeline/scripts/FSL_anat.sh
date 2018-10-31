@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # General FSL anatomical processing pipeline
 #
