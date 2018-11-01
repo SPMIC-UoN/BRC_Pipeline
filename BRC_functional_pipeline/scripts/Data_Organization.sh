@@ -148,7 +148,7 @@ fi
 
 processed_rfMRI_file=${TemFilUnlabFolder}/${NameOffMRI}_tempfilt
 processed_rfMRI2std_file=${OneStResUnlabFolder}/${NameOffMRI}_nonlin
-processed_SBRef_file=${InNormUnlabFolder}/${NameOffMRI}_SBRef_nonlin_norm
+processed_SBRef_file=${InNormUnlabFolder}/SBRef_intnorm
 processed_SBRef2str_file=${DcUnlabFolder}/SBRef_dc
 processed_SBRef2std_file=${OneStResUnlabFolder}/${NameOffMRI}_SBRef_nonlin
 

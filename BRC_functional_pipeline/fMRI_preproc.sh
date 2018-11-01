@@ -14,9 +14,6 @@
 
 set -e
 
-#export ScriptsDir=$(dirname "$(readlink -f "$0")") #Absolute path where scripts are
-#source ${ScriptsDir}/init_vars.sh
-
 # --------------------------------------------------------------------------------
 #  Usage Description Function
 # --------------------------------------------------------------------------------
