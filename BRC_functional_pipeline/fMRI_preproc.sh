@@ -437,10 +437,10 @@ fi
 
 if [[ $DistortionCorrection == "TOPUP" ]] ; then
 
-    $FSLDIR/bin/imcp ${SpinEchoPhaseEncodePositive} ${rawFolder}/${OrigSE_Pos_Name}
+    ${RUN} ${FSLDIR}/bin/fslroi ${SpinEchoPhaseEncodePositive} ${rawFolder}/${OrigSE_Pos_Name} 0 1
     SpinEchoPhaseEncodePositive=${rawFolder}/${OrigSE_Pos_Name}
 
-    $FSLDIR/bin/imcp ${SpinEchoPhaseEncodeNegative} ${rawFolder}/${OrigSE_Neg_Name}
+    ${RUN} ${FSLDIR}/bin/fslroi ${SpinEchoPhaseEncodeNegative} ${rawFolder}/${OrigSE_Neg_Name} 0 1
     SpinEchoPhaseEncodeNegative=${rawFolder}/${OrigSE_Neg_Name}
 
 elif [[ $DistortionCorrection == "NONE" ]] ; then
