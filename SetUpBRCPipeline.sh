@@ -33,7 +33,10 @@ export MATLABpath="/usr/local/matlab/R2017a/bin"            #TO BE MODIFIED BY U
 export SPMpath="/usr/local/spm12"                           #TO BE MODIFIED BY USER
 export LIBSVMpath="/home/mszam12/main/fsl_docs/data/rest/octave/libsvm/matlab"   #TO BE MODIFIED BY USER
 
-#ENV VARIABLES FOR BIOBANK
+#SET DYNAMIC LIBRARIES FOR Eddy
+export LD_LIBRARY_PATH$LD_LIBRARY_PATH:/usr/local/cuda/lib64    #TO BE MODIFIED BY USER
+
+#ENV VARIABLES FOR THE BRC_PIPELINE
 export BRCDIR="/home/mszam12/main/BRC_Pipeline"                  #TO BE MODIFIED BY USER
 export BRC_SCTRUC_DIR=${BRCDIR}/BRC_structural_pipeline
 export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
