@@ -31,6 +31,7 @@ export FSLOUTPUTTYPE="NIFTI_GZ"
 #SETUP MATLAB
 export MATLABpath="/usr/local/matlab/R2017a/bin"            #TO BE MODIFIED BY USER
 export SPMpath="/usr/local/spm12"                           #TO BE MODIFIED BY USER
+export LIBSVMpath="/home/mszam12/main/fsl_docs/data/rest/octave/libsvm/matlab"   #TO BE MODIFIED BY USER
 
 #ENV VARIABLES FOR BIOBANK
 export BRCDIR="/home/mszam12/main/BRC_Pipeline"                  #TO BE MODIFIED BY USER
