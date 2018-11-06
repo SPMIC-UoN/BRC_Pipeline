@@ -612,7 +612,6 @@ fi
 
 
 echo "One Step Resampling"
-
 ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --workingdir=${OsrFolder} \
       --scoutgdcin=${OSR_Scout_In} \
