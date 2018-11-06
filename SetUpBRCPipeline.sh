@@ -34,7 +34,7 @@ export SPMpath="/usr/local/spm12"                           #TO BE MODIFIED BY U
 export LIBSVMpath="/home/mszam12/main/fsl_docs/data/rest/octave/libsvm/matlab"   #TO BE MODIFIED BY USER
 
 #SET DYNAMIC LIBRARIES FOR Eddy
-export LD_LIBRARY_PATH$LD_LIBRARY_PATH:/usr/local/cuda/lib64    #TO BE MODIFIED BY USER
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64    #TO BE MODIFIED BY USER
 
 #ENV VARIABLES FOR THE BRC_PIPELINE
 export BRCDIR="/home/mszam12/main/BRC_Pipeline"                  #TO BE MODIFIED BY USER
