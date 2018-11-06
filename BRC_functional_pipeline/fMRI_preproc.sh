@@ -588,6 +588,23 @@ ${RUN} ${BRC_FMRI_SCR}/EPI_2_T1_Registration.sh \
       --ojacobian=${regFolder}/${JacobianOut}
 
 
+echo "One Step Resampling"
+
+${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
+      --workingdir=${OsrFolder} \
+      --scoutgdcin=${OSR_Scout_In} \
+      --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
+      --t12std=${T1wFolder}/reg/nonlin/T1_2_std_warp \
+      --t1brainmask=${T1wFolder}/preprocess/${T1wRestoreImageBrain}_mask \
+      --fmriresout=${FinalfMRIResolution} \
+      --fmri2structin=${regFolder}/${fMRI2strOutputTransform} \
+      --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field \
+      --oscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin \
+      --owarp=${regFolder}/${OutputfMRI2StandardTransform} \
+      --oiwarp=${regFolder}/${Standard2OutputfMRITransform} \
+      --ojacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
+
+
 if [ $smoothingfwhm -ne 0 ]; then
 
     echo "Spatial Smoothing and Artifact/Physiological Noise Removal"
@@ -609,24 +626,6 @@ else
     ${FSLDIR}/bin/imcp ${stcFolder}/${NameOffMRI}_stc ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr
     ${FSLDIR}/bin/imcp ${OSR_Scout_In}_mask ${nrFolder}/${fmriName}_mask
 fi
-
-
-echo "One Step Resampling"
-
-${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
-      --workingdir=${OsrFolder} \
-      --scoutgdcin=${OSR_Scout_In} \
-      --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
-      --t12std=${T1wFolder}/reg/nonlin/T1_2_std_warp \
-      --t1brainmask=${T1wFolder}/preprocess/${T1wRestoreImageBrain}_mask \
-      --fmriresout=${FinalfMRIResolution} \
-      --fmri2structin=${regFolder}/${fMRI2strOutputTransform} \
-      --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field \
-      --oscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin \
-      --owarp=${regFolder}/${OutputfMRI2StandardTransform} \
-      --oiwarp=${regFolder}/${Standard2OutputfMRITransform} \
-      --ojacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
-
 
 #ResultsFolder=${fMRIFolder}/result
 
