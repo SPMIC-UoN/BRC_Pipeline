@@ -160,9 +160,9 @@ Start_Time="$(date -u +%s)"
 #=====================================================================================
 ###                          Sanity checking of arguments
 #=====================================================================================
-if [ X$Sub_ID = X ] || [ X$InputImages = X ] || [ X$OutputFolder = X ] ; then
+if [ X$Sub_ID = X ] || [ X$InputImages = X ] || [ X$OutputFolder = X ] || [ X$echospacing = X ] || [ X$PEdir = X ] ; then
     echo ""
-    echo "All of the compulsory arguments --path, -i1 and -s MUST be used"
+    echo "All of the compulsory arguments --path, -i1, -s, --echo_s, and --echo_s MUST be used"
     echo ""
     exit 1;
 fi
