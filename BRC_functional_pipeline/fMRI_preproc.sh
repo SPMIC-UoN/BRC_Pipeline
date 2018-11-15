@@ -45,7 +45,9 @@ Usage()
   echo "                                      Set to NONE if using regular FIELDMAP"
   echo " --SEPhasePos <Image path>            For the spin echo field map volume with a 'positive' phase encoding direction"
   echo "                                      Set to NONE if using regular FIELDMAP"
-  echo " --echospacing <value>                Effective Echo Spacing of fMRI image (specified in *sec* for the fMRI processing)"
+  echo " --echospacing <value>                Effective Echo Spacing of spin echo field map acquisitions (in sec)"
+  echo "                                           NOTE: The pipeline expects you to have used the same phase encoding axis and echo spacing in the fMRI data"
+  echo "                                           as in the SE field map acquisitions. Otherwise, you need to specify the fMRI Echo spacing using --echospacing_fMRI"
   echo " --unwarpdir <direction>              ‌Based on Phase Encoding Direction: PA: 'y', AP: 'y-', RL: 'x', and LR: 'x-'"
   echo " --dcmethod <method>                  Susceptibility distortion correction method (required for accurate processing)"
   echo "                                      Values: TOPUP, SiemensFieldMap (same as FIELDMAP), GeneralElectricFieldMap, and NONE (default)"
@@ -75,6 +77,7 @@ Usage()
   echo " --fmrires <value>                    Target final resolution of fMRI data in mm (default is 2 mm)"
   echo " --tempfilter <value>                 Non-zero value of this option means that one wants to do temporal filtering with High pass filter curoff <value> in Sec"
   echo "                                      default value is 0, means No Temporal Filtering"
+  echo " --echospacing_fMRI <value>           Echo Spacing of fMRI image (in sec)."
   echo " --printcom                           use 'echo' for just printing everything and not running the commands (default is to run)"
   echo " -h | --help                          help"
   echo " "
@@ -104,6 +107,7 @@ FinalfMRIResolution=2
 SliceTimingCorrection=0
 smoothingfwhm=0
 Temp_Filter_Cutoff=0
+EchoSpacing_fMRI=0.0
 
 opts_DefaultOpt()
 {
@@ -208,6 +212,10 @@ while [ "$1" != "" ]; do
 
       --fmrires )             shift
                               FinalfMRIResolution=$1
+                              ;;
+
+      --echospacing_fMRI )    shift
+                              EchoSpacing_fMRI=$1
                               ;;
 
       --printcom )            shift
@@ -499,6 +507,7 @@ else
     ${RUN} ${FSLDIR}/bin/fslmaths ${DCFolder}/SBRef_dc -mul 0 -add 1 ${DCFolder}/PhaseTwo_gdc_dc
 fi
 
+
 echo "MOTION CORRECTION"
 
 case $MotionCorrectionType in
@@ -537,17 +546,20 @@ case $MotionCorrectionType in
               --SEPhasePos=${SpinEchoPhaseEncodePositive} \
               --unwarpdir=${UnwarpDir} \
               --echospacing=${EchoSpacing} \
+              --echospacingfmri=${EchoSpacing_fMRI} \
               --slice2vol=${Slice2Volume} \
               --slspec=${SliceSpec} \
               --output_eddy=${EddyOutput} \
               --outfolder=${DCFolder}
-  ;;
+    ;;
 
     *)
         echo "UNKNOWN MOTION CORRECTION METHOD: ${MotionCorrectionType}"
         exit 1
 esac
 
+
+: <<'COMMENT'
 
 if [ $SliceTimingCorrection -ne 0 ]; then
 
