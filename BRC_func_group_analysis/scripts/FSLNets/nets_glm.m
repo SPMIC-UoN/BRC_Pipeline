@@ -14,12 +14,12 @@
 %   above the diagonal is the same thing, but thresholded at 0.95 i.e. corrected-p < 0.05
 %
 
-function [p_uncorrected,p_corrected] = nets_glm(netmats,des,con,view,varargin); 
+function [p_uncorrected,p_corrected] = nets_glm(netmats,des,con,view,varargin);
 
 nperms=5000;
 if nargin==5
   nperms=varargin{1};
-end 
+end
 
 XXX=size(netmats,2);
 TTT=size(netmats,1);
@@ -27,7 +27,7 @@ Nf=sqrt(XXX);
 N=round(Nf);
 ShowSquare=0;
 if (N==Nf)
-  grot=reshape(mean(netmats),N,N);  
+  grot=reshape(mean(netmats),N,N);
   if sum(sum(abs(grot-grot')))<0.00000001    % is netmat square and symmetric
     ShowSquare=1;
   end
@@ -42,7 +42,7 @@ system(sprintf('randomise -i %s -o %s -d %s -t %s -x --uncorrp -n %d',fname,fnam
 ncon=str2num(ncon);
 
 if view==1
-  figure('position',[100 100 600*ncon 500]); 
+  figure('visible', 'off' , 'position',[100 100 600*ncon 500]); 
 end
 
 gap=0.05; cw=0.1;  xw=(1-gap*(ncon+2))/(ncon+0.1);
@@ -74,4 +74,3 @@ for i=1:ncon
     title(sprintf('contrast %d',i));
   end
 end
-

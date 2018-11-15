@@ -7,7 +7,7 @@
 #
 # Preprocessing Pipeline for resting-state fMRI. Generates the "data" directory that can be used as input to fibre orientation estimation.
 # Ali-Reza Mohammadi-Nejad, SPMIC, Queens Medical Centre, School of Medicine, University of Nottingham, 2018.
-#Example:
+#Example: ./fmri_group_analysis.sh --in ~/main/analysis/input_list.txt --indir ~/main/analysis --outdir ~/main/analysis --parcellation SHEN --fmrires 3 --tr 1.45 --labels ~/main/analysis/input_labels.txt --varnorm 1 --groupdiffs
 #
 
 set -e
@@ -57,6 +57,9 @@ Usage()
   echo "                                       0 = none (default)"
   echo "                                       1 = normalise whole subject stddev"
   echo "                                       2 = normalise each separate timeseries from each subject"
+  echo " --groupdiffs                    do cross-subject GLM on a set of network matrices, giving uncorrected and corrected (1-p) values"
+  echo "                                       assuming you already specified the corresponding group for each subject in a column next to each subject name"
+  echo "                                       (e.g., 1 for the 1st group and 2 for the 2nd group) in --in option input file"
   echo " "
   echo " "
 }
@@ -73,6 +76,7 @@ DataResolution=""
 LabelList=""
 VarNorm="0"
 RegVal=0
+DO_GLM="no"
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -116,6 +120,9 @@ while [ "$1" != "" ]; do
                               RepetitionTime=$1
                               ;;
 
+      --groupdiffs )          DO_GLM="yes"
+                              ;;
+
       * )                     Usage
                               exit 1
 
@@ -154,10 +161,16 @@ GroupFC_folder_name="GroupFC"
 TimeSeries_Folder_name="TimeSeries"
 GroupMaps_Folder_name="Image_4D" #We add a .sum at the end of this name
 NetWeb_Folder_name="netweb"
+List_Folder_name="list"
+design_Folder_name="design"
 
 NameOffMRI="rfMRI"
 fMRI2std_name="${NameOffMRI}2std"
 TimeSeries_name="TimeSeries"
+SubjectList_name="Subject_list.txt"
+GroupList_name="Group_list.txt"
+design_name="design"
+contrast_name="contrast"
 
 #=====================================================================================
 ###                                  Setup PATHS
@@ -170,6 +183,8 @@ GroupFCFolder=${OutDIR}/${GroupFC_folder_name}
 TimeSeriesFolder=${GroupFCFolder}/${TimeSeries_Folder_name}
 GroupMapsFolder=${GroupFCFolder}/${GroupMaps_Folder_name}.sum
 NetWebFolder=${GroupFCFolder}/${NetWeb_Folder_name}
+ListFolder=${GroupFCFolder}/${List_Folder_name}
+DesignFolder=${GroupFCFolder}/${design_Folder_name}
 
 case $ParcelAtlas in
 
@@ -191,6 +206,10 @@ if [ ! -d "$GroupFCFolder" ]; then mkdir -p $GroupFCFolder; fi
 if [ -e ${TimeSeriesFolder} ] ; then rm -r ${TimeSeriesFolder}; fi
 mkdir -p $TimeSeriesFolder
 if [ -e ${NetWebFolder} ] ; then rm -r ${NetWebFolder}; fi
+if [ -e ${ListFolder} ] ; then rm -r ${ListFolder}; fi
+mkdir -p $ListFolder
+if [ -e ${DesignFolder} ] ; then rm -r ${DesignFolder}; fi
+mkdir -p $DesignFolder
 
 #=====================================================================================
 ###                          Sanity checking of arguments
@@ -215,8 +234,19 @@ fi
 #      --groupmaps=${GroupMapsFolder}
 
 
+${RUN} ${BRC_FMRI_GP_SCR}/Generate_design.sh \
+      --inputlist=${InputList} \
+      --doglm=${DO_GLM} \
+      --listfolder=${ListFolder} \
+      --designfolder=${DesignFolder} \
+      --subListname=${SubjectList_name} \
+      --grouplistname=${GroupList_name} \
+      --designname=${design_name} \
+      --contrastname=${contrast_name}
+
+
 jj=0
-for Subject in $(cat $InputList) ; do
+for Subject in $(cat ${ListFolder}/${SubjectList_name}) ; do
     echo "$Subject"
     jj=$(( ${jj} + 1 ))
 
@@ -279,7 +309,9 @@ for Subject in $(cat $InputList) ; do
           --timeseries=${TimeSeries_name} \
           --repetitiontime=${RepetitionTime} \
           --varnorm=${VarNorm}
+
 done
+
 
 ${RUN} ${BRC_FMRI_GP_SCR}/Functional_Connectivity_Analysis.sh \
       --workingdir=${GroupFCFolder} \
@@ -289,7 +321,10 @@ ${RUN} ${BRC_FMRI_GP_SCR}/Functional_Connectivity_Analysis.sh \
       --varnorm=${VarNorm} \
       --corrtype=${CorrType} \
       --regval=${RegVal} \
-      --netwebfolder=${NetWebFolder}
+      --netwebfolder=${NetWebFolder} \
+      --doglm=${DO_GLM} \
+      --designmatrix=${DesignFolder}/${design_name} \
+      --contrastmatrix=${DesignFolder}/${contrast_name}
 
 
 

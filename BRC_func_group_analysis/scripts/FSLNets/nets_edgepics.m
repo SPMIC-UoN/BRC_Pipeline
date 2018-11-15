@@ -41,7 +41,7 @@ if exist('octave_config_info')~=0  % because octave has a stupid subplot bug
 end;
 
 YY=(109/91) * (isx*XX) / isy;
-figure('Position',[10 10 XX YY]); 
+figure('visible', 'off' , 'Position',[10 10 XX YY]); 
 
 for iii=1:showN
   xxx=ceil(ii(iii)/size(net,1));  yyy=ii(iii)-((xxx-1)*size(net,1));

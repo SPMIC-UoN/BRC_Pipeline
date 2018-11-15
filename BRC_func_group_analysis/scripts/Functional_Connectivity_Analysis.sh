@@ -31,9 +31,9 @@ VarNorm=`getopt1 "--varnorm" $@`
 CorrType=`getopt1 "--corrtype" $@`
 RegVal=`getopt1 "--regval" $@`
 NetWebFolder=`getopt1 "--netwebfolder" $@`
-
-
-fMRISubjFolder=`getopt1 "--fmrisubjfolder" $@`
+DO_GLM=`getopt1 "--doglm" $@`
+DesignMatrix=`getopt1 "--designmatrix" $@`
+ContrastMatrix=`getopt1 "--contrastmatrix" $@`
 
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "+                                                                        +"
@@ -72,6 +72,23 @@ case $CorrType in
         exit 1
 esac
 
+echo "addpath('${BRC_FMRI_GP_SCR}/FSLNets'); "
+echo "addpath('${LIBSVMpath}');"
+echo "${BRC_FMRI_GP_SCR}/FSLNets"
+echo "${BRC_FMRI_GP_SCR}/L1precision"
+echo "${BRC_FMRI_GP_SCR}/FSLNets"
+echo "${WD}"
+echo "${WD}/${GruopMaps}"
+echo "${TimeSeriesFolder}"
+echo "${TR}"
+echo "${VarNorm}"
+echo "${method}"
+echo "${RegVal}"
+echo "${NetWebFolder}"
+echo "${DO_GLM}"
+echo "${DesignMatrix}"
+echo "${ContrastMatrix}"
+
 ${MATLABpath}/matlab -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSLNets'); \
                                     addpath('${LIBSVMpath}'); \
                                     run_FSL_Nets('${BRC_FMRI_GP_SCR}/FSLNets' , \
@@ -84,5 +101,8 @@ ${MATLABpath}/matlab -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSLNets'); \
                                     ${VarNorm} , \
                                     '${method}' , \
                                     ${RegVal} , \
-                                    '${NetWebFolder}'); \
+                                    '${NetWebFolder}' , \
+                                    '${DO_GLM}' , \
+                                    '${DesignMatrix}.mat' , \
+                                    '${ContrastMatrix}.con'); \
                                     exit"

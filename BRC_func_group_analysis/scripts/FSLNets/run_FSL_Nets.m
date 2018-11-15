@@ -1,5 +1,5 @@
 
-function run_FSL_Nets(FSLNets_Path, L1precision_Path, PWling_Path, work_dir , group_maps, ts_dir, TR, varnorm, method, RegVal , NetWebFolder)
+function run_FSL_Nets(FSLNets_Path , L1precision_Path , PWling_Path , work_dir , group_maps , ts_dir , TR , varnorm , method , RegVal , NetWebFolder , DO_GLM , DesignMatrix , ContrastMatrix)
 
 %%% change the following paths according to your local setup
 addpath(FSLNets_Path);              % wherever you've put this package
@@ -30,76 +30,59 @@ ts=nets_tsclean(ts , 1);                 % regress the bad nodes out of the good
 nets_nodepics(ts,group_maps);
 print(strcat(work_dir , '/nodes.png') , '-dpng' , '-r300');
 
-Znet = zeros(6 , ts.Nnodes , ts.Nnodes);
-Mnet = zeros(6 , ts.Nnodes , ts.Nnodes);
 
-for i = 1:6
-    switch i
-        case 1
-            Method='cov';
-            Reg=0;
-            Text='cov';
-
-        case 2
-            Method='amp';
-            Reg=0;
-            Text='amp';
-
-        case 3
-            Method='corr';
-            Reg=0;
-            Text='corr';
-
-        case 4
-            Method='rcorr';
-            Reg=0;
-            Text='rcorr';
-
-        case 5
-            Method='icov';
-            Reg=0;
-            Text='pcorr';
-
-        case 6
-            Method='ridgep';
-            Reg=0.1;
-            Text='rpcorr';
-    end
-
-    %%% create network matrix and optionally convert correlations to z-stats.
-    out_netmats = nets_netmats(ts , 1 , Method , Reg);
-    dlmwrite(strcat(work_dir , '/' , 'netmats.txt' , Text) , out_netmats , 'delimiter' , ' ' , 'precision' , '%4d');
+%%% create network matrix and optionally convert correlations to z-stats.
+out_netmats = nets_netmats(ts , 1 , method , RegVal);
+dlmwrite(strcat(work_dir , '/' , 'netmats_' , method , '.txt') , out_netmats , 'delimiter' , ' ' , 'precision' , '%4d');
 
 
-    %%% view of consistency of netmats across subjects; returns t-test Z values as a network matrix
-    %%% Znet is Z-stat from one-group t-test across subjects
-    %%% Mnet is mean netmat across subjects
+%%% view of consistency of netmats across subjects; returns t-test Z values as a network matrix
+%%% Znet is Z-stat from one-group t-test across subjects
+%%% Mnet is mean netmat across subjects
 
-    if (i == 2)
-        [Znet_amp , Mnet_amp] = nets_groupmean(out_netmats , 1);
-        dlmwrite(strcat(work_dir , '/' , 'Znet_' , Text , '.txt') , Znet_amp , 'delimiter' , ' ' , 'precision' , '%4d');
-        dlmwrite(strcat(work_dir , '/' , 'Mnet_' , Text , '.txt') , Mnet_amp , 'delimiter' , ' ' , 'precision' , '%4d');
-    else
-        [Znet(i,:,:) , Mnet(i,:,:)] = nets_groupmean(out_netmats , 1);
-        Z_netmat=reshape(Znet(i,:,:) , size(Znet(i,:,:) ,2) , size(Znet(i,:,:) ,3));
-        dlmwrite(strcat(work_dir , '/' , 'Znet_' , Text , '.txt') , Z_netmat , 'delimiter' , ' ' , 'precision' , '%4d');
+[Znet , Mnet] = nets_groupmean(out_netmats , 1);
 
-        M_netmat=reshape(Mnet(i,:,:) , size(Mnet(i,:,:) ,2) , size(Mnet(i,:,:) ,3));
-        dlmwrite(strcat(work_dir , '/' , 'Mnet_' , Text , '.txt') , M_netmat , 'delimiter' , ' ' , 'precision' , '%4d');
-    end
-    print(strcat(work_dir , '/one-group-t-test-group-level_' , Text , '.png') , '-dpng' , '-r300');
-end
+dlmwrite(strcat(work_dir , '/' , 'Znet_' , method , '.txt') , Znet , 'delimiter' , ' ' , 'precision' , '%4d');
+dlmwrite(strcat(work_dir , '/' , 'Mnet_' , method , '.txt') , Mnet , 'delimiter' , ' ' , 'precision' , '%4d');
+
+print(strcat(work_dir , '/one-group-t-test-group-level_' , method , '.png') , '-dpng' , '-r300');
 
 
 %%% view hierarchical clustering of nodes
-netmatL=reshape(Znet(3,:,:) , size(Znet(3,:,:) ,2) , size(Znet(3,:,:) ,3));
-netmatH=reshape(Znet(6,:,:) , size(Znet(6,:,:) ,2) , size(Znet(6,:,:) ,3));
-nets_hierarchy(netmatL , netmatH , ts.DD , group_maps);
+%%% netmatL=reshape(Znet(3,:,:) , size(Znet(3,:,:) ,2) , size(Znet(3,:,:) ,3));
+%%% netmatH=reshape(Znet(6,:,:) , size(Znet(6,:,:) ,2) , size(Znet(6,:,:) ,3));
+nets_hierarchy(Znet , Znet , ts.DD , group_maps);
 print(strcat(work_dir , '/hierarchy.png') , '-dpng' , '-r300');
 
 
 %%% view interactive netmat web-based display
-nets_netweb(netmatL , netmatH , ts.DD , group_maps , NetWebFolder);
+nets_netweb(Znet , Znet , ts.DD , group_maps , NetWebFolder);
+
+%%% cross-subject GLM, with inference in randomise (assuming you already have the GLM design.mat and design.con files).
+%%% arg4 determines whether to view the corrected-p-values, with non-significant entries removed above the diagonal.
+if (DO_GLM == 'yes')
+    [p_uncorrected , p_corrected] = nets_glm(out_netmats , DesignMatrix , ContrastMatrix , 1);  % returns matrices of 1-p
+    print(strcat(work_dir , '/Group_diff.png') , '-dpng' , '-r300');
+
+
+    %%% OR - GLM, but with pre-masking that tests only the connections that are strong on average across all subjects.
+    %%% change the "8" to a different tstat threshold to make this sparser or less sparse.
+
+    netmats = out_netmats;
+    [grotH , grotP , grotCI , grotSTATS] = ttest(netmats);
+    netmats(: , abs(grotSTATS.tstat) < 8) = 0;
+    [p_uncorrected , p_corrected] = nets_glm(netmats , DesignMatrix , ContrastMatrix ,1);
+    print(strcat(work_dir , '/Group_diff_8.png') , '-dpng' , '-r300');
+
+
+    %%% view 1 most significant edges from this GLM
+    nets_edgepics(ts , group_maps , Znet , reshape(p_corrected(1,:) , ts.Nnodes , ts.Nnodes) , 1);
+    print(strcat(work_dir , '/most_significant_edges.png') , '-dpng' , '-r300');
+
+    %%% show how the partial correlation differs between the patients and the controls and these two significant edges.
+    %%% nets_boxplots(ts , Pnetmats,57,33,6);
+end
+
 
 end
 %f = figure('visible', 'off');
