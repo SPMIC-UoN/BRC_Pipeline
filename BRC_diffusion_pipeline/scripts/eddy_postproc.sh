@@ -32,17 +32,17 @@ else
         ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Neg ${PosVols} ${NegVols}
     else
         NegVols=$PosVols
-        ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Neg ${PosVols} ${NegVols}
+        ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Neg $((${PosVols} - 1)) ${PosVols}
 
         touch ${eddydir}/Neg.bval
         touch ${eddydir}/Neg.bvec
     fi
 
-    ${BRC_DMRI_SCR}/eddy_combine ${eddydir}/eddy_unwarped_Pos ${eddydir}/Pos.bval ${eddydir}/Pos.bvec ${eddydir}/Pos_SeriesVolNum.txt \
-                                ${eddydir}/eddy_unwarped_Neg ${eddydir}/Neg.bval ${eddydir}/Neg.bvec ${eddydir}/Neg_SeriesVolNum.txt ${datadir} ${CombineMatchedFlag}
+    ${BRC_DMRI_SCR}/eddy_combine.sh ${eddydir}/eddy_unwarped_Pos ${eddydir}/Pos.bval ${eddydir}/Pos.bvec ${eddydir}/Pos_SeriesVolNum.txt \
+                                    ${eddydir}/eddy_unwarped_Neg ${eddydir}/Neg.bval ${eddydir}/Neg.bvec ${eddydir}/Neg_SeriesVolNum.txt ${datadir} ${CombineMatchedFlag}
 
-    ${FSLDIR}/bin/imrm ${eddydir}/eddy_unwarped_Pos
     ${FSLDIR}/bin/imrm ${eddydir}/eddy_unwarped_Neg
+    ${FSLDIR}/bin/imrm ${eddydir}/eddy_unwarped_Pos
 fi
 
 #Remove negative intensity values (caused by spline interpolation) from final data

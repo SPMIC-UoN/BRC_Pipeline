@@ -58,8 +58,9 @@ echo "DistortionCorrection:$DistortionCorrection"
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 
-TopupConfig=`defaultopt $TopupConfig ${FSLDIR}/etc/flirtsch/b02b0.cnf`
+TopupConfig=`defaultopt $TopupConfig ${BRC_GLOBAL_DIR}/config/b02b0.cnf.txt`
 
+echo "TopupConfig:$TopupConfig"
 ########################################## DO WORK ##########################################
 
 case $DistortionCorrection in

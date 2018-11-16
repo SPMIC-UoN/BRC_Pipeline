@@ -70,7 +70,7 @@ Usage()
   echo " -c | --cm_flag <0..2>           CombineMatchedFlag"
   echo "                                      2 for including in the output all volumes uncombined,"
   echo "                                      1 for including in the output and combine only volumes where both LR/RL (or AP/PA) pairs have been acquired,"
-  echo "                                      0 for including (uncombined) single volumes as well"
+  echo "                                      0 for including (uncombined) single volumes as well (default)"
   echo " -g | --p_im                     ParallelImaging_Factor, In-plane parallel imaging factor"
   echo "                                      1 for No_Parallel_Imaging"
   echo " -h | --help                     help"
@@ -88,7 +88,7 @@ Slice2Volume="no"
 SliceSpec="NONE"
 echospacing=
 PEdir=
-CombineMatched=
+CombineMatched=0
 PIFactor=1
 
 do_QC=no

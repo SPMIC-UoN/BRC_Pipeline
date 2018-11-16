@@ -42,6 +42,7 @@ export BRC_SCTRUC_DIR=${BRCDIR}/BRC_structural_pipeline
 export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
 export BRC_FMRI_DIR=${BRCDIR}/BRC_functional_pipeline
 export BRC_FMRI_GP_DIR=${BRCDIR}/BRC_func_group_analysis
+export BRC_GLOBAL_DIR=${BRCDIR}/global
 export BRC_SCTRUC_SCR=${BRC_SCTRUC_DIR}/scripts
 export BRC_DMRI_SCR=${BRC_DMRI_DIR}/scripts
 export BRC_FMRI_SCR=${BRC_FMRI_DIR}/scripts

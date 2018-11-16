@@ -45,13 +45,15 @@ Usage()
   echo "                                      Set to NONE if using regular FIELDMAP"
   echo " --SEPhasePos <Image path>            For the spin echo field map volume with a 'positive' phase encoding direction"
   echo "                                      Set to NONE if using regular FIELDMAP"
-  echo " --echospacing <value>                Effective Echo Spacing of fMRI image (specified in *sec* for the fMRI processing)"
+  echo " --echospacing <value>                Effective Echo Spacing of spin echo field map acquisitions (in sec)"
+  echo "                                           NOTE: The pipeline expects you to have used the same phase encoding axis and echo spacing in the fMRI data"
+  echo "                                           as in the SE field map acquisitions. Otherwise, you need to specify the fMRI Echo spacing using --echospacing_fMRI"
   echo " --unwarpdir <direction>              ‌Based on Phase Encoding Direction: PA: 'y', AP: 'y-', RL: 'x', and LR: 'x-'"
   echo " --dcmethod <method>                  Susceptibility distortion correction method (required for accurate processing)"
   echo "                                      Values: TOPUP, SiemensFieldMap (same as FIELDMAP), GeneralElectricFieldMap, and NONE (default)"
   echo " --biascorrection <method>            Receive coil bias field correction method"
-  echo "                                      Values: NONE, or SEBASED (Spin-Echo Based)"
-  echo "                                      SEBASED calculates bias field from spin echo images (which requires TOPUP distortion correction)"
+  echo "                                           Values: NONE (default), or SEBASED (Spin-Echo Based)"
+  echo "                                           SEBASED calculates bias field from spin echo images (which requires TOPUP distortion correction)"
   echo " --intensitynorm                      If one wants to do intensity normalization"
   echo " --stcmethod <method>                 Slice timing correction method"
   echo "                                           0: NONE (default value),"
@@ -75,6 +77,7 @@ Usage()
   echo " --fmrires <value>                    Target final resolution of fMRI data in mm (default is 2 mm)"
   echo " --tempfilter <value>                 Non-zero value of this option means that one wants to do temporal filtering with High pass filter curoff <value> in Sec"
   echo "                                      default value is 0, means No Temporal Filtering"
+  echo " --echospacing_fMRI <value>           Echo Spacing of fMRI image (in sec)."
   echo " --printcom                           use 'echo' for just printing everything and not running the commands (default is to run)"
   echo " -h | --help                          help"
   echo " "
@@ -104,6 +107,7 @@ FinalfMRIResolution=2
 SliceTimingCorrection=0
 smoothingfwhm=0
 Temp_Filter_Cutoff=0
+EchoSpacing_fMRI=0.0
 
 opts_DefaultOpt()
 {
@@ -210,6 +214,10 @@ while [ "$1" != "" ]; do
                               FinalfMRIResolution=$1
                               ;;
 
+      --echospacing_fMRI )    shift
+                              EchoSpacing_fMRI=$1
+                              ;;
+
       --printcom )            shift
                               RUN=$1
                               ;;
@@ -272,6 +280,15 @@ if [[ ${MotionCorrectionType} == "EDDY" ]]; then
     if [[ X$EchoSpacing = X ]] ; then
         echo ""
         echo "--echospacing is a compulsory arguments when you select EDDY as a motion correction method"
+        echo ""
+        exit 1;
+    fi
+fi
+
+if [[ ${BiasCorrection} == "SEBASED" ]]; then
+    if [ $EchoSpacing_fMRI != 0.0 ]; then
+        echo ""
+        echo "ERROR: Spin Echo-based bias field correction of the Receive coil just works with the same Echospacing for SE and fMRI data"
         echo ""
         exit 1;
     fi
@@ -454,6 +471,37 @@ elif [[ $DistortionCorrection == "NONE" ]] ; then
 fi
 
 
+
+#if [[ $DistortionCorrection == "TOPUP" ]] ; then
+#    if [[ `${FSLDIR}/bin/fslhd $SpinEchoPhaseEncodePositive | grep '^dim[123]'` != `${FSLDIR}/bin/fslhd ${rawFolder}/${OrigScoutName} | grep '^dim[123]'` ]]
+#    then
+#        echo "Error: Spin echo fieldmap has different dimensions than scout image, this requires a manual fix"
+#        exit 1
+#    fi
+#    #for kicks, check that the spin echo images match
+#    if [[ `${FSLDIR}/bin/fslhd $SpinEchoPhaseEncodePositive | grep '^dim[123]'` != `${FSLDIR}/bin/fslhd $SpinEchoPhaseEncodeNegative | grep '^dim[123]'` ]]
+#    then
+#        echo "Error: Spin echo fieldmap images have different dimensions!"
+#        exit 1
+#    fi
+#
+#    numslice=`${FSLDIR}/bin/fslval ${SpinEchoPhaseEncodePositive} dim3`
+#
+#    if [ ! $(($numslice % 2)) -eq "0" ] ; then
+#        echo "Padding Z by one slice"
+#
+#        for Image in ${SpinEchoPhaseEncodePositive} ${SpinEchoPhaseEncodeNegative} ${rawFolder}/${OrigScoutName} ${rawFolder}/${OrigTCSName} ; do
+#            echo "Image=$Image"
+#
+#            ${FSLDIR}/bin/fslroi ${Image} ${Image} 0 -1 0 -1 1 -1
+#        done
+#    fi
+#fi
+
+
+
+
+
 echo "Gradient Distortion Correction of fMRI"
 if [ ! $GradientDistortionCoeffs = "NONE" ] ; then
     echo "PERFORMING GRADIENT DISTORTION CORRECTION"
@@ -499,6 +547,7 @@ else
     ${RUN} ${FSLDIR}/bin/fslmaths ${DCFolder}/SBRef_dc -mul 0 -add 1 ${DCFolder}/PhaseTwo_gdc_dc
 fi
 
+
 echo "MOTION CORRECTION"
 
 case $MotionCorrectionType in
@@ -537,11 +586,12 @@ case $MotionCorrectionType in
               --SEPhasePos=${SpinEchoPhaseEncodePositive} \
               --unwarpdir=${UnwarpDir} \
               --echospacing=${EchoSpacing} \
+              --echospacingfmri=${EchoSpacing_fMRI} \
               --slice2vol=${Slice2Volume} \
               --slspec=${SliceSpec} \
               --output_eddy=${EddyOutput} \
               --outfolder=${DCFolder}
-  ;;
+    ;;
 
     *)
         echo "UNKNOWN MOTION CORRECTION METHOD: ${MotionCorrectionType}"
@@ -588,6 +638,23 @@ ${RUN} ${BRC_FMRI_SCR}/EPI_2_T1_Registration.sh \
       --ojacobian=${regFolder}/${JacobianOut}
 
 
+echo "One Step Resampling"
+
+${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
+      --workingdir=${OsrFolder} \
+      --scoutgdcin=${OSR_Scout_In} \
+      --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
+      --t12std=${T1wFolder}/reg/nonlin/T1_2_std_warp \
+      --t1brainmask=${T1wFolder}/preprocess/${T1wRestoreImageBrain}_mask \
+      --fmriresout=${FinalfMRIResolution} \
+      --fmri2structin=${regFolder}/${fMRI2strOutputTransform} \
+      --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field \
+      --oscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin \
+      --owarp=${regFolder}/${OutputfMRI2StandardTransform} \
+      --oiwarp=${regFolder}/${Standard2OutputfMRITransform} \
+      --ojacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
+
+
 if [ $smoothingfwhm -ne 0 ]; then
 
     echo "Spatial Smoothing and Artifact/Physiological Noise Removal"
@@ -609,23 +676,6 @@ else
     ${FSLDIR}/bin/imcp ${stcFolder}/${NameOffMRI}_stc ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr
     ${FSLDIR}/bin/imcp ${OSR_Scout_In}_mask ${nrFolder}/${fmriName}_mask
 fi
-
-
-echo "One Step Resampling"
-${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
-      --workingdir=${OsrFolder} \
-      --scoutgdcin=${OSR_Scout_In} \
-      --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
-      --t12std=${T1wFolder}/reg/nonlin/T1_2_std_warp \
-      --t1brainmask=${T1wFolder}/preprocess/${T1wRestoreImageBrain}_mask \
-      --fmriresout=${FinalfMRIResolution} \
-      --fmri2structin=${regFolder}/${fMRI2strOutputTransform} \
-      --struct2std=${T1wFolder}/reg/nonlin/T1_2_std_warp_field \
-      --oscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin \
-      --owarp=${regFolder}/${OutputfMRI2StandardTransform} \
-      --oiwarp=${regFolder}/${Standard2OutputfMRITransform} \
-      --ojacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution}
-
 
 #ResultsFolder=${fMRIFolder}/result
 
