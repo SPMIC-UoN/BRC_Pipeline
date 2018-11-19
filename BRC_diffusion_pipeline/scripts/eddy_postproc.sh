@@ -47,7 +47,7 @@ fi
 
 #Remove negative intensity values (caused by spline interpolation) from final data
 ${FSLDIR}/bin/fslmaths ${datadir}/data -thr 0 ${datadir}/data
-${FSLDIR}/bin/bet ${datadir}/data ${datadir}/nodif_brain -m -f 0.25
+${FSLDIR}/bin/bet ${datadir}/data ${datadir}/nodif_brain -m -f 0.20
 
 ${FSLDIR}/bin/dtifit -k ${datadir}/data -m ${datadir}/nodif_brain -r ${datadir}/bvecs -b ${datadir}/bvals -o ${datadir}/dti
 

@@ -47,3 +47,4 @@ export BRC_SCTRUC_SCR=${BRC_SCTRUC_DIR}/scripts
 export BRC_DMRI_SCR=${BRC_DMRI_DIR}/scripts
 export BRC_FMRI_SCR=${BRC_FMRI_DIR}/scripts
 export BRC_FMRI_GP_SCR=${BRC_FMRI_GP_DIR}/scripts
+export BRC_GLOBAL_SCR=${BRC_GLOBAL_DIR}/scripts
