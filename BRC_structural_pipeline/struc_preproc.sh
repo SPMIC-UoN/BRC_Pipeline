@@ -9,15 +9,6 @@ set -e
 #export ScriptsDir=$(dirname "$(readlink -f "$0")") #Absolute path where scripts are
 #source ${ScriptsDir}/init_vars.sh
 
-# --------------------------------------------------------------------------------
-#  Load Function Libraries
-# --------------------------------------------------------------------------------
-
-source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
-
-# --------------------------------------------------------------------------------
-#  Usage Description Function
-# --------------------------------------------------------------------------------
 
 Usage()
 {
@@ -26,20 +17,18 @@ Usage()
   echo "`basename $0`: Description"
   echo " "
   echo "Usage: `basename $0`"
-  echo "Compulsory arguments (You MUST set one or more of):"
   echo " -i | --input <T1W image>         Full path of the input image (for one image only)"
-  echo " --path <full path>               Output path"
-  echo " -s | --subject <Subject name>    Output directory is a subject name folder in output path directory"
-  echo " "
-  echo "Optional arguments (You may optionally specify one or more of):"
+  echo " --path <full path>               output path"
+  echo " -s | --subject <Subject name>    output directory is a subject name folder in output path directory"
   echo " -t2 <T2W image>                  Full path of the input T2W image (for processing of T2 data)"
-  echo " --freesurfer                     Turn on Freesurfer processing pipeline"
-  echo " --subseg                         Turn on subcortical segmentation by FIRS"
-  echo " --qc                             Turn on quality control of T1 data"
-  echo " --strongbias                     Turn on for images with very strong bias fields"
-  echo " --noreg                          Turn off steps that do registration to standard (FLIRT and FNIRT)"
-  echo " --noseg                          Turn off step that does tissue-type segmentation (FAST)"
-  echo " -ft | --FAST_t <type>            Specify the type of image (choose one of T1 T2 PD - default is T1)"
+  echo " --freesurfer                     turn on Freesurfer processing pipeline"
+  echo " --subseg                         a flag to do subcortical segmentation by FIRST"
+  echo " --qc                             a flag to do quality control of T1 data"
+  echo " --strongbias                     (fsl_anat arg) used for images with very strong bias fields"
+  echo " --noreg                          (fsl_anat arg) turn off steps that do registration to standard (FLIRT and FNIRT)"
+  echo " --noseg                          (fsl_anat arg) turn off step that does tissue-type segmentation (FAST)"
+  echo " -ft | --FAST_t <type>            (fsl_anat arg) specify the type of image (choose one of T1 T2 PD - default is T1)"
+  echo " --betfparam                      (fsl_anat arg) specify f parameter for BET (only used if not running non-linear reg and also wanting brain extraction done)"
   echo " -h | --help                      help"
   echo " "
   echo " "
@@ -48,11 +37,6 @@ Usage()
 # Just give usage if no arguments specified
 if [ $# -eq 0 ] ; then Usage; exit 0; fi
 if [ $# -le 4 ] ; then Usage; exit 1; fi
-
-################################################## OPTION PARSING #####################################################
-log_Msg "Parsing Command Line Options"
-
-log=`echo "$@"`
 
 # default values
 Sub_ID=""
@@ -76,7 +60,6 @@ while [ "$1" != "" ]; do
     case $1 in
         -s | --subject )        shift
                                 Sub_ID=$1
-                                log_Msg "Sub_ID: ${Sub_ID}"
                                 ;;
 
         --path )                shift
@@ -115,6 +98,9 @@ while [ "$1" != "" ]; do
 				                        FAST_t=$1
                                 ;;
 
+        --betfparam )        	  Opt_args="$Opt_args --betfparam"
+                                ;;
+
         -h | --help )           Usage
                                 exit
                                 ;;
@@ -143,23 +129,8 @@ fi
 
 Opt_args="$Opt_args -t $FAST_t"
 
-#=====================================================================================
-###                                Naming Conventions
-#=====================================================================================
-
-AnalysisFolderName="analysis"
-AnatMRIFolderName="anatMRI"
-T1FolderName="T1"
-T2FolderName="T2"
-rawFolderName="raw"
-preprocessFolderName="preprocess"
-segFolderName="seg"
-regFolderName="reg"
-
-#=====================================================================================
-###                                  Setup PATHS
-#=====================================================================================
-echo $log
+# Setup PATHS
+Sub_ID=${Sub_ID%.nii.gz}
 
 O_DIR=$Path/${Sub_ID};
 if [ ! -d "$O_DIR" ]; then
@@ -169,88 +140,72 @@ if [ ! -d "$O_DIR" ]; then
 #  mkdir $O_DIR
 fi
 
-AnalysisFolder=${O_DIR}/${AnalysisFolderName}
-AnatMRIFolder=${AnalysisFolder}/${AnatMRIFolderName}
-rawFolder=${O_DIR}/${rawFolderName}
-AnatMRIrawFolder=${rawFolder}/${AnatMRIFolderName}
-rawT1Folder=${AnatMRIrawFolder}/${T1FolderName}
-rawT2Folder=${AnatMRIrawFolder}/${T2FolderName}
-T1Folder=${AnatMRIFolder}/${T1FolderName}
-T2Folder=${AnatMRIFolder}/${T2FolderName}
-preprocT1Folder=${T1Folder}/${preprocessFolderName}
-preprocT2Folder=${T2Folder}/${preprocessFolderName}
-segT1Folder=${T1Folder}/${segFolderName}
-regT1Folder=${T1Folder}/${regFolderName}
-regT2Folder=${T2Folder}/${regFolderName}
+O_DIR=${O_DIR}/analysis;
+if [ ! -d "$O_DIR" ]; then mkdir $O_DIR; fi
 
-echo OutputDir is $AnatMRIFolder
+O_DIR=${O_DIR}/anatMRI;
+if [ ! -d "$O_DIR" ]; then mkdir $O_DIR; fi
+
+echo OutputDir is $O_DIR
+cd $O_DIR
 
 #Check existance of foldersa= and then create them
-if [ ! -d ${AnalysisFolder} ]; then mkdir ${AnalysisFolder}; fi
-if [ ! -d ${AnatMRIFolder} ]; then mkdir ${AnatMRIFolder}; fi
-if [ ! -d ${rawFolder} ]; then mkdir ${rawFolder}; fi
-if [ ! -d ${AnatMRIrawFolder} ]; then mkdir ${AnatMRIrawFolder}; fi
-if [ ! -d ${T1Folder} ]; then mkdir ${T1Folder}; fi
-if [ ! -d ${rawT1Folder} ]; then mkdir ${rawT1Folder}; fi
-if [ ! -d ${preprocT1Folder} ]; then mkdir ${preprocT1Folder}; fi
-if [ ! -d ${segT1Folder} ]; then mkdir ${segT1Folder}; fi
-if [ ! -d "${segT1Folder}/tissue" ]; then mkdir ${segT1Folder}/tissue; fi
-if [ ! -d "${segT1Folder}/tissue/sing_chan" ]; then mkdir ${segT1Folder}/tissue/sing_chan; fi
-if [ ! -d "${segT1Folder}/tissue/multi_chan" ]; then mkdir ${segT1Folder}/tissue/multi_chan; fi
-if [ ! -d "${segT1Folder}/sub" ]; then mkdir ${segT1Folder}/sub; fi
-if [ ! -d "${segT1Folder}/sub/shape" ]; then mkdir ${segT1Folder}/sub/shape; fi
-if [ ! -d ${regT1Folder} ]; then mkdir ${regT1Folder}; fi
-if [ ! -d "${regT1Folder}/lin" ]; then mkdir ${regT1Folder}/lin; fi
-if [ ! -d "${regT1Folder}/nonlin" ]; then mkdir ${regT1Folder}/nonlin; fi
-if [ ! -d ${T1Folder}/log ]; then mkdir ${T1Folder}/log; fi
-if [ ! -d "${T1Folder}/qc" ]; then mkdir ${T1Folder}/qc; fi
-if [ ! -d "${T1Folder}/unlabeled" ]; then mkdir ${T1Folder}/unlabeled; fi
-if [ ! -d "${T1Folder}/unlabeled/fsl_anat" ]; then mkdir ${T1Folder}/unlabeled/fsl_anat; fi
+if [ ! -d "$O_DIR/T1" ]; then mkdir $O_DIR/T1; fi
+if [ ! -d "$O_DIR/T1/raw" ]; then mkdir $O_DIR/T1/raw; fi
+if [ ! -d "$O_DIR/T1/preprocess" ]; then mkdir $O_DIR/T1/preprocess; fi
+if [ ! -d "$O_DIR/T1/seg" ]; then mkdir $O_DIR/T1/seg; fi
+if [ ! -d "$O_DIR/T1/seg/tissue" ]; then mkdir $O_DIR/T1/seg/tissue; fi
+if [ ! -d "$O_DIR/T1/seg/tissue/sing_chan" ]; then mkdir $O_DIR/T1/seg/tissue/sing_chan; fi
+if [ ! -d "$O_DIR/T1/seg/tissue/multi_chan" ]; then mkdir $O_DIR/T1/seg/tissue/multi_chan; fi
+if [ ! -d "$O_DIR/T1/seg/sub" ]; then mkdir $O_DIR/T1/seg/sub; fi
+if [ ! -d "$O_DIR/T1/seg/sub/shape" ]; then mkdir $O_DIR/T1/seg/sub/shape; fi
+if [ ! -d "$O_DIR/T1/reg" ]; then mkdir $O_DIR/T1/reg; fi
+if [ ! -d "$O_DIR/T1/reg/lin" ]; then mkdir $O_DIR/T1/reg/lin; fi
+if [ ! -d "$O_DIR/T1/reg/nonlin" ]; then mkdir $O_DIR/T1/reg/nonlin; fi
+if [ ! -d "$O_DIR/T1/log" ]; then mkdir $O_DIR/T1/log; fi
+if [ ! -d "$O_DIR/T1/qc" ]; then mkdir $O_DIR/T1/qc; fi
+if [ ! -d "$O_DIR/T1/unlabeled" ]; then mkdir $O_DIR/T1/unlabeled; fi
+if [ ! -d "$O_DIR/T1/unlabeled/fsl_anat" ]; then mkdir $O_DIR/T1/unlabeled/fsl_anat; fi
 
 if [[ $T2 == yes ]]; then
-    if [ ! -d ${T2Folder} ]; then mkdir ${T2Folder}; fi
-    if [ ! -d ${rawT2Folder} ]; then mkdir ${rawT2Folder}; fi
-    if [ ! -d ${preprocT2Folder} ]; then mkdir ${preprocT2Folder}; fi
-    if [ ! -d ${regT2Folder} ]; then mkdir ${regT2Folder}; fi
-    if [ ! -d ${regT2Folder}/lin ]; then mkdir ${regT2Folder}/lin; fi
-    if [ ! -d ${regT2Folder}/nonlin ]; then mkdir ${regT2Folder}/nonlin; fi
-    if [ ! -d "${T2Folder}/log" ]; then mkdir ${T2Folder}/log; fi
-    if [ ! -d "${T2Folder}/qc" ]; then mkdir ${T2Folder}/qc; fi
-    if [ ! -d "${T2Folder}/unlabeled" ]; then mkdir ${T2Folder}/unlabeled; fi
-    if [ ! -d "${T2Folder}/unlabeled/fsl_anat" ]; then mkdir ${T2Folder}/unlabeled/fsl_anat; fi
+    if [ ! -d "$O_DIR/T2" ]; then mkdir $O_DIR/T2; fi
+    if [ ! -d "$O_DIR/T2/raw" ]; then mkdir $O_DIR/T2/raw; fi
+    if [ ! -d "$O_DIR/T2/preprocess" ]; then mkdir $O_DIR/T2/preprocess; fi
+    if [ ! -d "$O_DIR/T2/reg" ]; then mkdir $O_DIR/T2/reg; fi
+    if [ ! -d "$O_DIR/T2/reg/lin" ]; then mkdir $O_DIR/T2/reg/lin; fi
+    if [ ! -d "$O_DIR/T2/reg/nonlin" ]; then mkdir $O_DIR/T2/reg/nonlin; fi
+    if [ ! -d "$O_DIR/T2/log" ]; then mkdir $O_DIR/T2/log; fi
+    if [ ! -d "$O_DIR/T2/qc" ]; then mkdir $O_DIR/T2/qc; fi
+    if [ ! -d "$O_DIR/T2/unlabeled" ]; then mkdir $O_DIR/T2/unlabeled; fi
+    if [ ! -d "$O_DIR/T2/unlabeled/fsl_anat" ]; then mkdir $O_DIR/T2/unlabeled/fsl_anat; fi
 fi
 
-#=====================================================================================
-###                                   DO WORK
-#=====================================================================================
 
-
-$FSLDIR/bin/imcp $IN_Img ${rawT1Folder}/T1_orig.nii.gz
+$FSLDIR/bin/imcp $IN_Img $O_DIR/T1/raw/T1_orig.nii.gz
 
 
 if [[ $T2 == "yes" ]]; then
-    $FSLDIR/bin/imcp $T2_IN_Img ${rawT2Folder}/T2_orig.nii.gz
+    $FSLDIR/bin/imcp $T2_IN_Img $O_DIR/T2/raw/T2_orig.nii.gz
 fi
 
-: <<'COMMENT'
 
 if [[ $do_anat_based_on_FS == "yes" ]]; then
     date; echo "Intensity normalization, Bias correction, Brain Extraction"
 
-    if [ -d ${T1Folder}/FS ] ; then
-        rm -r ${T1Folder}/FS
+    if [ -d $O_DIR/T1/FS ] ; then
+        rm -r $O_DIR/T1/FS
     fi
 
-    SUBJECTS_DIR=${T1Folder}
-    recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s FS -autorecon1
+    SUBJECTS_DIR=$O_DIR/T1
+    recon-all -i $O_DIR/T1/raw/T1_orig.nii.gz -s FS -autorecon1
 
-    mridir=${T1Folder}/FS/mri
+    mridir=$O_DIR/T1/FS/mri
 
     mri_convert -it mgz -ot nii $mridir/T1.mgz $mridir/T1_FS.nii.gz
     mri_convert -it mgz -ot nii $mridir/brainmask.mgz $mridir/brainmask_FS.nii.gz
 
-    $FSLDIR/bin/flirt -ref ${rawT1Folder}/T1_orig.nii.gz -in $mridir/T1_FS.nii.gz -omat $mridir/rigid_manToFs.mat -out $mridir/T1.nii.gz -dof 12 -cost normmi -searchcost normmi
-    $FSLDIR/bin/flirt -ref ${rawT1Folder}/T1_orig.nii.gz -in $mridir/brainmask_FS.nii.gz -out $mridir/brainmask.nii.gz -init $mridir/rigid_manToFs.mat -applyxfm
+    $FSLDIR/bin/flirt -ref $O_DIR/T1/raw/T1_orig.nii.gz -in $mridir/T1_FS.nii.gz -omat $mridir/rigid_manToFs.mat -out $mridir/T1.nii.gz -dof 12 -cost normmi -searchcost normmi
+    $FSLDIR/bin/flirt -ref $O_DIR/T1/raw/T1_orig.nii.gz -in $mridir/brainmask_FS.nii.gz -out $mridir/brainmask.nii.gz -init $mridir/rigid_manToFs.mat -applyxfm
 
     #### REORIENTATION 2 STANDARD
     $FSLDIR/bin/fslmaths $mridir/brainmask $mridir/brainmask_orig
@@ -258,25 +213,25 @@ if [[ $do_anat_based_on_FS == "yes" ]]; then
     $FSLDIR/bin/convert_xfm -omat $mridir/brainmask_std2orig.mat -inverse $mridir/brainmask_orig2std.mat
     $FSLDIR/bin/fslreorient2std $mridir/brainmask $mridir/brainmask
 
-    $FSLDIR/bin/imcp $mridir/brainmask ${preprocT1Folder}/T1_brain_norm
+    $FSLDIR/bin/imcp $mridir/brainmask $O_DIR/T1/preprocess/T1_brain_norm
 
     Opt_args="$Opt_args --anatbasedFS"
     Opt_args="$Opt_args -i $mridir/T1.nii.gz"
 else
-    Opt_args="$Opt_args -i ${rawT1Folder}/T1_orig.nii.gz"
+    Opt_args="$Opt_args -i $O_DIR/T1/raw/T1_orig.nii.gz"
 fi
 
-Opt_args="$Opt_args -o ${T1Folder}"
+Opt_args="$Opt_args -o $O_DIR/T1"
 
 # run fsl_anat
 date; echo "Queueing fsl_anat for T1w image"
 echo "Command is:"
 echo '***********************************************************************************************'
-#echo "fsl_anat -i ${rawT1Folder}/T1_orig.nii.gz "$Opt_args" -o ${T1Folder}/temp"
+#echo "fsl_anat -i $O_DIR/T1/raw/T1_orig.nii.gz "$Opt_args" -o $O_DIR/T1/temp"
 echo "fsl_anat "$Opt_args""
 echo '***********************************************************************************************'
 
-#${FSLDIR}/bin/fsl_anat "-i ${rawT1Folder}/T1_orig.nii.gz "$Opt_args" -o ${T1Folder}/temp"
+#${FSLDIR}/bin/fsl_anat "-i $O_DIR/T1/raw/T1_orig.nii.gz "$Opt_args" -o $O_DIR/T1/temp"
 ${BRC_SCTRUC_SCR}/FSL_anat.sh ""$Opt_args""
 
 
@@ -284,52 +239,52 @@ if [[ $T2 == "yes" ]]; then
     echo "Queueing fsl_anat for T2w image"
     echo "Command is:"
     echo '***********************************************************************************************'
-    echo "fsl_anat -i ${rawT2Folder}/T2_orig.nii.gz -o ${T2Folder}/temp -t T2 --nononlinreg --nosubcortseg --noreg --noseg --clobber"
+    echo "fsl_anat -i $O_DIR/T2/raw/T2_orig.nii.gz -o $O_DIR/T2/temp -t T2 --nononlinreg --nosubcortseg --noreg --noseg --clobber"
     echo '***********************************************************************************************'
 
-   ${FSLDIR}/bin/fsl_anat  -i ${rawT2Folder}/T2_orig.nii.gz -o ${T2Folder}/temp -t T2 --nononlinreg --nosubcortseg --noreg --noseg --clobber
+   ${FSLDIR}/bin/fsl_anat  -i $O_DIR/T2/raw/T2_orig.nii.gz -o $O_DIR/T2/temp -t T2 --nononlinreg --nosubcortseg --noreg --noseg --clobber
 fi
 
 
 echo "Queueing organizing data structure"
-${BRC_SCTRUC_SCR}/move_rename.sh $AnatMRIFolder $T2 $do_Sub_seg
+${BRC_SCTRUC_SCR}/move_rename.sh $O_DIR $T2 $do_Sub_seg
 
 
 if [ $do_tissue_seg = "yes" ] && [ $T2 = "yes" ] ; then
     echo "Do multichanel tissue segmentation using FAST"
 
-    if [ ! -d "${T1Folder}/temp" ]; then mkdir ${T1Folder}/temp; fi
-    if [ ! -d "${T1Folder}/unlabeled/mc_FAST" ]; then mkdir ${T1Folder}/unlabeled/mc_FAST; fi
+    if [ ! -d "$O_DIR/T1/temp" ]; then mkdir $O_DIR/T1/temp; fi
+    if [ ! -d "$O_DIR/T1/unlabeled/mc_FAST" ]; then mkdir $O_DIR/T1/unlabeled/mc_FAST; fi
 
-    $FSLDIR/bin/fast -o ${T1Folder}/temp/mc_FAST -g -N -S 2 ${preprocT1Folder}/T1_biascorr_brain  ${T2Folder}/reg/lin/T2_2_T1
+    $FSLDIR/bin/fast -o $O_DIR/T1/temp/mc_FAST -g -N -S 2 $O_DIR/T1/preprocess/T1_biascorr_brain  $O_DIR/T2/reg/lin/T2_2_T1
 
-    $FSLDIR/bin/immv ${T1Folder}/temp/mc_FAST_pve_0  ${segT1Folder}/tissue/multi_chan/T1_mc_pve_CSF
-    $FSLDIR/bin/immv ${T1Folder}/temp/mc_FAST_pve_1  ${segT1Folder}/tissue/multi_chan/T1_mc_pve_WM
-    $FSLDIR/bin/immv ${T1Folder}/temp/mc_FAST_pve_2  ${segT1Folder}/tissue/multi_chan/T1_mc_pve_GM
-    $FSLDIR/bin/immv ${T1Folder}/temp/mc_FAST_pveseg  ${segT1Folder}/tissue/multi_chan/T1_mc_pveseg
-    $FSLDIR/bin/immv ${T1Folder}/temp/mc_FAST_seg_0  ${segT1Folder}/tissue/multi_chan/T1_mc_CSF
-    $FSLDIR/bin/immv ${T1Folder}/temp/mc_FAST_seg_1  ${segT1Folder}/tissue/multi_chan/T1_mc_WM
-    $FSLDIR/bin/immv ${T1Folder}/temp/mc_FAST_seg_2  ${segT1Folder}/tissue/multi_chan/T1_mc_GM
-    $FSLDIR/bin/immv ${T1Folder}/temp/mc_FAST_seg  ${segT1Folder}/tissue/multi_chan/T1_mc_seg
+    $FSLDIR/bin/immv $O_DIR/T1/temp/mc_FAST_pve_0  $O_DIR/T1/seg/tissue/multi_chan/T1_mc_pve_CSF
+    $FSLDIR/bin/immv $O_DIR/T1/temp/mc_FAST_pve_1  $O_DIR/T1/seg/tissue/multi_chan/T1_mc_pve_WM
+    $FSLDIR/bin/immv $O_DIR/T1/temp/mc_FAST_pve_2  $O_DIR/T1/seg/tissue/multi_chan/T1_mc_pve_GM
+    $FSLDIR/bin/immv $O_DIR/T1/temp/mc_FAST_pveseg  $O_DIR/T1/seg/tissue/multi_chan/T1_mc_pveseg
+    $FSLDIR/bin/immv $O_DIR/T1/temp/mc_FAST_seg_0  $O_DIR/T1/seg/tissue/multi_chan/T1_mc_CSF
+    $FSLDIR/bin/immv $O_DIR/T1/temp/mc_FAST_seg_1  $O_DIR/T1/seg/tissue/multi_chan/T1_mc_WM
+    $FSLDIR/bin/immv $O_DIR/T1/temp/mc_FAST_seg_2  $O_DIR/T1/seg/tissue/multi_chan/T1_mc_GM
+    $FSLDIR/bin/immv $O_DIR/T1/temp/mc_FAST_seg  $O_DIR/T1/seg/tissue/multi_chan/T1_mc_seg
 
-    mv ${T1Folder}/temp/* ${T1Folder}/unlabeled/mc_FAST/
-    rm -r ${T1Folder}/temp
+    mv $O_DIR/T1/temp/* $O_DIR/T1/unlabeled/mc_FAST/
+    rm -r $O_DIR/T1/temp
 fi
 
 
 if [[ $do_freesurfer == "yes" ]]; then
-    SUBJECTS_DIR=${T1Folder}
+    SUBJECTS_DIR=$O_DIR/T1
     echo "Queueing Freesurfer"
 
 #    if [[ $T2 == yes ]]; then
-#      recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s FS -FLAIR ${rawT2Folder}/T2_orig.nii.gz -all
+#      recon-all -i $O_DIR/T1/raw/T1_orig.nii.gz -s FS -FLAIR $O_DIR/T2/raw/T2_orig.nii.gz -all
 #    else
         recon-all -s FS -autorecon2
 
         recon-all -s FS -autorecon3
 
-        rm -r ${T1Folder}/fsaverage
-#      recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s FS -all
+        rm -r $O_DIR/T1/fsaverage
+#      recon-all -i $O_DIR/T1/raw/T1_orig.nii.gz -s FS -all
 #    fi
 fi
 
