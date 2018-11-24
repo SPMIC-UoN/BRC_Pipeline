@@ -1,0 +1,69 @@
+#
+# Description:
+#   sets the path of the log file to use for future logging
+#
+# Input:
+#   The first parameter is the name of the tool
+#
+log_SetPath()
+{
+	log_logName="$1"
+}
+
+#
+# Description:
+#   sets the name of the tool to use for future logging
+#
+# Input:
+#   The first parameter is the name of the tool
+#
+log_SetToolName()
+{
+	log_toolName="$1"
+}
+
+#
+# Description:
+#   logs a time-stamped, tool-described message to standard output
+#
+# Input:
+#   Type of display, 1: Terminal, 2: Log, 3: Both
+#   The parameters are the message to send to standard output
+#
+log_Msg()
+{
+  local type=$1
+  shift
+	local msg="$*"
+	local dateTime
+	dateTime=$(date)
+	local toolname
+  local logfile
+  logfile=${log_logName}
+
+	if [ -z "${log_toolName}" ]; then
+		toolname=$(basename ${0})
+	else
+		toolname="${log_toolName}"
+	fi
+
+  case $type in
+
+      1)
+          echo "${msg}"
+      ;;
+
+      2)
+          echo "${msg}" >> "${logfile}"
+      ;;
+
+      3)
+          echo "${msg}"
+          echo "${msg}" >> "${logfile}"
+      ;;
+
+      *)
+          echo "UNKNOWN: ${type}"
+          exit 1
+  esac
+}
