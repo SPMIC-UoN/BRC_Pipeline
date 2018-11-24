@@ -1,169 +1,83 @@
 #!/bin/bash
+# Last update: 02/10/2018
 
-# General FSL anatomical processing pipeline
+# Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
-#   Mark Jenkinson
-#   FMRIB Image Analysis Group
+# Copyright 2018 University of Nottingham
 #
-#   Copyright (C) 2012 University of Oxford
-#
-#   Part of FSL - FMRIB's Software Library
-#   http://www.fmrib.ox.ac.uk/fsl
-#   fsl@fmrib.ox.ac.uk
-#
-#   Developed at FMRIB (Oxford Centre for Functional Magnetic Resonance
-#   Imaging of the Brain), Department of Clinical Neurology, Oxford
-#   University, Oxford, UK
-#
-#
-#   LICENCE
-#
-#   FMRIB Software Library, Release 5.0 (c) 2012, The University of
-#   Oxford (the "Software")
-#
-#   The Software remains the property of the University of Oxford ("the
-#   University").
-#
-#   The Software is distributed "AS IS" under this Licence solely for
-#   non-commercial use in the hope that it will be useful, but in order
-#   that the University as a charitable foundation protects its assets for
-#   the benefit of its educational and research purposes, the University
-#   makes clear that no condition is made or to be implied, nor is any
-#   warranty given or to be implied, as to the accuracy of the Software,
-#   or that it will be suitable for any particular purpose or for use
-#   under any specific conditions. Furthermore, the University disclaims
-#   all responsibility for the use which is made of the Software. It
-#   further disclaims any liability for the outcomes arising from using
-#   the Software.
-#
-#   The Licensee agrees to indemnify the University and hold the
-#   University harmless from and against any and all claims, damages and
-#   liabilities asserted by third parties (including claims for
-#   negligence) which arise directly or indirectly from the use of the
-#   Software or the sale of any products based on the Software.
-#
-#   No part of the Software may be reproduced, modified, transmitted or
-#   transferred in any form or by any means, electronic or mechanical,
-#   without the express permission of the University. The permission of
-#   the University is not required if the said reproduction, modification,
-#   transmission or transference is done without financial return, the
-#   conditions of this Licence are imposed upon the receiver of the
-#   product, and all original and amended source code is included in any
-#   transmitted product. You may be held legally responsible for any
-#   copyright infringement that is caused or encouraged by your failure to
-#   abide by these terms and conditions.
-#
-#   You are not permitted under this Licence to use this Software
-#   commercially. Use for which any financial return is received shall be
-#   defined as commercial use, and includes (1) integration of all or part
-#   of the source code or the Software into a product for sale or license
-#   by or on behalf of Licensee to third parties or (2) use of the
-#   Software or any derivative of it for research with the final aim of
-#   developing software products for sale or license to a third party or
-#   (3) use of the Software or any derivative of it for research with the
-#   final aim of developing non-software products for sale or license to a
-#   third party, or (4) use of the Software to provide any service to an
-#   external organisation for which payment is received. If you are
-#   interested in using the Software commercially, please contact Oxford
-#   University Innovation ("OUI"), the technology transfer company of the
-#   University, to negotiate a licence. Contact details are:
-#   Innovation@innovation.ox.ac.uk quoting reference DE/9564.
 export LC_ALL=C
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+
 set -e
-LOGFILE=log.txt
 
 # The following is a debugging line (displays all commands as they are executed)
 # set -x
 
-Usage() {
-    echo "Usage: `basename $0` [options] -i <structural image>"
-    echo "       `basename $0` [options] -d <existing anat directory>"
-    #echo "       `basename $0` [options] --list=<list of image names OR a text file>"
-    echo " "
-    echo "Arguments (You may specify one or more of):"
-    echo "  -i <strucural image>         filename of input image (for one image only)"
-    echo "  -d <anat dir>                directory name for existing .anat directory where this script will be run in place"
-    echo "  -o <output directory>        basename of directory for output (default is input image basename followed by .anat)"
-    #echo "  --list=<image list>          specifies a list of images to be averaged (either a comma separated list of image names with no spaces, or the filename for a text file containing the individual image filenames)"
-    echo "  --clobber                    if .anat directory exist (as specified by -o or default from -i) then delete it and make a new one"
-    echo "  --strongbias                 used for images with very strong bias fields"
-    echo "  --weakbias                   used for images with smoother, more typical, bias fields (default setting)"
-    echo "  --noreorient                 turn off step that does reorientation 2 standard (fslreorient2std)"
-    echo "  --nocrop                     turn off step that does automated cropping (robustfov)"
-    #echo "  --nobet                      turn off step that does brain extraction (BET or registration) - to use this the input image must already brain extracted"
-    echo "  --nobias                     turn off steps that do bias field correction (via FAST)"
-    echo "  --noreg                      turn off steps that do registration to standard (FLIRT and FNIRT)"
-    echo "  --nononlinreg                turn off step that does non-linear registration (FNIRT)"
-    echo "  --noseg                      turn off step that does tissue-type segmentation (FAST)"
-    echo "  --nosubcortseg               turn off step that does sub-cortical segmentation (FIRST)"
-    echo "  -s <value>                   specify the value for bias field smoothing (the -l option in FAST)"
-    echo "  -t <type>                    specify the type of image (choose one of T1 T2 PD - default is T1)"
-    #echo "  -m <lesion mask>             use the mask image to exclude areas (e.g. lesions) -  voxels=1 in mask are excluded/deweighted"
-    echo "  --nosearch                   specify that linear registration uses the -nosearch option (FLIRT)"
-    echo "  --betfparam                  specify f parameter for BET (only used if not running non-linear reg and also wanting brain extraction done)"
-    echo "  --nocleanup                  do not remove intermediate files"
-    echo " "
-}
-
-
 # extracts the option name from any version (-- or -)
-get_opt1() {
+get_opt1()
+{
     arg=`echo $1 | sed 's/=.*//'`
     echo $arg
 }
 
 # get arg for -- options
-get_arg1() {
+get_arg1()
+{
     if [ X`echo $1 | grep '='` = X ] ; then
-	echo "Option $1 requires an argument" 1>&2
-	exit 1
+	       echo "Option $1 requires an argument" 1>&2
+         exit 1
     else
-	arg=`echo $1 | sed 's/.*=//'`
-	if [ X$arg = X ] ; then
-	    echo "Option $1 requires an argument" 1>&2
-	    exit 1
-	fi
-	echo $arg
+	       arg=`echo $1 | sed 's/.*=//'`
+         if [ X$arg = X ] ; then
+            echo "Option $1 requires an argument" 1>&2
+	          exit 1
+        fi
+	      echo $arg
     fi
 }
 
 # get image filename from -- options
-get_imarg1() {
+get_imarg1()
+{
     arg=`get_arg1 $1`;
     arg=`$FSLDIR/bin/remove_ext $arg`;
     echo $arg
 }
 
 # get arg for - options (need to pass both $1 and $2 to this)
-get_arg2() {
+get_arg2()
+{
     if [ X$2 = X ] ; then
-	echo "Option $1 requires an argument" 1>&2
-	exit 1
+      	echo "Option $1 requires an argument" 1>&2
+      	exit 1
     fi
     echo $2
 }
 
 # get arg of image filenames for - options (need to pass both $1 and $2 to this)
-get_imarg2() {
+get_imarg2()
+{
     arg=`get_arg2 $1 $2`;
     arg=`$FSLDIR/bin/remove_ext $arg`;
     echo $arg
 }
 
-run() {
-  echo $@ >> $LOGFILE
-  $@
+run()
+{
+    log_Msg 2 "$@"
+    $@
 }
 
 
-quick_smooth() {
-  in=$1
-  out=$2
-  run $FSLDIR/bin/fslmaths $in -subsamp2 -subsamp2 -subsamp2 -subsamp2 vol16
-  run $FSLDIR/bin/flirt -in vol16 -ref $in -out $out -noresampblur -applyxfm -paddingsize 16
-  # possibly do a tiny extra smooth to $out here?
-  run $FSLDIR/bin/imrm vol16
+quick_smooth()
+{
+    in=$1
+    out=$2
+    run $FSLDIR/bin/fslmaths $in -subsamp2 -subsamp2 -subsamp2 -subsamp2 vol16
+    run $FSLDIR/bin/flirt -in vol16 -ref $in -out $out -noresampblur -applyxfm -paddingsize 16
+    # possibly do a tiny extra smooth to $out here?
+    run $FSLDIR/bin/imrm vol16
 }
 
 # Parse input arguments
@@ -202,115 +116,187 @@ type=1  # For FAST: 1 = T1w, 2 = T2w, 3 = PD
 
 if [ $# -eq 0 ] ; then Usage; exit 0; fi
 if [ $# -lt 2 ] ; then Usage; exit 1; fi
+
 while [ $# -ge 1 ] ; do
     iarg=`get_opt1 $1`;
-    case "$iarg"
-	in
-	-i)
-	    inputimage=`get_imarg2 $1 $2`;
-	    shift 2;;
-	-o)
-	    outputname=`get_arg2 $1 $2`;
-	    shift 2;;
-	-d)
-	    anatdir=`get_arg2 $1 $2`;
-	    shift 2;;
-	-s)
-	    smooth=`get_arg2 $1 $2`;
-	    shift 2;;
-	-m)
-	    use_lesionmask=yes;
-	    lesionmask=`get_arg2 $1 $2`;
-	    shift 2;;
-	-t)
-	    typestr=`get_arg2 $1 $2`;
-	    if [ $typestr = T1 ] ; then type=1; fi
-	    if [ $typestr = T2 ] ; then type=2; fi
-	    if [ $typestr = PD ] ; then type=3; fi
-	    shift 2;;
-	--list)
-	    imagelist=`get_arg1 $1`;
-	    multipleimages=yes;
-	    shift;;
-	--clobber)
-	    clobber=yes;
-	    shift;;
-	--noreorient)
-	    do_reorient=no;
-	    shift;;
-	--nocrop)
-	    do_crop=no;
-	    shift;;
-	--nobet)
-	    do_bet=no;
-	    shift;;
-	--noreg)
-	    do_reg=no;
-	    shift;;
-	--nononlinreg)
-	    do_nonlinreg=no;
-	    shift;;
-	--noseg)
-	    do_seg=no;
-	    shift;;
-	--nosubcortseg)
-	    do_subcortseg=no;
-	    shift;;
-	--nobias)
-	    do_biasrestore=no;
-	    shift;;
-	--nosearch)
-	    nosearch=-nosearch;
-	    shift;;
-	--strongbias)
-	    strongbias=yes;
-	    niter=5;
-	    smooth=10;
-	    shift;;
-	--weakbias)
-	    strongbias=no;
-	    niter=10;
-	    smooth=20;
-	    shift;;
-	--betfparam)
-	    betfparam=`get_arg1 $1`;
-	    shift;;
-	--nocleanup)
-	    do_cleanup=no;
-	    shift;;
-  --anatbasedFS)
-	    do_anat_based_on_FS=yes;
-	    shift;;
-	-v)
-	    verbose=yes;
-	    shift;;
-	-h)
-	    Usage;
-	    exit 0;;
-	*)
-	    #if [ `echo $1 | sed 's/^\(.\).*/\1/'` = "-" ] ; then
-	    echo "Unrecognised option $1" 1>&2
-	    exit 1
-	    #fi
-	    #shift;;
+
+    case "$iarg" in
+      -i)     inputimage=`get_imarg2 $1 $2`;
+	            shift 2
+              ;;
+
+      -o)     outputname=`get_arg2 $1 $2`;
+              shift 2
+              ;;
+
+      -d)     anatdir=`get_arg2 $1 $2`;
+	            shift 2
+              ;;
+
+	    -s)     smooth=`get_arg2 $1 $2`;
+              shift 2
+              ;;
+
+      -m)     use_lesionmask=yes;
+	            lesionmask=`get_arg2 $1 $2`;
+	            shift 2
+              ;;
+
+	    -t)     typestr=`get_arg2 $1 $2`;
+	            if [ $typestr = T1 ] ; then type=1; fi
+	            if [ $typestr = T2 ] ; then type=2; fi
+	            if [ $typestr = PD ] ; then type=3; fi
+	            shift 2
+              ;;
+
+	    --list)  imagelist=`get_arg1 $1`;
+	             multipleimages=yes;
+	             shift
+               ;;
+
+	    --clobber)   clobber=yes;
+	                 shift
+                   ;;
+
+    	--noreorient)  do_reorient=no;
+	                   shift
+                     ;;
+
+      --nocrop)      do_crop=no;
+                     shift
+                     ;;
+
+ 	    --nobet)       do_bet=no;
+                     shift
+                     ;;
+
+	    --noreg)       do_reg=no;
+	                   shift
+                     ;;
+
+	   --nononlinreg)  do_nonlinreg=no;
+	                   shift
+                     ;;
+
+    --noseg)         do_seg=no;
+	                   shift
+                     ;;
+
+    --nosubcortseg)  do_subcortseg=no;
+	                   shift
+                     ;;
+
+    --nobias)        do_biasrestore=no;
+	                   shift
+                     ;;
+
+    --nosearch)      nosearch=-nosearch;
+	                   shift
+                     ;;
+
+	  --strongbias)    strongbias=yes;
+	                   niter=5;
+	                   smooth=10;
+	                   shift
+                     ;;
+
+    --weakbias)	    strongbias=no;
+	                  niter=10;
+	                  smooth=20;
+	                  shift
+                    ;;
+
+    --betfparam)    betfparam=`get_arg1 $1`;
+	                  shift
+                    ;;
+
+    --nocleanup)    do_cleanup=no;
+	                  shift
+                    ;;
+
+    --anatbasedFS)  do_anat_based_on_FS=yes;
+                    shift
+                    ;;
+
+    -logfile)       LogFile=`get_arg2 $1 $2`;
+	                  shift 2
+                    ;;
+
+    -mridir)        mridir=`get_arg2 $1 $2`;
+	                  shift 2
+                    ;;
+
+    -orig)          Orig_T1=`get_arg2 $1 $2`;
+	                  shift 2
+                    ;;
+
+    -v)             verbose=yes;
+              	    shift
+                    ;;
+
+    -h)             Usage;
+	                  exit 0
+                    ;;
+
+    *)
+  	    #if [ `echo $1 | sed 's/^\(.\).*/\1/'` = "-" ] ; then
+  	    echo "Unrecognised option $1" 1>&2
+  	    exit 1
+  	    #fi
+  	    #shift;;
     esac
 done
+
+log_SetPath "${LogFile}"
+
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+                     START: T1w image preprocessing                     +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "inputimage=$inputimage"
+log_Msg 2 "outputname=$outputname"
+log_Msg 2 anatdir=$anatdir
+log_Msg 2 smooth=$smooth
+log_Msg 2 use_lesionmask=$use_lesionmask
+log_Msg 2 lesionmask=$lesionmask
+log_Msg 2 typestr=$typestr
+log_Msg 2 imagelist=$imagelist
+log_Msg 2 multipleimages=$multipleimages
+log_Msg 2 clobber=$clobber
+log_Msg 2 do_reorient=$do_reorient
+log_Msg 2 do_crop=$do_crop
+log_Msg 2 do_bet=$do_bet
+log_Msg 2 do_reg=$do_reg
+log_Msg 2 do_nonlinreg=$do_nonlinreg
+log_Msg 2 do_seg=$do_seg
+log_Msg 2 do_subcortseg=$do_subcortseg
+log_Msg 2 do_biasrestore=$do_biasrestore
+log_Msg 2 strongbias=$strongbias
+log_Msg 2 betfparam=$betfparam
+log_Msg 2 do_cleanup=$do_cleanup
+log_Msg 2 do_anat_based_on_FS=$do_anat_based_on_FS
+log_Msg 2 LogFile=$LogFile
+log_Msg 2 verbose=$verbose
+log_Msg 2 mridir=$mridir
+log_Msg 2 Orig_T1=$Orig_T1
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 ### Sanity checking of arguments
 
 if [ X$inputimage = X ] && [ X$anatdir = X ] && [ X"$imagelist" = X ] ; then
     #echo "One of the compulsory arguments -i, -d or --list MUST be used"
-    echo "One of the compulsory arguments -i or -d MUST be used"
+    log_Msg 3 "One of the compulsory arguments -i or -d MUST be used"
     exit 1;
 fi
 
 if [ $type != 1 ] ; then
     if [ $do_nonlinreg = yes ] ; then
-      	echo "ERROR: Cannot do non-linear registration with non-T1 images, please re-run with --nononlinreg" ;
+      	log_Msg 3 "ERROR: Cannot do non-linear registration with non-T1 images, please re-run with --nononlinreg" ;
       	exit 1;
     fi ;
     if [ $do_subcortseg = yes ] ; then
-      	echo "ERROR: Cannot perform subcortical segmentation (with FIRST) on a non-T1 image, please re-run with --nosubcortseg"
+      	log_Msg 3 "ERROR: Cannot perform subcortical segmentation (with FIRST) on a non-T1 image, please re-run with --nosubcortseg"
       	exit 1;
     fi ;
 fi
@@ -325,11 +311,10 @@ betopts="-f ${betfparam}"
 
 # setup output directory (or go to existing one)
 
-if [ $do_anat_based_on_FS = yes ]; then
-    do_crop=yes
-fi
+#if [ $do_anat_based_on_FS = yes ]; then
+#    do_crop=yes
+#fi
 
-mridir=$outputname/FS/mri;
 outputname=$outputname/temp;
 
 if [ X$anatdir = X ] ; then
@@ -339,7 +324,7 @@ if [ X$anatdir = X ] ; then
 
     if [ -d ${outputname}.anat ] ; then
         if [ $clobber = no ] ; then
-            echo "ERROR: Directory ${outputname}.anat already exists!"
+            log_Msg 3 "ERROR: Directory ${outputname}.anat already exists!"
             exit 1;
         else
             rm -rf ${outputname}.anat
@@ -348,12 +333,12 @@ if [ X$anatdir = X ] ; then
     mkdir ${outputname}.anat
 else
     if [ X${inputimage} != X ] ; then
-        echo "ERROR: Cannot specify both -d and -i";
+        log_Msg 3 "ERROR: Cannot specify both -d and -i";
         exit 1;
     fi
 
     if [ $multipleimages = yes ] ; then
-        echo "ERROR: Cannot specify both -d and --list";
+        log_Msg 3 "ERROR: Cannot specify both -d and --list";
         exit 1;
     fi
 
@@ -361,7 +346,7 @@ else
     outputname=`echo $outputname | sed 's/\.anat$//'`;
 
     if [ ! -d ${outputname}.anat ] ; then
-        echo "ERROR: Directory ${outputname}.anat not found"
+        log_Msg 3 "ERROR: Directory ${outputname}.anat not found"
         exit 1;
     fi
 
@@ -369,12 +354,12 @@ else
 fi
 
 # some initial reporting for the log file
-echo "Script invoked from directory = `pwd`" >> ${outputname}.anat/$LOGFILE
-echo "Output directory = ${outputname}.anat" >> ${outputname}.anat/$LOGFILE
+log_Msg 3 "Script invoked from directory = `pwd`"
+log_Msg 3 "Output directory = ${outputname}.anat"
 
 if [ $multipleimages = yes ] ; then
     if [ X${inputimage} != X ] ; then
-        echo "ERROR: Cannot specify both -i and --list";
+        log_Msg 3 "ERROR: Cannot specify both -i and --list";
         exit 1;
     fi
 
@@ -390,33 +375,33 @@ if [ $multipleimages = yes ] ; then
 
     for name in $namelist ; do
         if [ $FSLDIR/bin/imtest $name = 0 ] ; then
-      	    echo "ERROR: Cannot find image $name"
+      	    log_Msg 3 "ERROR: Cannot find image $name"
       	    exit 1;
         fi
 
         $FSLDIR/bin/fslmaths $name ${outputname}.anat/${T1}_${num}
     done
 
-    echo "Input images are ${namelist}" >> ${outputname}.anat/$LOGFILE
+    log_Msg 3 "Input images are ${namelist}"
 else
     $FSLDIR/bin/fslmaths ${inputimage} ${outputname}.anat/${T1}
-    echo "Input image is ${inputimage}" >> ${outputname}.anat/$LOGFILE
+    log_Msg 3 "Input image is ${inputimage}"
 fi
 
 
 if [ $use_lesionmask = yes ] ; then
     $FSLDIR/bin/fslmaths $lesionmask ${outputname}.anat/lesionmask
-    echo "Lesion mask is ${lesionmask}" >> ${outputname}.anat/$LOGFILE
+    log_Msg 3 "Lesion mask is ${lesionmask}"
 fi
 
 cd ${outputname}.anat
-echo " " >> $LOGFILE
+log_Msg 3 " "
 
 # now the real work
 
 #### AVERAGING MULTIPLE SCANS
 if [ $multipleimages = yes ] ; then
-    date; echo "Averaging list of input images"
+    date; log_Msg 3 "Averaging list of input images"
 
     mkdir average_dir
     run $FSLDIR/bin/AnatomicalAverage -w average_dir -o ${T1} `$FSLDIR/bin/imglob ${T1}_*`
@@ -439,32 +424,41 @@ fi
 
 #### REORIENTATION 2 STANDARD
 if [ $do_reorient = yes ] ; then
-    date; echo "Reorienting to standard orientation"
+    log_Msg 3 `date`
+    log_Msg 3 "Reorienting to standard orientation"
 
-    run $FSLDIR/bin/fslmaths ${T1} ${T1}_orig
-    run $FSLDIR/bin/fslreorient2std ${T1} > ${T1}_orig2std.mat
-    run $FSLDIR/bin/convert_xfm -omat ${T1}_std2orig.mat -inverse ${T1}_orig2std.mat
-    run $FSLDIR/bin/fslreorient2std ${T1} ${T1}
+    $FSLDIR/bin/fslmaths ${T1} ${T1}_orig
+    $FSLDIR/bin/fslreorient2std ${T1} > ${T1}_orig2std.mat
+    $FSLDIR/bin/convert_xfm -omat ${T1}_std2orig.mat -inverse ${T1}_orig2std.mat
+    $FSLDIR/bin/fslreorient2std ${T1} ${T1}
 fi
-
 
 #### AUTOMATIC CROPPING
 # required input: ${T1}
 # output: ${T1} (modified) [ and ${T1}_fullfov plus various .mats ]
 if [ $do_crop = yes ] ; then
-    date; echo "Automatically cropping the image"
+    log_Msg 3 `date`
+    log_Msg 3 "Automatically cropping the image"
 
-    head_offset=6
+    head_offset=0
     run $FSLDIR/bin/immv ${T1} ${T1}_fullfov
 
     head_top=`${FSLDIR}/bin/robustfov -i ${T1}_fullfov | grep -v Final | head -n 1 | awk '{print $5}'`
-    run $FSLDIR/bin/robustfov -i ${T1}_fullfov -r ${T1} -m ${T1}_roi2nonroi.mat --debug | grep [0-9] | tail -1 > ${T1}_roi.log
+    echo "head_top=$head_top"
+    head_top=`${FSLDIR}/bin/robustfov -i ${Orig_T1} | grep -v Final | head -n 1 | awk '{print $5}'`
+    echo "head_top=$head_top"
+
+    run $FSLDIR/bin/robustfov -i ${Orig_T1} -r ${T1} -m ${T1}_roi2nonroi.mat --debug | grep [0-9] | tail -1 > ${T1}_roi.log
+
+    run cat "${T1}_roi2nonroi.mat"
 
     corrected_head_top=`echo "scale=0; ${head_top%%.*} - $head_offset" | bc`
     #replace ${head_top%%.*} ${corrected_head_top} -- ${T1}_roi2nonroi.mat
     tmp=$(<${T1}_roi2nonroi.mat)
     echo "${tmp//${head_top%%.*}/${corrected_head_top}}" > ${T1}_roi2nonroi.mat
     ${FSLDIR}/bin/fslroi ${T1}_fullfov ${T1} 0 -1 0 -1 $corrected_head_top 170
+
+    run cat "${T1}_roi2nonroi.mat"
 
     # combine this mat file and the one above (if generated)
     if [ $do_reorient = yes ] ; then
@@ -473,6 +467,7 @@ if [ $do_crop = yes ] ; then
          run $FSLDIR/bin/convert_xfm -omat ${T1}_roi2orig.mat -inverse ${T1}_orig2roi.mat
     fi
 fi
+
 
 ### LESION MASK
 # make appropriate (reoreinted and cropped) lesion mask (or a default blank mask to simplify the code later on)
@@ -497,7 +492,8 @@ $FSLDIR/bin/fslmaths lesionmask -binv lesionmaskinv
 # output: ${T1}_biascorr  [ other intermediates to be cleaned up ]
 if [ $do_biasrestore = yes ] ; then
     if [ $strongbias = yes ] ; then
-        date; echo "Estimating and removing field (stage 1 - large-scale fields)"
+        log_Msg 3  `date`
+        log_Msg 3 "Estimating and removing field (stage 1 - large-scale fields)"
 
         # for the first step (very gross bias field) don't worry about the lesionmask
         # the following is a replacement for : run $FSLDIR/bin/fslmaths ${T1} -s 20 ${T1}_s20
@@ -524,7 +520,8 @@ if [ $do_biasrestore = yes ] ; then
         med1=`$FSLDIR/bin/fslstats ${T1}_hpf2_brain -k ${T1}_hpf_brain_mask -P 50`;
         run $FSLDIR/bin/fslmaths ${T1}_hpf2_brain -div $med1 -mul $med0 ${T1}_hpf2_brain
 
-        date; echo "Estimating and removing bias field (stage 2 - detailed fields)"
+        log_Msg 3  `date`
+        log_Msg 3 "Estimating and removing bias field (stage 2 - detailed fields)"
 
         run $FSLDIR/bin/fslmaths ${T1}_hpf2_brain -mas lesionmaskinv ${T1}_hpf2_maskedbrain
         run $FSLDIR/bin/fast -o ${T1}_initfast -l ${smooth} -b -B -t $type --iter=${niter} --nopve --fixed=0 -v ${T1}_hpf2_maskedbrain
@@ -547,7 +544,8 @@ if [ $do_biasrestore = yes ] ; then
     run $FSLDIR/bin/fslmaths ${T1}_initfast2_restore -mas lesionmaskinv ${T1}_initfast2_maskedrestore
     run $FSLDIR/bin/fast -o ${T1}_fast -l ${smooth} -b -B -t $type --iter=${niter} --nopve --fixed=0 -v ${T1}_initfast2_maskedrestore
 
-    date; echo "Extrapolating bias field from central region"
+    log_Msg 3  `date`
+    log_Msg 3 "Extrapolating bias field from central region"
     # use the latest fast output
     run $FSLDIR/bin/fslmaths ${T1} -div ${T1}_fast_restore -mas ${T1}_initfast2_brain_mask ${T1}_fast_totbias
     run $FSLDIR/bin/fslmaths ${T1}_initfast2_brain_mask -ero -ero -ero -ero -mas lesionmaskinv ${T1}_initfast2_brain_mask2
@@ -567,16 +565,18 @@ fi
 # output: ${T1}_biascorr_brain ${T1}_biascorr_brain_mask ${T1}_to_MNI_lin ${T1}_to_MNI [plus transforms, inverse transforms, jacobians, etc.]
 if [ $do_reg = yes ] ; then
     if [ $do_bet != yes ] ; then
-        echo "Skipping registration, as it requires a non-brain-extracted input image"
+        log_Msg 3 "Skipping registration, as it requires a non-brain-extracted input image"
     else
-        date; echo "Registering to standard space (linear)"
+        log_Msg 3  `date`
+        log_Msg 3 "Registering to standard space (linear)"
 
         flirtargs="$flirtargs $nosearch"
         if [ $use_lesionmask = yes ] ; then flirtargs="$flirtargs -inweight lesionmaskinv" ; fi
         run $FSLDIR/bin/flirt -interp spline -dof 12 -in ${T1}_biascorr -ref $FSLDIR/data/standard/MNI152_${T1}_2mm -dof 12 -omat ${T1}_to_MNI_lin.mat -out ${T1}_to_MNI_lin $flirtargs
 
         if [ $do_nonlinreg = yes ] ; then
-            date; echo "Registering to standard space (non-linear)"
+            log_Msg 3  `date`
+            log_Msg 3 "Registering to standard space (non-linear)"
 
             #refmask=$FSLDIR/data/standard/MNI152_${T1}_2mm_brain_mask_dil1
             refmask=MNI152_${T1}_2mm_brain_mask_dil1
@@ -587,7 +587,8 @@ if [ $do_reg = yes ] ; then
             run $FSLDIR/bin/fslmaths $FSLDIR/data/standard/MNI152_${T1}_2mm_brain_mask -fillh -dilF $refmask
             run $FSLDIR/bin/fnirt --in=${T1}_biascorr --ref=$FSLDIR/data/standard/MNI152_${T1}_2mm --fout=${T1}_to_MNI_nonlin_field --jout=${T1}_to_MNI_nonlin_jac --iout=${T1}_to_MNI_nonlin --logout=${T1}_to_MNI_nonlin.txt --cout=${T1}_to_MNI_nonlin_coeff --config=$FSLDIR/etc/flirtsch/${T1}_2_MNI152_2mm.cnf --aff=${T1}_to_MNI_lin.mat --refmask=$refmask $fnirtargs
 
-            date; echo "Performing brain extraction (using FNIRT)"
+            log_Msg 3  `date`
+            log_Msg 3 "Performing brain extraction (using FNIRT)"
 
             run $FSLDIR/bin/invwarp --ref=${T1}_biascorr -w ${T1}_to_MNI_nonlin_coeff -o MNI_to_${T1}_nonlin_field
             run $FSLDIR/bin/applywarp --interp=nn --in=$FSLDIR/data/standard/MNI152_${T1}_2mm_brain_mask --ref=${T1}_biascorr -w MNI_to_${T1}_nonlin_field -o ${T1}_biascorr_brain_mask
@@ -604,7 +605,8 @@ if [ $do_reg = yes ] ; then
     fi
 else
     if [ $do_bet = yes ] ; then
-        date; echo "Performing brain extraction (using BET)"
+        log_Msg 3  `date`
+        log_Msg 3 "Performing brain extraction (using BET)"
         run $FSLDIR/bin/bet ${T1}_biascorr ${T1}_biascorr_brain -m $betopts  ## results sensitive to the f parameter
     else
         run $FSLDIR/bin/fslmaths ${T1}_biascorr ${T1}_biascorr_brain
@@ -628,7 +630,8 @@ fi
 # required input: ${T1}_biascorr ${T1}_biascorr_brain ${T1}_biascorr_brain_mask
 # output: ${T1}_biascorr ${T1}_biascorr_brain (modified) ${T1}_fast* (as normally output by fast) ${T1}_fast_bias (modified)
 if [ $do_seg = yes ] ; then
-    date; echo "Performing tissue-type segmentation"
+    log_Msg 3  `date`
+    log_Msg 3 "Performing tissue-type segmentation"
 
     run $FSLDIR/bin/fslmaths ${T1}_biascorr_brain -mas lesionmaskinv ${T1}_biascorr_maskedbrain
     run $FSLDIR/bin/fast -o ${T1}_fast -l ${smooth} -b -B -t $type --iter=${niter} ${T1}_biascorr_maskedbrain
@@ -659,7 +662,7 @@ fi
 # required inputs: ${T1}_biascorr
 # output: ${T1}_vols.txt
 if [ $do_reg = yes ] && [ $do_seg = yes ] && [ $T1 = T1 ] ; then
-    echo "Skull-constrained registration (linear)"
+    log_Msg 3  "Skull-constrained registration (linear)"
 
     run ${FSLDIR}/bin/bet ${T1}_biascorr ${T1}_biascorr_bet -s -m $betopts
     run ${FSLDIR}/bin/pairreg ${FSLDIR}/data/standard/MNI152_T1_2mm_brain ${T1}_biascorr_bet ${FSLDIR}/data/standard/MNI152_T1_2mm_skull ${T1}_biascorr_bet_skull ${T1}2std_skullcon.mat
@@ -686,7 +689,8 @@ fi
 # required input: ${T1}_biascorr
 # output: ${T1}_first*
 if [ $do_subcortseg = yes ] ; then
-    date; echo "Performing subcortical segmentation"
+    log_Msg 3  `date`
+    log_Msg 3  "Performing subcortical segmentation"
 
     # Future note, would be nice to use ${T1}_to_MNI_lin.mat to initialise first_flirt
     ffopts=""
@@ -696,7 +700,7 @@ if [ $do_subcortseg = yes ] ; then
     run $FSLDIR/bin/first_flirt ${T1}_biascorr ${T1}_biascorr_to_std_sub $ffopts
     run mkdir first_results
 
-    echo "$FSLDIR/bin/run_first_all $firstreg -i ${T1}_biascorr -o first_results/${T1}_first -a ${T1}_biascorr_to_std_sub.mat" >> $LOGFILE
+    log_Msg 2  "$FSLDIR/bin/run_first_all $firstreg -i ${T1}_biascorr -o first_results/${T1}_first -a ${T1}_biascorr_to_std_sub.mat"
     FIRSTID=`$FSLDIR/bin/run_first_all $firstreg -i ${T1}_biascorr -o first_results/${T1}_first -a ${T1}_biascorr_to_std_sub.mat`
 #    ${ScriptsDir}/run_first_all.sh $firstreg -i ${T1}_biascorr -o first_results/${T1}_first -a ${T1}_biascorr_to_std_sub.mat
 
@@ -710,6 +714,7 @@ fi
 
 #### CLEANUP
 if [ $do_cleanup = yes ] ; then
-    date; echo "Cleaning up intermediate files"
+    log_Msg 3  `date`
+    log_Msg 3  "Cleaning up intermediate files"
     run $FSLDIR/bin/imrm ${T1}_biascorr_bet_mask ${T1}_biascorr_bet ${T1}_biascorr_brain_mask2 ${T1}_biascorr_init ${T1}_biascorr_maskedbrain ${T1}_biascorr_to_std_sub ${T1}_fast_bias_idxmask ${T1}_fast_bias_init ${T1}_fast_bias_vol2 ${T1}_fast_bias_vol32 ${T1}_fast_totbias ${T1}_hpf* ${T1}_initfast* ${T1}_s20 ${T1}_initmask_s20
 fi
