@@ -27,6 +27,7 @@ SEC1=`getopt1 "--start" $@`
 SEC2=`getopt1 "--end" $@`
 Sub_ID=`getopt1 "--subject" $@`
 Type=`getopt1 "--type" $@`
+LogFile=`getopt1 "--logfile" $@`
 
 this_tools_dir=$(dirname "${BASH_SOURCE[0]}")
 product_file="${this_tools_dir}/product.txt"
@@ -34,15 +35,22 @@ version_file="${this_tools_dir}/version.txt"
 #branch_file="${this_tools_dir}/branch.txt"
 #deployment_file="${this_tools_dir}/deployment.txt"
 
-echo "=========================================================================="
+#=====================================================================================
+###                              Setup the Log file
+#=====================================================================================
+
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+log_SetPath "${LogFile}"
+
+#=====================================================================================
+
+log_Msg 3 "=========================================================================="
 if [ -e "${product_file}" ] ; then
-		echo -n "                         PRODUCT: "
-		cat ${product_file}
+		log_Msg 3 "                         PRODUCT: `cat ${product_file}`"
 fi
 
 if [ -e "${version_file}" ] ; then
-		echo -n "                           VERSION: "
-		cat ${version_file}
+		log_Msg 3 "                           VERSION: `cat ${version_file}`"
 fi
 
 #if [ -e "${branch_file}" ] ; then
@@ -57,32 +65,32 @@ fi
 #fi
 
 if [[ ${ShowDiff} == "yes" ]]; then
-    echo "                           Subject: $Sub_ID"
+    log_Msg 3 "                           Subject: $Sub_ID"
 
     case $Type in
 
         1)
-            echo "                     Type of Analysis: Structural"
+            log_Msg 3 "                     Type of Analysis: Structural"
         ;;
 
         2)
-            echo "                     Type of Analysis: Diffusion"
+            log_Msg 3 "                     Type of Analysis: Diffusion"
         ;;
 
         3)
-            echo "                     Type of Analysis: Functional"
+            log_Msg 3 "                     Type of Analysis: Functional"
         ;;
 
         4)
-            echo "                 Type of Analysis: Group Functional"
+            log_Msg 3 "                 Type of Analysis: Group Functional"
         ;;
     esac
 
 		DIFFSEC=`expr ${SEC2} - ${SEC1}`
 
-		echo "                 End Time: `date`"
-		echo "                       Run Time (H:M:S): `date +%H:%M:%S -ud @${DIFFSEC}`"
+		log_Msg 3 "                 End Time: `date`"
+		log_Msg 3 "                       Run Time (H:M:S): `date +%H:%M:%S -ud @${DIFFSEC}`"
 else
-		echo "               Start Time: `date`"
+		log_Msg 3 "               Start Time: `date`"
 fi
-echo "=========================================================================="
+log_Msg 3 "=========================================================================="
