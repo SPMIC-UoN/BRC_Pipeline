@@ -7,6 +7,8 @@
 #
 set -e
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+
 # function for parsing options
 getopt1()
 {
@@ -35,13 +37,32 @@ JacobianOutput=`getopt1 "--ojacobian" $@`  # "$8"
 GradientDistortionCoeffs=`getopt1 "--gdcoeffs" $@`  # "$9"
 TopupConfig=`getopt1 "--topupconfig" $@`  # "${11}"
 OutFolder=`getopt1 "--outfolder" $@`  # "${11}"
-#UseJacobian=`getopt1 "--usejacobian" $@`
+LogFile=`getopt1 "--logfile" $@`
 
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                        +"
-echo "+         START: Topup Field Map Generation and Gradient Unwarping       +"
-echo "+                                                                        +"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_SetPath "${LogFile}"
+
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+         START: Topup Field Map Generation and Gradient Unwarping       +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "WD:$WD"
+log_Msg 2 "PhaseEncodeOne:$PhaseEncodeOne"
+log_Msg 2 "PhaseEncodeTwo:$PhaseEncodeTwo"
+log_Msg 2 "ScoutInputName:$ScoutInputName"
+log_Msg 2 "EchoSpacing:$EchoSpacing"
+log_Msg 2 "UnwarpDir:$UnwarpDir"
+log_Msg 2 "DistortionCorrectionWarpFieldOutput:$DistortionCorrectionWarpFieldOutput"
+log_Msg 2 "DistortionCorrectionMagnitudeOutput:$DistortionCorrectionMagnitudeOutput"
+log_Msg 2 "DistortionCorrectionMagnitudeBrainOutput:$DistortionCorrectionMagnitudeBrainOutput"
+log_Msg 2 "DistortionCorrectionFieldOutput:$DistortionCorrectionFieldOutput"
+log_Msg 2 "JacobianOutput:$JacobianOutput"
+log_Msg 2 "GradientDistortionCoeffs:$GradientDistortionCoeffs"
+log_Msg 2 "TopupConfig:$TopupConfig"
+log_Msg 2 "OutFolder:$OutFolder"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 mkdir -p $WD
 ########################################## DO WORK ##########################################
@@ -50,13 +71,13 @@ mkdir -p $WD
 #should we also check spacing info? could be off by tiny fractions, so probably not
 if [[ `${FSLDIR}/bin/fslhd $PhaseEncodeOne | grep '^dim[123]'` != `${FSLDIR}/bin/fslhd $ScoutInputName | grep '^dim[123]'` ]]
 then
-    echo "Error: Spin echo fieldmap has different dimensions than scout image, this requires a manual fix"
+    log_Msg 3 "Error: Spin echo fieldmap has different dimensions than scout image, this requires a manual fix"
     exit 1
 fi
 #for kicks, check that the spin echo images match
 if [[ `${FSLDIR}/bin/fslhd $PhaseEncodeOne | grep '^dim[123]'` != `${FSLDIR}/bin/fslhd $PhaseEncodeTwo | grep '^dim[123]'` ]]
 then
-    echo "Error: Spin echo fieldmap images have different dimensions!"
+    log_Msg 3 "Error: Spin echo fieldmap images have different dimensions!"
     exit 1
 fi
 
@@ -170,10 +191,10 @@ ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/PhaseOne_gdc -r ${WD}/Pha
 ${FSLDIR}/bin/fslmaths ${WD}/PhaseOne_gdc_dc -mul ${WD}/Jacobian_${vnum} ${WD}/PhaseOne_gdc_dc_jac
 
 # Scout - warp and Jacobian modulate to get distortion corrected output
-echo "create a spline interpolated image of scout (distortion corrected in same space)"
+log_Msg 3 "create a spline interpolated image of scout (distortion corrected in same space)"
 ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/SBRef.nii.gz -r ${WD}/SBRef.nii.gz -w ${WD}/WarpField.nii.gz -o ${WD}/SBRef_dc.nii.gz
 
-echo "apply Jacobian correction to scout image"
+log_Msg 3 "apply Jacobian correction to scout image"
 ${FSLDIR}/bin/fslmaths ${WD}/SBRef_dc.nii.gz -mul ${WD}/Jacobian.nii.gz ${WD}/SBRef_dc_jac.nii.gz
 
 # Calculate Equivalent Field Map
@@ -202,11 +223,11 @@ ${FSLDIR}/bin/imcp ${WD}/SBRef_dc ${OutFolder}/SBRef_dc
 ${FSLDIR}/bin/imcp ${WD}/PhaseOne_gdc_dc ${OutFolder}/PhaseOne_gdc_dc
 ${FSLDIR}/bin/imcp ${WD}/PhaseTwo_gdc_dc ${OutFolder}/PhaseTwo_gdc_dc
 
-echo ""
-echo "          END: Topup Field Map Generation and Gradient Unwarping"
-echo "                    END: `date`"
-echo "=========================================================================="
-echo "                             ===============                              "
+log_Msg 3 ""
+log_Msg 3 "          END: Topup Field Map Generation and Gradient Unwarping"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
 
 ################################################################################################
 ## Cleanup
