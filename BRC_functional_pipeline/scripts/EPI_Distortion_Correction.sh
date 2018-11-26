@@ -7,6 +7,8 @@
 #
 set -e
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+
 # ---------------------------------------------------------------------
 #  Constants for specification of Readout Distortion Correction Method
 # ---------------------------------------------------------------------
@@ -36,6 +38,7 @@ defaultopt()
 
 # parse arguments
 WD=`getopt1 "--workingdir" $@`
+topupFolderName=`getopt1 "--topupfoldername" $@`
 ScoutInputName=`getopt1 "--scoutin" $@`
 SpinEchoPhaseEncodeNegative=`getopt1 "--SEPhaseNeg" $@`
 SpinEchoPhaseEncodePositive=`getopt1 "--SEPhasePos" $@`
@@ -44,23 +47,26 @@ UnwarpDir=`getopt1 "--unwarpdir" $@`
 TopupConfig=`getopt1 "--topupconfig" $@`
 GradientDistortionCoeffs=`getopt1 "--gdcoeffs" $@`
 DistortionCorrection=`getopt1 "--method" $@`
+LogFile=`getopt1 "--logfile" $@`
 
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "WD:$WD"
-echo "ScoutInputName:$ScoutInputName"
-echo "SpinEchoPhaseEncodeNegative:$SpinEchoPhaseEncodeNegative"
-echo "SpinEchoPhaseEncodePositive:$SpinEchoPhaseEncodePositive"
-echo "EchoSpacing:$EchoSpacing"
-echo "UnwarpDir:$UnwarpDir"
-echo "TopupConfig:$TopupConfig"
-echo "GradientDistortionCoeffs:$GradientDistortionCoeffs"
-echo "DistortionCorrection:$DistortionCorrection"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_SetPath "${LogFile}"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "WD:$WD"
+log_Msg 2 "topupFolderName:$topupFolderName"
+log_Msg 2 "ScoutInputName:$ScoutInputName"
+log_Msg 2 "SpinEchoPhaseEncodeNegative:$SpinEchoPhaseEncodeNegative"
+log_Msg 2 "SpinEchoPhaseEncodePositive:$SpinEchoPhaseEncodePositive"
+log_Msg 2 "EchoSpacing:$EchoSpacing"
+log_Msg 2 "UnwarpDir:$UnwarpDir"
+log_Msg 2 "TopupConfig:$TopupConfig"
+log_Msg 2 "GradientDistortionCoeffs:$GradientDistortionCoeffs"
+log_Msg 2 "DistortionCorrection:$DistortionCorrection"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 
 TopupConfig=`defaultopt $TopupConfig ${BRC_GLOBAL_DIR}/config/b02b0.cnf.txt`
-
-echo "TopupConfig:$TopupConfig"
 ########################################## DO WORK ##########################################
 
 case $DistortionCorrection in
@@ -74,7 +80,7 @@ case $DistortionCorrection in
         # Use topup to distortion correct the scout scans using a blip-reversed SE pair "fieldmap" sequence
 
         ${BRC_FMRI_SCR}/TopupPreprocessing.sh \
-              --workingdir=${WD}/FieldMap \
+              --workingdir=${WD}/${topupFolderName} \
               --scoutin=${ScoutInputName} \
               --phaseone=${SpinEchoPhaseEncodeNegative} \
               --phasetwo=${SpinEchoPhaseEncodePositive} \
@@ -84,21 +90,22 @@ case $DistortionCorrection in
               --gdcoeffs=${GradientDistortionCoeffs} \
               --outfolder=${WD} \
               --owarp=${WD}/WarpField \
-              --ojacobian=${WD}/Jacobian
+              --ojacobian=${WD}/Jacobian \
+              --logfile=${LogFile}
 
      ;;
 
 
     *)
-        echo "UNKNOWN DISTORTION CORRECTION METHOD: ${DistortionCorrection}"
+        log_Msg 3 "UNKNOWN DISTORTION CORRECTION METHOD: ${DistortionCorrection}"
         exit 1
 esac
 
-echo ""
-echo "                     END: EPI Distortion Correction"
-echo "                    END: `date`"
-echo "=========================================================================="
-echo "                             ===============                              "
+log_Msg 3 ""
+log_Msg 3 "                     END: EPI Distortion Correction"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
 
 ################################################################################################
 ## Cleanup
