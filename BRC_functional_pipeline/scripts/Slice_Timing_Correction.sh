@@ -7,6 +7,8 @@
 #
 set -e
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+
 # function for parsing options
 getopt1()
 {
@@ -28,12 +30,24 @@ InputfMRI=`getopt1 "--infmri" $@`
 OutputfMRI=`getopt1 "--ofmri" $@`
 STCMethod=`getopt1 "--stc_method" $@`
 SliceTimingFile=`getopt1 "--slicetimingfile" $@`
+LogFile=`getopt1 "--logfile" $@`
 
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                        +"
-echo "+                  START: Slice Timing Corection                         +"
-echo "+                                                                        +"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_SetPath "${LogFile}"
+
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+                  START: Slice Timing Corection                         +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "WD:$WD"
+log_Msg 2 "InputfMRI:$InputfMRI"
+log_Msg 2 "OutputfMRI:$OutputfMRI"
+log_Msg 2 "STCMethod:$STCMethod"
+log_Msg 2 "SliceTimingFile:$SliceTimingFile"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 ########################################## DO WORK ##########################################
 
@@ -78,7 +92,7 @@ case $STCMethod in
     ;;
 
     *)
-        echo "UNKNOWN SLICE TIMING CORRECTION METHOD: ${STCMethod}"
+        log_Msg 3 "UNKNOWN SLICE TIMING CORRECTION METHOD: ${STCMethod}"
         exit 1
 esac
 
@@ -97,11 +111,11 @@ else
 fi
 
 
-echo ""
-echo "                       END: Slice Timing Corection"
-echo "                    END: `date`"
-echo "=========================================================================="
-echo "                             ===============                              "
+log_Msg 3 ""
+log_Msg 3 "                       END: Slice Timing Corection"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
 
 ################################################################################################
 ## Cleanup
