@@ -7,6 +7,8 @@
 #
 set -e
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+
 FIELDMAP_METHOD_OPT="FIELDMAP"
 SIEMENS_METHOD_OPT="SiemensFieldMap"
 GENERAL_ELECTRIC_METHOD_OPT="GeneralElectricFieldMap"
@@ -28,11 +30,14 @@ getopt1()
 # parse arguments
 WD=`getopt1 "--workingdir" $@`
 fMRIFolder=`getopt1 "--fmrifolder" $@`
+topupFolderName=`getopt1 "--topupfodername" $@`
+sebfFolderName=`getopt1 "--sebffoldername" $@`
 ScoutInputName=`getopt1 "--scoutin" $@`
 ScoutReference=`getopt1 "--scoutrefin" $@`
 T1wImage=`getopt1 "--t1" $@`
 T1wBrainImage=`getopt1 "--t1brain" $@`
 WMseg=`getopt1 "--wmseg" $@`
+GMseg=`getopt1 "--gmseg" $@`
 dof=`getopt1 "--dof" $@`
 BiasCorrection=`getopt1 "--biascorrection" $@`
 NameOffMRI=`getopt1 "--fmriname" $@`
@@ -45,14 +50,42 @@ JacobianOut=`getopt1 "--ojacobian" $@`
 MotionCorrectionType=`getopt1 "--motioncorrectiontype" $@`
 EddyOutput=`getopt1 "--eddyoutname" $@`
 DistortionCorrection=`getopt1 "--method" $@`
+LogFile=`getopt1 "--logfile" $@`
+
+log_SetPath "${LogFile}"
 
 ScoutInputFile=`basename $ScoutInputName`
 
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                        +"
-echo "+                   START: EPI to T1 Registration                        +"
-echo "+                                                                        +"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+                   START: EPI to T1 Registration                        +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "WD:$WD"
+log_Msg 2 "fMRIFolder:$fMRIFolder"
+log_Msg 2 "topupFolderName:$topupFolderName"
+log_Msg 2 "ScoutInputName:$ScoutInputName"
+log_Msg 2 "ScoutReference:$ScoutReference"
+log_Msg 2 "T1wImage:$T1wImage"
+log_Msg 2 "T1wBrainImage:$T1wBrainImage"
+log_Msg 2 "WMseg:$WMseg"
+log_Msg 2 "GMseg:$GMseg"
+log_Msg 2 "dof:$dof"
+log_Msg 2 "BiasCorrection:$BiasCorrection"
+log_Msg 2 "NameOffMRI:$NameOffMRI"
+log_Msg 2 "SubjectFolder:$SubjectFolder"
+log_Msg 2 "UseJacobian:$UseJacobian"
+log_Msg 2 "RegOutput:$RegOutput"
+log_Msg 2 "OutputTransform:$OutputTransform"
+log_Msg 2 "OutputInvTransform:$OutputInvTransform"
+log_Msg 2 "JacobianOut:$JacobianOut"
+log_Msg 2 "MotionCorrectionType:$MotionCorrectionType"
+log_Msg 2 "EddyOutput:$EddyOutput"
+log_Msg 2 "DistortionCorrection:$DistortionCorrection"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 if [[ $MotionCorrectionType == "EDDY" ]]; then
     Eddy_Folder=${fMRIFolder}/Eddy
@@ -67,7 +100,7 @@ case "$BiasCorrection" in
     SEBASED)
         if [[ "$DistortionCorrection" != "${SPIN_ECHO_METHOD_OPT}" ]]
         then
-            echo "SEBASED bias correction is only available with --method=${SPIN_ECHO_METHOD_OPT}"
+            log_Msg 3 "SEBASED bias correction is only available with --method=${SPIN_ECHO_METHOD_OPT}"
             exit 1
         fi
         #note, this file doesn't exist yet, gets created by Compute_SpinEcho_BiasField.sh
@@ -75,12 +108,12 @@ case "$BiasCorrection" in
         ;;
 
     "")
-        echo "--biascorrection option not specified"
+        log_Msg 3 "--biascorrection option not specified"
         exit 1
         ;;
 
     *)
-        echo "unrecognized value for bias correction: $BiasCorrection"
+        log_Msg 3 "unrecognized value for bias correction: $BiasCorrection"
         exit 1
 esac
 
@@ -97,19 +130,19 @@ case $DistortionCorrection in
             ${FSLDIR}/bin/imcp ${WD}/SBRef_dc  ${WD}/${ScoutInputFile}_undistorted
         else
             if [[ $UseJacobian == "true" ]]; then
-                ${FSLDIR}/bin/imcp ${WD}/FieldMap/SBRef_dc_jac  ${WD}/${ScoutInputFile}_undistorted
+                ${FSLDIR}/bin/imcp ${WD}/${topupFolderName}/SBRef_dc_jac  ${WD}/${ScoutInputFile}_undistorted
             else
                 ${FSLDIR}/bin/imcp ${WD}/SBRef_dc  ${WD}/${ScoutInputFile}_undistorted
             fi
         fi
 
-        echo "register undistorted scout image to T1w"
+        log_Msg 3 "register undistorted scout image to T1w"
         ${BRC_FMRI_SCR}/epi_reg_dof.sh --dof=${dof} --epi=${WD}/${ScoutInputFile}_undistorted --t1=${T1wImage} --t1brain=${T1wBrainImage} --wmseg=$WMseg --out=${WD}/${ScoutInputFile}_undistorted2T1w_init
 
         #copy the initial registration into the final affine's filename, as it is pretty good
         cp "${WD}/${ScoutInputFile}_undistorted2T1w_init.mat" "${WD}/fMRI2str.mat"
 
-        echo "generate combined warpfields and spline interpolated images and apply bias field correction"
+        log_Msg 3 "generate combined warpfields and spline interpolated images and apply bias field correction"
         ${FSLDIR}/bin/convertwarp --relout --rel -r ${T1wImage} --warp1=${WD}/WarpField.nii.gz --postmat=${WD}/${ScoutInputFile}_undistorted2T1w_init.mat -o ${WD}/${ScoutInputFile}_undistorted2T1w_init_warp
 
         if [[ $MotionCorrectionType == "EDDY" ]]; then
@@ -129,7 +162,7 @@ case $DistortionCorrection in
                 ${FSLDIR}/bin/applywarp --interp=spline -i "${WD}/${File}" -r ${T1wImage} --premat=${WD}/fMRI2str.mat -o ${WD}/${File}
             else
                 if [[ $UseJacobian == "true" ]]; then
-                    ${FSLDIR}/bin/applywarp --interp=spline -i "${WD}/FieldMap/${File}_jac" -r ${T1wImage} --premat=${WD}/fMRI2str.mat -o ${WD}/${File}
+                    ${FSLDIR}/bin/applywarp --interp=spline -i "${WD}/${topupFolderName}/${File}_jac" -r ${T1wImage} --premat=${WD}/fMRI2str.mat -o ${WD}/${File}
                 else
                     ${FSLDIR}/bin/applywarp --interp=spline -i "${WD}/${File}" -r ${T1wImage} --premat=${WD}/fMRI2str.mat -o ${WD}/${File}
                 fi
@@ -138,37 +171,41 @@ case $DistortionCorrection in
 
         #correct filename is already set in UseBiasField, but we have to compute it if using SEBASED
         #we compute it in this script because it needs outputs from topup, and because it should be applied to the scout image
-        echo "BiasCorrection=$BiasCorrection"
+        log_Msg 3 "BiasCorrection=$BiasCorrection"
         if [[ "$BiasCorrection" == "SEBASED" ]]
         then
-            mkdir -p "$WD/Compute_SE_BiasField"
+            mkdir -p "$WD/${sebfFolderName}"
             "${BRC_FMRI_SCR}/Compute_SpinEcho_BiasField.sh" \
-                  --workingdir="$WD/Compute_SE_BiasField" \
+                  --workingdir="$WD/${sebfFolderName}" \
                   --subjectfolder="$SubjectFolder" \
                   --fmriname="$NameOffMRI" \
                   --smoothingfwhm="2" \
-                  --inputdir="$WD"
+                  --inputdir="$WD" \
+                  --t1brain=${T1wBrainImage} \
+                  --gmseg=${GMseg} \
+                  --logfile=${LogFile}
+
         fi
     ;;
 
 
     *)
-        echo "UNKNOWN DISTORTION CORRECTION METHOD: ${DistortionCorrection}"
+        log_Msg 3 "UNKNOWN DISTORTION CORRECTION METHOD: ${DistortionCorrection}"
         exit 1
 esac
 
 if [[ $UseJacobian == "true" ]] ; then
 
     if [[ "$UseBiasField" != "" ]]; then
-        echo "apply Jacobian correction and bias correction options to scout image"
+        log_Msg 3 "apply Jacobian correction and bias correction options to scout image"
         ${FSLDIR}/bin/fslmaths ${WD}/${ScoutInputFile}_undistorted2T1w_init -div ${UseBiasField} -mul ${WD}/Jacobian2T1w.nii.gz ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz
     else
-        echo "apply Jacobian correction to scout image"
+        log_Msg 3 "apply Jacobian correction to scout image"
         ${FSLDIR}/bin/fslmaths ${WD}/${ScoutInputFile}_undistorted2T1w_init -mul ${WD}/Jacobian2T1w.nii.gz ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz
     fi
 else
     if [[ "$UseBiasField" != "" ]]; then
-        echo "apply bias correction options to scout image"
+        log_Msg 3 "apply bias correction options to scout image"
         ${FSLDIR}/bin/fslmaths ${WD}/${ScoutInputFile}_undistorted2T1w_init -div ${UseBiasField} ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz
     fi
     #these all overwrite the input, no 'else' needed for "do nothing"
@@ -183,7 +220,7 @@ ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undisto
 #${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat ${WD}/fMRI2str_refinement.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
 ${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat $FSLDIR/etc/flirtsch/ident.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
 
-echo "Create warped image with spline interpolation, bias correction and (optional) Jacobian modulation"
+log_Msg 3 "Create warped image with spline interpolation, bias correction and (optional) Jacobian modulation"
 if [[ $MotionCorrectionType == "EDDY" ]]; then
     ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/${ScoutInputFile}_undistorted -r ${T1wImage} -w ${WD}/fMRI2str.nii.gz -o ${WD}/${ScoutInputFile}_undistorted2T1w
 else
@@ -198,41 +235,41 @@ ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/Jacobian.nii.gz -r ${T1wI
 if [[ $UseJacobian == "true" ]]; then
 
     if [[ "$UseBiasField" != "" ]]; then
-        echo "applying Jacobian modulation and bias correction"
+        log_Msg 3 "applying Jacobian modulation and bias correction"
         ${FSLDIR}/bin/fslmaths ${WD}/${ScoutInputFile}_undistorted2T1w -div ${UseBiasField} -mul ${WD}/Jacobian2T1w.nii.gz ${WD}/${ScoutInputFile}_undistorted2T1w
     else
-        echo "applying Jacobian modulation"
+        log_Msg 3 "applying Jacobian modulation"
         ${FSLDIR}/bin/fslmaths ${WD}/${ScoutInputFile}_undistorted2T1w -mul ${WD}/Jacobian2T1w.nii.gz ${WD}/${ScoutInputFile}_undistorted2T1w
     fi
 
 else
     if [[ "$UseBiasField" != "" ]]; then
-        echo "apply bias correction options"
+        log_Msg 3 "apply bias correction options"
         ${FSLDIR}/bin/fslmaths ${WD}/${ScoutInputFile}_undistorted2T1w -div ${UseBiasField} ${WD}/${ScoutInputFile}_undistorted2T1w
     fi
     #no else, the commands are overwriting their input
 fi
 
-echo "cp ${WD}/${ScoutInputFile}_undistorted2T1w.nii.gz ${RegOutput}.nii.gz"
+log_Msg 3 "cp ${WD}/${ScoutInputFile}_undistorted2T1w.nii.gz ${RegOutput}.nii.gz"
 cp ${WD}/${ScoutInputFile}_undistorted2T1w.nii.gz ${RegOutput}.nii.gz
 
 OutputTransformDir=$(dirname ${OutputTransform})
 if [ ! -e ${OutputTransformDir} ] ; then
-    echo "mkdir -p ${OutputTransformDir}"
+    log_Msg 3 "mkdir -p ${OutputTransformDir}"
     mkdir -p ${OutputTransformDir}
 fi
 
-echo "cp ${WD}/fMRI2str.nii.gz ${OutputTransform}.nii.gz"
+log_Msg 3 "cp ${WD}/fMRI2str.nii.gz ${OutputTransform}.nii.gz"
 cp ${WD}/fMRI2str.nii.gz ${OutputTransform}.nii.gz
 
-echo "cp ${WD}/Jacobian2T1w.nii.gz ${JacobianOut}.nii.gz"
+log_Msg 3 "cp ${WD}/Jacobian2T1w.nii.gz ${JacobianOut}.nii.gz"
 cp ${WD}/Jacobian2T1w.nii.gz ${JacobianOut}.nii.gz
 
-echo ""
-echo "                       END: EPI to T1 Registration"
-echo "                    END: `date`"
-echo "=========================================================================="
-echo "                             ===============                              "
+log_Msg 3 ""
+log_Msg 3 "                       END: EPI to T1 Registration"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
 
 ################################################################################################
 ## Cleanup
