@@ -7,6 +7,8 @@
 #
 set -e
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+
 # function for parsing options
 getopt1()
 {
@@ -28,6 +30,7 @@ InputSBref=`getopt1 "--inscout" $@`
 NameOffMRI=`getopt1 "--fmriname" $@`
 DCFolder=`getopt1 "--dcfolder" $@`
 DCMethod=`getopt1 "--dcmethod" $@`
+topupFolderName=`getopt1 "--topupfodername" $@`
 EddyOut=`getopt1 "--output_eddy" $@`
 PhaseEncodeOne=`getopt1 "--SEPhaseNeg" $@`
 PhaseEncodeTwo=`getopt1 "--SEPhasePos" $@`
@@ -37,12 +40,35 @@ Slice2Volume=`getopt1 "--slice2vol" $@`
 SliceSpec=`getopt1 "--slspec" $@`
 OutFolder=`getopt1 "--outfolder" $@`
 EchoSpacing_fMRI=`getopt1 "--echospacingfmri" $@`  # "$5"
+LogFile=`getopt1 "--logfile" $@`
 
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                        +"
-echo "+         START: Eddy for correcting eddy currents and movements         +"
-echo "+                                                                        +"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_SetPath "${LogFile}"
+
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+         START: Eddy for correcting eddy currents and movements         +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "EddyFolder:$EddyFolder"
+log_Msg 2 "InputfMRI:$InputfMRI"
+log_Msg 2 "InputSBref:$InputSBref"
+log_Msg 2 "NameOffMRI:$NameOffMRI"
+log_Msg 2 "DCFolder:$DCFolder"
+log_Msg 2 "DCMethod:$DCMethod"
+log_Msg 2 "EddyOut:$EddyOut"
+log_Msg 2 "PhaseEncodeOne:$PhaseEncodeOne"
+log_Msg 2 "PhaseEncodeTwo:$PhaseEncodeTwo"
+log_Msg 2 "UnwarpDir:$UnwarpDir"
+log_Msg 2 "EchoSpacing:$EchoSpacing"
+log_Msg 2 "Slice2Volume:$Slice2Volume"
+log_Msg 2 "SliceSpec:$SliceSpec"
+log_Msg 2 "OutFolder:$OutFolder"
+log_Msg 2 "EchoSpacing_fMRI:$EchoSpacing_fMRI"
+log_Msg 2 "topupFolderName:$topupFolderName"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 if [ -e ${EddyFolder} ] ; then
     ${RUN} rm -r ${EddyFolder}
@@ -74,9 +100,9 @@ TR_vol=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
 #fi
 
 if [[ ${DCMethod} == "TOPUP" ]]; then
-    BrainMask=$DCFolder/FieldMap/Magnitude_brain_mask.nii.gz
+    BrainMask=$DCFolder/${topupFolderName}/Magnitude_brain_mask.nii.gz
 else
-    echo "generating brain mask using the 1st fMRI volume"
+    log_Msg 3 "generating brain mask using the 1st fMRI volume"
     ${FSLDIR}/bin/fslmaths ${InputfMRI} -Tmean ${EddyFolder}/${NameOffMRI}_mean
     ${FSLDIR}/bin/bet2 ${EddyFolder}/${NameOffMRI}_mean ${EddyFolder}/${NameOffMRI}_brain -f 0.3 -m -n
     BrainMask=${EddyFolder}/${NameOffMRI}_brain_mask.nii.gz
@@ -84,7 +110,7 @@ else
     ${FSLDIR}/bin/imrm ${EddyFolder}/${NameOffMRI}_mean
 fi
 
-echo "generating acquisition parameters"
+log_Msg 3 "generating acquisition parameters"
 
 if [ $EchoSpacing_fMRI != 0.0 ]; then
 
@@ -99,7 +125,7 @@ if [ $EchoSpacing_fMRI != 0.0 ]; then
                   --echospacing=${EchoSpacing_fMRI} \
                   --out=${txtfname}
 
-elif [ ! -e $DCFolder/FieldMap/acqparams.txt ]; then
+elif [ ! -e $DCFolder/${topupFolderName}/acqparams.txt ]; then
 
     #TOPUP is not active
     txtfname=${EddyFolder}/acqparams.txt
@@ -112,7 +138,7 @@ elif [ ! -e $DCFolder/FieldMap/acqparams.txt ]; then
                   --echospacing=${EchoSpacing} \
                   --out=${txtfname}
 else
-    txtfname=$DCFolder/FieldMap/acqparams.txt
+    txtfname=$DCFolder/${topupFolderName}/acqparams.txt
 fi
 
 
@@ -143,7 +169,7 @@ fi
 #
 #echo $txtfname
 
-echo "generating index, bval, and bvec files"
+log_Msg 3 "generating index, bval, and bvec files"
 
 dimt=`${FSLDIR}/bin/fslval $Eddy_Input dim4`
 
@@ -198,17 +224,17 @@ if [ ! $SliceSpec = "NONE" ] ; then
     if [ -e ${EddyFolder}/slspec.txt ] ; then
         EDDY_arg="${EDDY_arg} --slspec=${EddyFolder}/slspec.txt"
     else
-        echo ""
-        echo "WARNING: Slice Timing information does not exist in the json file"
-        echo ""
+        log_Msg 3 ""
+        log_Msg 3 "WARNING: Slice Timing information does not exist in the json file"
+        log_Msg 3 ""
     fi
 fi
 
 if [[ ${DCMethod} == "TOPUP" ]]; then
-    EDDY_arg="${EDDY_arg} --topup=${DCFolder}/FieldMap/Coefficents"
+    EDDY_arg="${EDDY_arg} --topup=${DCFolder}/${topupFolderName}/Coefficents"
 fi
 
-echo $EDDY_arg
+log_Msg 2 "EDDY_arg: $EDDY_arg"
 $FSLDIR/bin/eddy_cuda  ""$EDDY_arg""
 
 #        --imain=${Eddy_Input} \
@@ -256,7 +282,7 @@ $FSLDIR/bin/eddy_cuda  ""$EDDY_arg""
 #          -b ${EddyFolder}/${NameOffMRI}.bvals \
 #          -g ${EddyFolder}/${NameOffMRI}.bvecs
 
-echo "Extract the outputs"
+log_Msg 3 "Extract the outputs"
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/SBRef_dc 0 1
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/PhaseOne_gdc_dc $(( ${dimt} - 2 )) 1
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/PhaseTwo_gdc_dc $(( ${dimt} - 1 )) 1
@@ -286,11 +312,11 @@ ${FSLDIR}/bin/imcp ${EddyFolder}/SBRef_dc.nii.gz ${OutFolder}/SBRef_dc.nii.gz
 ${FSLDIR}/bin/imcp ${EddyFolder}/PhaseOne_gdc_dc.nii.gz ${OutFolder}/PhaseOne_gdc_dc.nii.gz
 ${FSLDIR}/bin/imcp ${EddyFolder}/PhaseTwo_gdc_dc.nii.gz ${OutFolder}/PhaseTwo_gdc_dc.nii.gz
 
-echo ""
-echo "           END: Eddy for correcting eddy currents and movements"
-echo "                    END: `date`"
-echo "=========================================================================="
-echo "                             ===============                              "
+log_Msg 3 ""
+log_Msg 3 "           END: Eddy for correcting eddy currents and movements"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
 
 
 ################################################################################################
