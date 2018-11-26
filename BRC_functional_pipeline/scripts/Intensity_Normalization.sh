@@ -7,6 +7,8 @@
 #
 set -e
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+
 # Intensity normalisation, and bias field correction, and optional Jacobian modulation, applied to fMRI images (all inputs must be in fMRI space)
 
 #  This code is released to the public domain.
@@ -54,6 +56,29 @@ ScoutInput=`getopt1 "--inscout" $@`
 ScoutOutput=`getopt1 "--oscout" $@`
 UseJacobian=`getopt1 "--usejacobian" $@`
 BiasCorrection=`getopt1 "--biascorrection" $@`
+LogFile=`getopt1 "--logfile" $@`
+
+log_SetPath "${LogFile}"
+
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+                    START: Intensity Normalization                      +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "WD:$WD"
+log_Msg 2 "InputfMRI:$InputfMRI"
+log_Msg 2 "BiasField:$BiasField"
+log_Msg 2 "Jacobian:$Jacobian"
+log_Msg 2 "BrainMask:$BrainMask"
+log_Msg 2 "OutputfMRI:$OutputfMRI"
+log_Msg 2 "ScoutInput:$ScoutInput"
+log_Msg 2 "ScoutOutput:$ScoutOutput"
+log_Msg 2 "UseJacobian:$UseJacobian"
+log_Msg 2 "BiasCorrection:$BiasCorrection"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 # default parameters
 OutputfMRI=`$FSLDIR/bin/remove_ext $OutputfMRI`
@@ -71,16 +96,10 @@ fi
 # sanity checking
 if [ X${ScoutInput} != X ] ; then
     if [ X${ScoutOutput} = X ] ; then
-      	echo "Error: Must supply an output name for the normalised scout image"
+      	log_Msg 3 "Error: Must supply an output name for the normalised scout image"
       	exit 1
     fi
 fi
-
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                        +"
-echo "+                    START: Intensity Normalization                      +"
-echo "+                                                                        +"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 ########################################## DO WORK ##########################################
 
@@ -95,11 +114,11 @@ fi
 #rm ${InputfMRI}.nii.*
 #${FSLDIR}/bin/imrm ${WD}/rfMRI_temp
 
-echo ""
-echo "                     START: Intensity Normalization"
-echo "                    END: `date`"
-echo "=========================================================================="
-echo "                             ===============                              "
+log_Msg 3 ""
+log_Msg 3 "                     START: Intensity Normalization"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
 
 ################################################################################################
 ## Cleanup
