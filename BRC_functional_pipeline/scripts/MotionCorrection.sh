@@ -7,6 +7,8 @@
 #
 set -e
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+
 # function for parsing options
 getopt1()
 {
@@ -29,14 +31,29 @@ OutputMotionRegressors=`getopt1 "--outputmotionregressors" $@`
 OutputMotionMatrixFolder=`getopt1 "--outputmotionmatrixfolder" $@`
 OutputMotionMatrixNamePrefix=`getopt1 "--outputmotionmatrixnameprefix" $@`
 MotionCorrectionType=`getopt1 "--motioncorrectiontype" $@`
+LogFile=`getopt1 "--logfile" $@`
+
+log_SetPath "${LogFile}"
 
 OutputfMRIBasename=`basename ${OutputfMRI}`
 
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                        +"
-echo "+                        START: Motion Correction                        +"
-echo "+                     Motion correction type: $MotionCorrectionType                    +"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+                        START: Motion Correction                        +"
+log_Msg 3 "+                     Motion correction type: $MotionCorrectionType      +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "WorkingDirectory:$WorkingDirectory"
+log_Msg 2 "InputfMRI:$InputfMRI"
+log_Msg 2 "Scout:$Scout"
+log_Msg 2 "OutputfMRI:$OutputfMRI"
+log_Msg 2 "OutputMotionRegressors:$OutputMotionRegressors"
+log_Msg 2 "OutputMotionMatrixFolder:$OutputMotionMatrixFolder"
+log_Msg 2 "OutputMotionMatrixNamePrefix:$OutputMotionMatrixNamePrefix"
+log_Msg 2 "MotionCorrectionType:$MotionCorrectionType"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 # Do motion correction
 
@@ -50,7 +67,7 @@ case "$MotionCorrectionType" in
     ;;
 
     *)
-        echo "ERROR: MotionCorrectionType must be 'MCFLIRT' or 'FLIRT'"
+        log_Msg 3 "ERROR: MotionCorrectionType must be 'MCFLIRT' or 'FLIRT'"
         exit 1
     ;;
 esac
@@ -68,7 +85,7 @@ mv -f ${WorkingDirectory}/${OutputfMRIBasename}/* ${OutputMotionMatrixFolder}
 #mv -f ${WorkingDirectory}/${OutputfMRIBasename}.nii.gz ${OutputfMRI}.nii.gz
 
 # Change names of all matrices in OutputMotionMatrixFolder
-echo "Change names of all matrices in OutputMotionMatrixFolder"
+log_Msg 3 "Change names of all matrices in OutputMotionMatrixFolder"
 DIR=`pwd`
 
 if [ -e $OutputMotionMatrixFolder ] ; then
@@ -134,7 +151,7 @@ function DeriveBackwards
 }
 
 # Run the Derive function to generate appropriate regressors from the par file
-echo "Run the Derive function to generate appropriate regressors from the par file"
+log_Msg 3 "Run the Derive function to generate appropriate regressors from the par file"
 in=${WorkingDirectory}/${OutputfMRIBasename}.par
 out=${OutputMotionRegressors}.txt
 cat $in | sed s/"  "/" "/g > $out
@@ -150,7 +167,7 @@ mv ${out}_ $out
 
 awk -f ${BRC_FMRI_SCR}/mtrendout.awk $out > ${OutputMotionRegressors}_dt.txt
 
-echo "END"
+log_Msg 3 "END"
 
 # Make 4dfp style motion parameter and derivative regressors for timeseries
 # Take the unbiased temporal derivative in column $1 of input $2 and output it as $3
@@ -195,20 +212,20 @@ function DeriveUnBiased
 }
 
 
-echo "Plot the Mcflirt rotational data"
+log_Msg 3 "Plot the Mcflirt rotational data"
 $FSLDIR/bin/fsl_tsplot -i ${WorkingDirectory}/${OutputfMRIBasename}.par -t 'MCFLIRT estimated rotations (radians)' -u 1 --start=1 --finish=3 -a x,y,z -w 640 -h 144 -o ${WorkingDirectory}/rot.png
 
-echo "Plot the Mcflirt translational data"
+log_Msg 3 "Plot the Mcflirt translational data"
 $FSLDIR/bin/fsl_tsplot -i ${WorkingDirectory}/${OutputfMRIBasename}.par -t 'MCFLIRT estimated translations (mm)' -u 1 --start=4 --finish=6 -a x,y,z -w 640 -h 144 -o ${WorkingDirectory}/trans.png
 
-#echo "Plot the Mcflirt mean displacement data"
+#log_Msg 3 "Plot the Mcflirt mean displacement data"
 #$FSLDIR/bin/fsl_tsplot -i mc/prefiltered_func_data_mcf_abs.rms,mc/prefiltered_func_data_mcf_rel.rms -t 'MCFLIRT estimated mean displacement (mm)' -u 1 -w 640 -h 144 -a absolute,relative -o mc/disp.png
 
-echo ""
-echo "                         END: Motion Correction"
-echo "                    END: `date`"
-echo "=========================================================================="
-echo "                             ===============                              "
+log_Msg 3 ""
+log_Msg 3 "                         END: Motion Correction"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
 
 ################################################################################################
 ## Cleanup
