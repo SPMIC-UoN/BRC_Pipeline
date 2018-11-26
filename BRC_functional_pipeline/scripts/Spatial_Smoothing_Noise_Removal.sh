@@ -7,6 +7,8 @@
 #
 set -e
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+
 # function for parsing options
 getopt1()
 {
@@ -31,12 +33,27 @@ fmriName=`getopt1 "--fmriname" $@`
 fMRI2StructMat=`getopt1 "--fmri2structin" $@`
 Struct2StdWarp=`getopt1 "--struct2std" $@`
 MotionCorrectionType=`getopt1 "--motioncorrectiontype" $@`
+LogFile=`getopt1 "--logfile" $@`
 
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                        +"
-echo "+    START: Spatial Smoothing and Artifact/Physiological Noise Removal   +"
-echo "+                                                                        +"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_SetPath "${LogFile}"
+
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+    START: Spatial Smoothing and Artifact/Physiological Noise Removal   +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "WD:$WD"
+log_Msg 2 "InputfMRI:$InputfMRI"
+log_Msg 2 "FWHM:$FWHM"
+log_Msg 2 "MotionParam:$MotionParam"
+log_Msg 2 "fmriName:$fmriName"
+log_Msg 2 "fMRI2StructMat:$fMRI2StructMat"
+log_Msg 2 "Struct2StdWarp:$Struct2StdWarp"
+log_Msg 2 "MotionCorrectionType:$MotionCorrectionType"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 ########################################## DO WORK ##########################################
 
@@ -44,11 +61,11 @@ RepetitionTime=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
 
 ${FSLDIR}/bin/imcp ${InputfMRI} ${WD}/${fmriName}
 
-echo "calculate the mean across time ..."
+log_Msg 3 "calculate the mean across time ..."
 ${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -Tmean ${WD}/${fmriName}_mean
 
 # Perform bet2 on the mean_func data, use a threshold of .3 (.225 used for anatomical)
-echo "Perform bet2 on the mean_func data ..."
+log_Msg 3 "Perform bet2 on the mean_func data ..."
 ${FSLDIR}/bin/bet2 ${WD}/${fmriName}_mean ${WD}/${fmriName}_brain -f 0.3 -n -m
 
 # Perform bet2 on the mean_func data, use a threshold of .3 (.225 used for anatomical)
@@ -56,14 +73,14 @@ ${FSLDIR}/bin/bet2 ${WD}/${fmriName}_mean ${WD}/${fmriName}_brain -f 0.3 -n -m
 #${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_mean -thr 1 -bin ${WD}/${fmriName}_mask
 
 # Mask the motion corrected functional data with the mask to create the masked (bet) motion corrected functional data
-echo "Mask the input functional data ..."
+log_Msg 3 "Mask the input functional data ..."
 ${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -mas ${WD}/${fmriName}_brain_mask ${WD}/${fmriName}_bet
 
 # Calculate the difference between the 98th and 2nd percentile (the region between the tails) and use that range as a threshold minimum on the prefiltered, motion corrected, masked functional data - so we are eliminating
 # intensities outside that are below 2nd percentile, and above 98th percentile.
 
 # Use fslstats to output the 2nd and 98th percentile
-echo "Calculate the 98th and 2nd percentile ..."
+log_Msg 3 "Calculate the 98th and 2nd percentile ..."
 lowerp=`${FSLDIR}/bin/fslstats ${WD}/${fmriName}_bet -p 2`
 upperp=`${FSLDIR}/bin/fslstats ${WD}/${fmriName}_bet -p 98`
 BBTHRESH=10       # Brain background threshold
@@ -74,7 +91,7 @@ BBTHRESH=10       # Brain background threshold
 thresholdp=`echo "scale=6; (${upperp} - ${lowerp}) / ${BBTHRESH}" | bc`
 
 # Use fslmaths to threshold the brain extracted data based on the highpass filter above
-echo "threshold the brain extracted data based on the highpass filter ..."
+log_Msg 3 "threshold the brain extracted data based on the highpass filter ..."
 # use "mask" as a binary mask, and Tmin to specify we want the minimum across time
 ${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_bet -thr $thresholdp -Tmin -bin ${WD}/${fmriName}_mask -odt char
 
@@ -82,7 +99,7 @@ ${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_bet -thr $thresholdp -Tmin -bin ${WD}/$
 # output the 50th percentile (the mean?)
 # We will need this later to calculate the intensity scaling factor
 meanintensity=`${FSLDIR}/bin/fslstats ${WD}/${fmriName} -k ${WD}/${fmriName}_mask -p 50`
-echo "meanintensity: $meanintensity"
+log_Msg 3 "meanintensity: $meanintensity"
 
 # IM NOT SURE WHAT WE DO WITH THIS?
 # difF is a spatial filtering option that specifies maximum filtering of all voxels
@@ -103,25 +120,25 @@ ${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_thresh -Tmean ${WD}/${fmriName}_mean
 # This is saying that we want the brightness threshold to be 66% of the median value.
 # Note that the FSL "standard" is 75% (.75)
 # This is the value that we use for bt, the "brightness threshold" in susan
-echo "calculate brightness threshold"
+log_Msg 3 "calculate brightness threshold"
 uppert=`echo "scale=6; ${upperp} - ${lowerp}" | bc`
 
 #thresholdpdifft=`echo "scale=8; ${uppert} - ${thresholdp}" | bc`
 thresholdpdifft=`echo "scale=8; (${meanintensity} - ${lowerp}) * 0.75" | bc`
 
-echo "brightness threshold: ${thresholdpdifft}"
+log_Msg 3 "brightness threshold: ${thresholdpdifft}"
 
 # We also need to calculate the spatial size based on the smoothing.
 # FWHM = 2.355*spatial size. So if desired FWHM = 6mm, spatial size = 2.54...
-echo "calculate the spatial size based on the smoothing"
+log_Msg 3 "calculate the spatial size based on the smoothing"
 ssize=`echo "scale=11; ${FWHM} / 2.355" | bc`
 
-echo "spatial size: ${ssize}"
+log_Msg 3 "spatial size: ${ssize}"
 
 # susan uses nonlinear filtering to reduce noise
 # by only averaging a voxel with local voxels which have similar intensity
-echo "Nonlinear filtering to reduce noise using 3D smmoothing, local median filter"
-echo "determine the smoothing area from 1 secondary image"
+log_Msg 3 "Nonlinear filtering to reduce noise using 3D smmoothing, local median filter"
+log_Msg 3 "determine the smoothing area from 1 secondary image"
 
 ${FSLDIR}/bin/susan ${WD}/${fmriName}_thresh $thresholdpdifft $ssize 3 1 1 ${WD}/${fmriName}_mean $thresholdpdifft ${WD}/${fmriName}_thresh_smooth
 #${FSLDIR}/bin/imcp ${WD}/${fmriName} ${WD}/${fmriName}_thresh_smooth
@@ -147,11 +164,11 @@ MC_arg="-in ${WD}/${fmriName}_thresh_smooth.nii.gz -out ${WD}/ICA_AROMA -tr ${Re
 ${RUN} python2.7 ${BRC_FMRI_SCR}/ICA_AROMA/ICA_AROMA.py ""$MC_arg""
 
 
-echo ""
-echo "      END: Spatial Smoothing and Artifact/Physiological Noise Removal"
-echo "                    END: `date`"
-echo "=========================================================================="
-echo "                             ===============                              "
+log_Msg 3 ""
+log_Msg 3 "      END: Spatial Smoothing and Artifact/Physiological Noise Removal"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
 
 ################################################################################################
 ## Cleanup
