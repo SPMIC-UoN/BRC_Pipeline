@@ -7,6 +7,8 @@
 #
 set -e
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+
 # function for parsing options
 getopt1()
 {
@@ -34,18 +36,35 @@ MotionMatrixFolder=`getopt1 "--motionmatdir" $@`  # "$9"
 MotionMatrixPrefix=`getopt1 "--motionmatprefix" $@`  # "${10}"
 OutputfMRI=`getopt1 "--ofmri" $@`  # "${11}"
 OutputTransform=`getopt1 "--owarp" $@`  # "$8"
+LogFile=`getopt1 "--logfile" $@`
 
+log_SetPath "${LogFile}"
 
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                        +"
-echo "+                    START: Final Transformation                         +"
-echo "+                                                                        +"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+                    START: Final Transformation                         +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "WD:$WD"
+log_Msg 2 "InputfMRI:$InputfMRI"
+log_Msg 2 "GradientDistortionField:$GradientDistortionField"
+log_Msg 2 "ScoutInputgdc:$ScoutInputgdc"
+log_Msg 2 "T1w2StdImage:$T1w2StdImage"
+log_Msg 2 "FinalfMRIResolution:$FinalfMRIResolution"
+log_Msg 2 "MotionCorrectionType:$MotionCorrectionType"
+log_Msg 2 "MotionMatrixFolder:$MotionMatrixFolder"
+log_Msg 2 "MotionMatrixPrefix:$MotionMatrixPrefix"
+log_Msg 2 "OutputfMRI:$OutputfMRI"
+log_Msg 2 "OutputTransform:$OutputTransform"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+########################################## DO WORK ##########################################
 
 T1w2StdImageFile=`basename $T1w2StdImage`
 MotionMatrixFile=`basename "$MotionMatrixFolder"`
-
-########################################## DO WORK ##########################################
 
 #Save TR for later
 TR_vol=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
@@ -80,7 +99,7 @@ FrameMergeSTRING=""
 FrameMergeSTRINGII=""
 
 for ((k=0; k < $NumFrames; k++)); do
-    echo "Volume No:$k"
+    log_Msg 3 "Volume No:$k"
 
     vnum=`${FSLDIR}/bin/zeropad $k 4`
 
@@ -124,11 +143,11 @@ if [[ $MotionCorrectionType == "MCFLIRT" ]]; then
     cat ${WD}/Movement_AbsoluteRMS.txt | awk '{ sum += $1} END { print sum / NR }' >> ${WD}/Movement_AbsoluteRMS_mean.txt
 fi
 
-echo ""
-echo "                       END: Final Transformation"
-echo "                    END: `date`"
-echo "=========================================================================="
-echo "                             ===============                              "
+log_Msg 3 ""
+log_Msg 3 "                       END: Final Transformation"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
 
 
 ################################################################################################
