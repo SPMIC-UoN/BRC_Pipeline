@@ -80,7 +80,7 @@ Usage()
   echo " --fmrires <value>                    Target final resolution of fMRI data in mm (default is 2 mm)"
   echo " --tempfilter <value>                 Non-zero value of this option means that one wants to do temporal filtering with High pass filter curoff <value> in Sec"
   echo "                                      default value is 0, means No Temporal Filtering"
-  echo " --echospacing_fMRI <value>           Echo Spacing of fMRI image (in sec)."
+  echo " --echospacing_fMRI <value>           Echo Spacing of fMRI image (in sec)"
   echo " --printcom                           use 'echo' for just printing everything and not running the commands (default is to run)"
   echo " -h | --help                          help"
   echo " "
