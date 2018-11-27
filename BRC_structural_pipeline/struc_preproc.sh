@@ -156,6 +156,7 @@ logFolderName="log"
 regFolderName="reg"
 qcFolderName="qc"
 dataFolderName="data"
+data2stdFolderName="data2std"
 segFolderName="seg"
 FSFolderName="FS"
 
@@ -186,6 +187,7 @@ TempT1Folder=${T1Folder}/${tempFolderName}
 regT1Folder=${preprocT1Folder}/${regFolderName}
 qcT1Folder=${preprocT1Folder}/${qcFolderName}
 dataT1Folder=${processedT1Folder}/${dataFolderName}
+data2stdT1Folder=${processedT1Folder}/${data2stdFolderName}
 segT1Folder=${processedT1Folder}/${segFolderName}
 FSFolder=${processedT1Folder}/${FSFolderName}
 rawT2Folder=${AnatMRIrawFolder}/${T2FolderName}
@@ -193,10 +195,9 @@ T2Folder=${AnatMRIFolder}/${T2FolderName}
 preprocT2Folder=${T2Folder}/${preprocessFolderName}
 processedT2Folder=${T2Folder}/${processedFolderName}
 dataT2Folder=${processedT2Folder}/${dataFolderName}
+data2stdT2Folder=${processedT2Folder}/${data2stdFolderName}
 regT2Folder=${preprocT2Folder}/${regFolderName}
 TempT2Folder=${T2Folder}/${tempFolderName}
-#preprocT2Folder=${T2Folder}/${preprocessFolderName}
-#logT2Folder=${T2Folder}/${logFolderName}
 
 #Check existance of foldersa= and then create them
 if [ ! -d ${AnalysisFolder} ]; then mkdir ${AnalysisFolder}; fi
@@ -212,6 +213,7 @@ if [ ! -d ${TempT1Folder} ]; then mkdir ${TempT1Folder}; fi
 if [ ! -d ${regT1Folder} ]; then mkdir ${regT1Folder}; fi
 if [ ! -d ${qcT1Folder} ]; then mkdir ${qcT1Folder}; fi
 if [ ! -d ${dataT1Folder} ]; then mkdir ${dataT1Folder}; fi
+if [ ! -d ${data2stdT1Folder} ]; then mkdir ${data2stdT1Folder}; fi
 if [ ! -d ${segT1Folder} ]; then mkdir ${segT1Folder}; fi
 
 
@@ -221,6 +223,7 @@ if [[ $T2 == yes ]]; then
     if [ ! -d ${preprocT2Folder} ]; then mkdir ${preprocT2Folder}; fi
     if [ ! -d ${processedT2Folder} ]; then mkdir ${processedT2Folder}; fi
     if [ ! -d ${dataT2Folder} ]; then mkdir ${dataT2Folder}; fi
+    if [ ! -d ${data2stdT2Folder} ]; then mkdir ${data2stdT2Folder}; fi
     if [ ! -d ${regT2Folder} ]; then mkdir ${regT2Folder}; fi
     if [ ! -d ${TempT2Folder} ]; then mkdir ${TempT2Folder}; fi
 fi
@@ -304,12 +307,14 @@ ${BRC_SCTRUC_SCR}/move_rename.sh \
       --dosubseg=${do_Sub_seg} \
       --anatname=temp.anat \
       --datat1folder=${dataT1Folder} \
+      --data2stdt1folder=${data2stdT1Folder} \
       --segt1folder=${segT1Folder} \
       --dosubseg=${do_Sub_seg} \
       --dotissueseg=${do_tissue_seg} \
       --regt1folder=${regT1Folder} \
       --tempt1folder=${TempT1Folder} \
       --datat2folder=${dataT2Folder} \
+      --data2stdt2folder=${data2stdT2Folder} \
       --regt2folder=${regT2Folder} \
       --tempt2folder=${TempT2Folder} \
       --logfile=${logT1Folder}/${log_Name}
