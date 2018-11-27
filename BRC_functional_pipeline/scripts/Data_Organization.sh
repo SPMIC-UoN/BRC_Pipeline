@@ -7,6 +7,8 @@
 #
 set -e
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+
 # function for parsing options
 getopt1()
 {
@@ -22,146 +24,173 @@ getopt1()
 }
 
 # parse arguments
-rfMRIFolder=`getopt1 "--workingdir" $@`
-unlabeledFolder=`getopt1 "--unlabeledfolder" $@`
+rfMRIrawFolder=`getopt1 "--rfmrirawfolder" $@`
+rfMRIFolder=`getopt1 "--rfmrifolder" $@`
+preprocFolder=`getopt1 "--preprocfolder" $@`
+processedFolder=`getopt1 "--processedfolder" $@`
+TempFolder=`getopt1 "--tempfolder" $@`
+EddyFolder=`getopt1 "--eddyfolder" $@`
+DCFolder=`getopt1 "--dcfolder" $@`
+SE_BF_Folder=`getopt1 "--biasfieldfolder" $@`
+TOPUP_Folder=`getopt1 "--topupfolder" $@`
+gdcFolder=`getopt1 "--gdcfolder" $@`
+In_Nrm_Folder=`getopt1 "--intennormfolder" $@`
+mcFolder=`getopt1 "--motcorrfolder" $@`
+nrFolder=`getopt1 "--noisremfolder" $@`
+OsrFolder=`getopt1 "--onestepfolder" $@`
+regFolder=`getopt1 "--regfolder" $@`
+stcFolder=`getopt1 "--slicecorrfolder" $@`
+Tmp_Filt_Folder=`getopt1 "--tempfiltfolder" $@`
 NameOffMRI=`getopt1 "--nameoffmri" $@`
-
-rawFolderName=`getopt1 "--rawfoldername" $@`
-OrigSE_Pos_Name=`getopt1 "--origse_pos_name" $@`
-OrigSE_Neg_Name=`getopt1 "--origse_neg_name" $@`
-OrigTCSName=`getopt1 "--origtcsname" $@`
-OrigScoutName=`getopt1 "--origscoutname" $@`
-DistortionCorrection=`getopt1 "--method" $@`
-
-regFolderName=`getopt1 "--regfoldername" $@`
 rfMRI2strTransf=`getopt1 "--rfmri2strtransf" $@`
 Str2rfMRITransf=`getopt1 "--str2rfmritransf" $@`
 rfMRI2StandardTransform=`getopt1 "--rfmri2stdtransf" $@`
 Standard2rfMRITransform=`getopt1 "--std2rfMRItransf" $@`
+LogFile=`getopt1 "--logfile" $@`
 
-mcFolderName=`getopt1 "--mcfoldername" $@`
-eddyFolderName=`getopt1 "--eddyfoldername" $@`
-MotionCorrectionType=`getopt1 "--motioncorrectiontype" $@`
-EddyOutput=`getopt1 "--eddyoutput" $@`
-MotionMatrixFolder=`getopt1 "--motionmatrixfolder" $@`
+log_SetPath "${LogFile}"
 
-figsFolderName=`getopt1 "--figsfoldername" $@`
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+                   START: Organization of the outputs                   +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-processedFolderName=`getopt1 "--processedfoldername" $@`
-SliceTimingCorrection=`getopt1 "--stc_method" $@`
-stcFolderName=`getopt1 "--stcfoldername" $@`
-smoothingfwhm=`getopt1 "--smoothingfwhm" $@`
-nrFolderName=`getopt1 "--nrfoldername" $@`
-Do_intensity_norm=`getopt1 "--dointensitynorm" $@`
-InNormfFolderName=`getopt1 "--innormffoldername" $@`
-ScoutName=`getopt1 "--scoutname" $@`
-gdcFolderName=`getopt1 "--gdcfoldername" $@`
-DCFolderName=`getopt1 "--dcfoldername" $@`
-RegOutput=`getopt1 "--oregim" $@`
-OneStResFolderName=`getopt1 "--onestresfoldername" $@`
-tempfiltFolderName=`getopt1 "--tempfiltfoldername" $@`
-Temp_Filter_Cutoff=`getopt1 "--temfFiltercutoff" $@`
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "rfMRIrawFolder:$rfMRIrawFolder"
+log_Msg 2 "rfMRIFolder:$rfMRIFolder"
+log_Msg 2 "preprocFolder:$preprocFolder"
+log_Msg 2 "processedFolder:$processedFolder"
+log_Msg 2 "TempFolder:$TempFolder"
+log_Msg 2 "EddyFolder:$EddyFolder"
+log_Msg 2 "DCFolder:$DCFolder"
+log_Msg 2 "SE_BF_Folder:$SE_BF_Folder"
+log_Msg 2 "TOPUP_Folder:$TOPUP_Folder"
+log_Msg 2 "gdcFolder:$gdcFolder"
+log_Msg 2 "In_Nrm_Folder:$In_Nrm_Folder"
+log_Msg 2 "mcFolder:$mcFolder"
+log_Msg 2 "nrFolder:$nrFolder"
+log_Msg 2 "OsrFolder:$OsrFolder"
+log_Msg 2 "regFolder:$regFolder"
+log_Msg 2 "stcFolder:$stcFolder"
+log_Msg 2 "Tmp_Filt_Folder:$Tmp_Filt_Folder"
+log_Msg 2 "NameOffMRI:$NameOffMRI"
+log_Msg 2 "rfMRI2strTransf:$rfMRI2strTransf"
+log_Msg 2 "Str2rfMRITransf:$Str2rfMRITransf"
+log_Msg 2 "rfMRI2StandardTransform:$rfMRI2StandardTransform"
+log_Msg 2 "Standard2rfMRITransform:$Standard2rfMRITransform"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                        +"
-echo "+                   START: Organization of the outputs                   +"
-echo "+                                                                        +"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+#=====================================================================================
+###                                Naming Conventions
+#=====================================================================================
 
-rawFolder=${rfMRIFolder}/${rawFolderName}
-regFolder=${rfMRIFolder}/${regFolderName}
-mcFolder=${rfMRIFolder}/${mcFolderName}
-figsFolder=${rfMRIFolder}/${figsFolderName}
-processedFolder=${rfMRIFolder}/${processedFolderName}
+denoisingPreFolderName="denoising"
+ICA_AROMAPreFolderName="ICA_AROMA"
+PNMPreFolderName="PNM"
+FieldMapPreFolderName="filedmap"
+topupPreFolderName="topup"
+fuguePreFolderName="fugue"
+mcPreFolderName="mc"
+eddyPreFolderName="eddy"
+mcflirtPreFolderName="mcflirt"
+regPreFolderName="reg"
+dataProFolderName="data"
+data2stdProFolderName="data2std"
 
-rawUnlabFolder=${unlabeledFolder}/${rawFolderName}
-regUnlabFolder=${unlabeledFolder}/${regFolderName}
-mcUnlabFolder=${unlabeledFolder}/${mcFolderName}
-EddyUnlabFolder=${unlabeledFolder}/${eddyFolderName}
-StcUnlabFolder=${unlabeledFolder}/${stcFolderName}
-nrUnlabFolder=${unlabeledFolder}/${nrFolderName}
-InNormUnlabFolder=${unlabeledFolder}/${InNormfFolderName}
-gdcUnlabFolder=${unlabeledFolder}/${gdcFolderName}
-DcUnlabFolder=${unlabeledFolder}/${DCFolderName}
-OneStResUnlabFolder=${unlabeledFolder}/${OneStResFolderName}
-TemFilUnlabFolder=${unlabeledFolder}/${tempfiltFolderName}
+#=====================================================================================
+###                                  Setup PATHS
+#=====================================================================================
 
-if [ ! -d "$rawFolder" ]; then mkdir $rawFolder; fi
-if [ ! -d "$regFolder" ]; then mkdir $regFolder; fi
-if [ ! -d "$mcFolder" ]; then mkdir $mcFolder; fi
-if [ ! -d "$figsFolder" ]; then mkdir $figsFolder; fi
-if [ ! -d "$processedFolder" ]; then mkdir $processedFolder; fi
+denoisingPreFolder=${preprocFolder}/${denoisingPreFolderName}
+icaaromaPreFolder=${denoisingPreFolder}/${ICA_AROMAPreFolderName}
+pnmPreFolder=${denoisingPreFolder}/${PNMPreFolderName}
+fieldmapPreFolder=${preprocFolder}/${FieldMapPreFolderName}
+topupPreFolder=${fieldmapPreFolder}/${topupPreFolderName}
+fuguePreFolder=${fieldmapPreFolder}/${fuguePreFolderName}
+mcPreFolder=${preprocFolder}/${mcPreFolderName}
+eddyPreFolder=${mcPreFolder}/${eddyPreFolderName}
+mcflirtPreFolder=${mcPreFolder}/${mcflirtPreFolderName}
+regPreFolder=${preprocFolder}/${regPreFolderName}
+dataProFolder=${processedFolder}/${dataProFolderName}
+data2stdProFolder=${processedFolder}/${data2stdProFolderName}
 
+if [ ! -d ${denoisingPreFolder} ]; then mkdir ${denoisingPreFolder}; fi
+if [ ! -d ${icaaromaPreFolder} ]; then mkdir ${icaaromaPreFolder}; fi
+if [ ! -d ${pnmPreFolder} ]; then mkdir ${pnmPreFolder}; fi
+if [ ! -d ${fieldmapPreFolder} ]; then mkdir ${fieldmapPreFolder}; fi
+if [ ! -d ${topupPreFolder} ]; then mkdir ${topupPreFolder}; fi
+if [ ! -d ${fuguePreFolder} ]; then mkdir ${fuguePreFolder}; fi
+if [ ! -d ${mcPreFolder} ]; then mkdir ${mcPreFolder}; fi
+if [ ! -d ${eddyPreFolder} ]; then mkdir ${eddyPreFolder}; fi
+if [ ! -d ${mcflirtPreFolder} ]; then mkdir ${mcflirtPreFolder}; fi
+if [ ! -d ${regPreFolder} ]; then mkdir ${regPreFolder}; fi
+if [ ! -d ${dataProFolder} ]; then mkdir ${dataProFolder}; fi
+if [ ! -d ${data2stdProFolder} ]; then mkdir ${data2stdProFolder}; fi
 
-echo "Organizing Raw folder"
-$FSLDIR/bin/imcp ${rawUnlabFolder}/${OrigTCSName} ${rawFolder}/${OrigTCSName}
-$FSLDIR/bin/imcp ${rawUnlabFolder}/${OrigScoutName} ${rawFolder}/${OrigScoutName}
+#=====================================================================================
+###                                   DO WORK
+#=====================================================================================
 
-if [[ $DistortionCorrection == "TOPUP" ]] ; then
-    $FSLDIR/bin/imcp ${rawUnlabFolder}/${OrigSE_Pos_Name} ${rawFolder}/${OrigSE_Pos_Name}
-    $FSLDIR/bin/imcp ${rawUnlabFolder}/${OrigSE_Neg_Name} ${rawFolder}/${OrigSE_Neg_Name}
+log_Msg 3 "Organizing denoising folder"
+if [ -n "$(ls -A ${nrFolder} 2>/dev/null)" ]; then
+    cp -r ${nrFolder}/${ICA_AROMAPreFolderName}/* ${icaaromaPreFolder}/
+    rm -rf ${nrFolder}
 fi
 
-
-echo "Organizing Reg folder"
-$FSLDIR/bin/imcp ${regUnlabFolder}/${rfMRI2strTransf}.nii.gz ${regFolder}/${rfMRI2strTransf}.nii.gz
-$FSLDIR/bin/imcp ${regUnlabFolder}/${Str2rfMRITransf}.nii.gz ${regFolder}/${Str2rfMRITransf}.nii.gz
-cp ${DcUnlabFolder}/fMRI2str.mat ${regFolder}/${rfMRI2strTransf}.mat
-$FSLDIR/bin/imcp ${regUnlabFolder}/${rfMRI2StandardTransform} ${regFolder}/${NameOffMRI}2std
-$FSLDIR/bin/imcp ${regUnlabFolder}/${Standard2rfMRITransform} ${regFolder}/std2${NameOffMRI}
-
-
-echo "Organizing MC folder"
-if [[ ${MotionCorrectionType} == "EDDY" ]]; then
-    $FSLDIR/bin/imcp ${EddyUnlabFolder}/${EddyOutput} ${mcFolder}/${NameOffMRI}_ec
-    cp ${EddyUnlabFolder}/${EddyOutput}.eddy_parameters  ${mcFolder}/${NameOffMRI}_ec.eddy_parameters
-elif [[ ${MotionCorrectionType} == "MCFLIRT" ]]; then
-    $FSLDIR/bin/imcp ${mcUnlabFolder}/${NameOffMRI}_mc ${mcFolder}/${NameOffMRI}_mc
-    cp ${mcUnlabFolder}/${NameOffMRI}_mc.par ${mcFolder}/${NameOffMRI}_mc.par
-    cp -r ${mcUnlabFolder}/${MotionMatrixFolder} ${mcFolder}/${MotionMatrixFolder}
+log_Msg 3 "Organizing fieldmap folder"
+if [ -n "$(ls -A ${TOPUP_Folder} 2>/dev/null)" ]; then
+    cp -r ${TOPUP_Folder}/* ${topupPreFolder}/
+    rm -rf ${TOPUP_Folder}
 fi
 
-
-echo "Organizing Figs folder"
-if [[ ${MotionCorrectionType} == "EDDY" ]]; then
-    cp ${EddyUnlabFolder}/eddy_movement_rms.png ${figsFolder}/eddy_movement_rms.png
-    cp ${EddyUnlabFolder}/eddy_restricted_movement_rms.png ${figsFolder}/eddy_restricted_movement_rms.png
-elif [[ ${MotionCorrectionType} == "MCFLIRT" ]]; then
-    cp ${mcUnlabFolder}/rot.png ${figsFolder}/mcflirt_rot.png
-    cp ${mcUnlabFolder}/trans.png ${figsFolder}/mcflirt_trans.png
+log_Msg 3 "Organizing motion correction folder"
+if [ -n "$(ls -A ${EddyFolder} 2>/dev/null)" ]; then
+    cp -r ${EddyFolder}/* ${eddyPreFolder}/
+    rm -rf ${EddyFolder}
 fi
 
-
-echo "Organizing Processed folder"
-if [[ ${MotionCorrectionType} == "EDDY" ]]; then
-    processed_rfMRI_file=${EddyUnlabFolder}/${EddyOutput}
-    processed_SBRef_file=${DcUnlabFolder}/SBRef_dc
-elif [[ ${MotionCorrectionType} == "MCFLIRT" ]]; then
-    processed_rfMRI_file=${mcUnlabFolder}/${NameOffMRI}_mc
-    processed_SBRef_file=${gdcUnlabFolder}/${ScoutName}_gdc
+if [ -n "$(ls -A ${mcFolder} 2>/dev/null)" ]; then
+    cp -r ${mcFolder}/* ${mcflirtPreFolder}/
+    rm -rf ${mcFolder}
 fi
 
-if [ $SliceTimingCorrection -ne 0 ]; then
-    processed_rfMRI_file=${StcUnlabFolder}/${NameOffMRI}_stc
-fi
+log_Msg 3 "Organizing registration folder"
+$FSLDIR/bin/imcp ${regFolder}/${rfMRI2strTransf}         ${regPreFolder}/${rfMRI2strTransf}
+$FSLDIR/bin/imcp ${regFolder}/${Str2rfMRITransf}         ${regPreFolder}/${Str2rfMRITransf}
+              cp ${DCFolder}/fMRI2str.mat                ${regPreFolder}/${rfMRI2strTransf}.mat
+$FSLDIR/bin/imcp ${regFolder}/${rfMRI2StandardTransform} ${regPreFolder}/${NameOffMRI}2std
+$FSLDIR/bin/imcp ${regFolder}/${Standard2rfMRITransform} ${regPreFolder}/std2${NameOffMRI}
 
 
-processed_rfMRI_file=${TemFilUnlabFolder}/${NameOffMRI}_tempfilt
-processed_rfMRI2std_file=${OneStResUnlabFolder}/${NameOffMRI}_nonlin
-processed_SBRef_file=${InNormUnlabFolder}/SBRef_intnorm
-processed_SBRef2str_file=${DcUnlabFolder}/SBRef_dc
-processed_SBRef2std_file=${OneStResUnlabFolder}/${NameOffMRI}_SBRef_nonlin
+log_Msg 3 "Organizing data folder"
+processed_rfMRI_file=${Tmp_Filt_Folder}/${NameOffMRI}_tempfilt
+processed_SBRef_file=${In_Nrm_Folder}/SBRef_intnorm
+processed_rfMRI2std_file=${OsrFolder}/${NameOffMRI}_nonlin
+processed_SBRef2str_file=${DCFolder}/SBRef_dc
+processed_SBRef2std_file=${OsrFolder}/${NameOffMRI}_SBRef_nonlin
 
 
-$FSLDIR/bin/imcp ${processed_rfMRI_file} ${processedFolder}/${NameOffMRI}
-$FSLDIR/bin/imcp ${processed_rfMRI2std_file} ${processedFolder}/${NameOffMRI}2std
-$FSLDIR/bin/imcp ${processed_SBRef_file} ${processedFolder}/SBref
-$FSLDIR/bin/imcp ${processed_SBRef2str_file} ${processedFolder}/SBref2str
-$FSLDIR/bin/imcp ${processed_SBRef2std_file} ${processedFolder}/SBref2std
+$FSLDIR/bin/imcp ${processed_rfMRI_file}     ${dataProFolder}/${NameOffMRI}
+$FSLDIR/bin/imcp ${processed_rfMRI2std_file} ${data2stdProFolder}/${NameOffMRI}2std
+$FSLDIR/bin/imcp ${processed_SBRef_file}     ${dataProFolder}/SBref
+$FSLDIR/bin/imcp ${processed_SBRef2str_file} ${dataProFolder}/SBref2str
+$FSLDIR/bin/imcp ${processed_SBRef2std_file} ${data2stdProFolder}/SBref2std
 
 
-echo ""
-echo "                     END: Organization of the outputs"
-echo "                    END: `date`"
-echo "=========================================================================="
-echo "                             ===============                              "
+log_Msg 3 ""
+log_Msg 3 "                     END: Organization of the outputs"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
+
+
+################################################################################################
+## Cleanup
+################################################################################################
+rm -rf ${gdcFolder}
+rm -rf ${In_Nrm_Folder}
+rm -rf ${stcFolder}
+rm -rf ${Tmp_Filt_Folder}
+rm -rf ${regFolder}
