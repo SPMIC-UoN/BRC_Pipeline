@@ -104,7 +104,7 @@ case "$BiasCorrection" in
             exit 1
         fi
         #note, this file doesn't exist yet, gets created by Compute_SpinEcho_BiasField.sh
-        UseBiasField="${WD}/Compute_SE_BiasField/${NameOffMRI}_sebased_bias.nii.gz"
+        UseBiasField="${WD}/${sebfFolderName}/${NameOffMRI}_sebased_bias.nii.gz"
         ;;
 
     "")
