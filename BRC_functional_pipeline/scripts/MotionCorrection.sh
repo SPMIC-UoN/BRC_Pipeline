@@ -40,7 +40,8 @@ OutputfMRIBasename=`basename ${OutputfMRI}`
 log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 3 "+                                                                        +"
 log_Msg 3 "+                        START: Motion Correction                        +"
-log_Msg 3 "+                     Motion correction type: $MotionCorrectionType      +"
+log_Msg 3 "+                     Motion correction type: $MotionCorrectionType              +"
+log_Msg 3 "+                                                                        +"
 log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
