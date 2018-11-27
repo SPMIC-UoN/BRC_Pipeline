@@ -296,8 +296,8 @@ ${FSLDIR}/bin/fslmaths ${OutFolder}/WarpField -mul 0 ${OutFolder}/WarpField
 ${FSLDIR}/bin/fslmaths ${EddyFolder}/SBRef_dc -mul 0 -add 1 ${OutFolder}/Jacobian
 
 
-$FSLDIR/bin/fsl_tsplot -i ${EddyFolder}/eddy_corrected.eddy_movement_rms -t 'Eddy emovement RMS (mm)' -u 1 -w 640 -h 144 -a absolute,relative -o ${EddyFolder}/eddy_movement_rms.png
-$FSLDIR/bin/fsl_tsplot -i ${EddyFolder}/eddy_corrected.eddy_restricted_movement_rms -t 'Eddy restricted movement RMS (mm)' -u 1 -w 640 -h 144 -a absolute,relative -o ${EddyFolder}/eddy_restricted_movement_rms.png
+$FSLDIR/bin/fsl_tsplot -i ${EddyFolder}/${EddyOut}.eddy_movement_rms -t 'Eddy emovement RMS (mm)' -u 1 -w 640 -h 144 -a absolute,relative -o ${EddyFolder}/eddy_movement_rms.png
+$FSLDIR/bin/fsl_tsplot -i ${EddyFolder}/${EddyOut}.eddy_restricted_movement_rms -t 'Eddy restricted movement RMS (mm)' -u 1 -w 640 -h 144 -a absolute,relative -o ${EddyFolder}/eddy_restricted_movement_rms.png
 
 
 $FSLDIR/bin/fslmodhd ${EddyFolder}/${EddyOut} pixdim4 $TR_vol
