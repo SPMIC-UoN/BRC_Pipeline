@@ -21,20 +21,20 @@ Usage()
   echo " "
   echo "Usage: `basename $0`"
   echo "Compulsory arguments (You MUST set one or more of):"
-  echo " -i | --input <T1W image>         Full path of the input image (for one image only)"
+  echo " --input <T1W image>              Full path of the input image (for one image only)"
   echo " --path <full path>               Output path"
-  echo " -s | --subject <Subject name>    Output directory is a subject name folder in output path directory"
+  echo " --subject <Subject name>         Output directory is a subject name folder in output path directory"
   echo " "
   echo "Optional arguments (You may optionally specify one or more of):"
   echo " -t2 <T2W image>                  Full path of the input T2W image (for processing of T2 data)"
   echo " --freesurfer                     Turn on Freesurfer processing pipeline"
-  echo " --subseg                         Turn on subcortical segmentation by FIRS"
+  echo " --subseg                         Turn on subcortical segmentation by FIRST"
   echo " --qc                             Turn on quality control of T1 data"
   echo " --strongbias                     Turn on for images with very strong bias fields"
   echo " --noreg                          Turn off steps that do registration to standard (FLIRT and FNIRT)"
-  echo " --noseg                          Turn off step that does tissue-type segmentation (FAST)"
+  echo " --noseg                          Turn off the step that does tissue-type segmentation (FAST)"
   echo " -ft | --FAST_t <type>            Specify the type of image (choose one of T1 T2 PD - default is T1)"
-  echo " --nocrop                         Turn off step that does automated cropping"
+  echo " --nocrop                         Turn off the step that does automated cropping"
   echo " -h | --help                      help"
   echo " "
   echo " "
@@ -68,7 +68,7 @@ FAST_t=1  # For FAST: 1 = T1w, 2 = T2w, 3 = PD
 # parse arguments
 while [ "$1" != "" ]; do
     case $1 in
-        -s | --subject )        shift
+        --subject )             shift
                                 Sub_ID=$1
                                 ;;
 
@@ -76,7 +76,7 @@ while [ "$1" != "" ]; do
 				                        Path=$1
                                 ;;
 
-        -i | --input )          shift
+        --input )               shift
 				                        IN_Img=$1
                                 ;;
 
