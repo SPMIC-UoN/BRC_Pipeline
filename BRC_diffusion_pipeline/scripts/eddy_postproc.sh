@@ -1,16 +1,52 @@
 #!/bin/bash
 # Last update: 28/09/2018
 
+# Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
+#
+# Copyright 2018 University of Nottingham
+#
 set -e
-echo -e "\n START: postproc"
 
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
 
-workingdir=$1
-CombineMatchedFlag=$2
-Apply_Topup=$3
+# function for parsing options
+getopt1()
+{
+    sopt="$1"
+    shift 1
+    for fn in $@ ; do
+        if [ `echo $fn | grep -- "^${sopt}=" | wc -w` -gt 0 ] ; then
+            echo $fn | sed "s/^${sopt}=//"
+            return 0
+        fi
+    done
+}
 
-eddydir=${workingdir}/preprocess/eddy
-datadir=${workingdir}/processed
+# parse arguments
+workingdir=`getopt1 "--workingdir" $@`
+eddydir=`getopt1 "--eddyfolder" $@`
+datadir=`getopt1 "--datafolder" $@`
+CombineMatchedFlag=`getopt1 "--combinematched" $@`
+Apply_Topup=`getopt1 "--Apply_Topup" $@`
+LogFile=`getopt1 "--logfile" $@`
+
+log_SetPath "${LogFile}"
+
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+                      START: Eddy Post-processing                       +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "workingdir:$workingdir"
+log_Msg 2 "eddydir:$eddydir"
+log_Msg 2 "datadir:$datadir"
+log_Msg 2 "CombineMatchedFlag:$CombineMatchedFlag"
+log_Msg 2 "Apply_Topup:$Apply_Topup"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
 
 if [ ${CombineMatchedFlag} -eq 2 ]; then
     ${FSLDIR}/bin/imcp  ${eddydir}/eddy_unwarped_images ${datadir}/data
@@ -61,4 +97,12 @@ else
 fi
 #${FSLDIR}/bin/imrm ${eddydir}/eddy_unwarped_images
 
-echo -e "\n END: postproc"
+log_Msg 3 ""
+log_Msg 3 "                        END: Eddy Post-processing"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
+
+################################################################################################
+## Cleanup
+################################################################################################

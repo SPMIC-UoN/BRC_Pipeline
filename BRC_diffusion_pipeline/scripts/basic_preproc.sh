@@ -1,11 +1,17 @@
 #!/bin/bash
 # Last update: 28/09/2018
 
+# Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
+#
+# Copyright 2018 University of Nottingham
+#
 set -e
-echo -e "\n START: basic_preproc"
+
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
 
 # function for parsing options
-getopt1() {
+getopt1()
+{
     sopt="$1"
     shift 1
     for fn in $@ ; do
@@ -21,17 +27,39 @@ isodd()
     echo "$(( $1 % 2 ))"
 }
 
-workingdir=`getopt1 "--workingdir" $@`
+# parse arguments
+rawdir=`getopt1 "--dmrirawfolder" $@`
+topupdir=`getopt1 "--topupfolder" $@`
+eddydir=`getopt1 "--eddyfolder" $@`
 echo_spacing=`getopt1 "--echospacing" $@`
 PEdir=`getopt1 "--pedir" $@`
 b0dist=`getopt1 "--b0dist" $@`
 b0maxbval=`getopt1 "--b0maxbval" $@`
 GRAPPA=`getopt1 "--pifactor" $@`
 Apply_Topup=`getopt1 "--applytopup" $@`
+LogFile=`getopt1 "--logfile" $@`
 
-rawdir=${workingdir}/raw
-topupdir=${workingdir}/preprocess/topup
-eddydir=${workingdir}/preprocess/eddy
+log_SetPath "${LogFile}"
+
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+                       START: Basic Preprocessing                       +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "rawdir:$rawdir"
+log_Msg 2 "topupdir:$topupdir"
+log_Msg 2 "eddydir:$eddydir"
+log_Msg 2 "echo_spacing:$echo_spacing"
+log_Msg 2 "PEdir:$PEdir"
+log_Msg 2 "b0dist:$b0dist"
+log_Msg 2 "b0maxbval:$b0maxbval"
+log_Msg 2 "GRAPPA:$GRAPPA"
+log_Msg 2 "Apply_Topup:$Apply_Topup"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
 
 if [ ${PEdir} -eq 1 ]; then    #RL/LR phase encoding
     basePos="RL"
@@ -54,12 +82,13 @@ nPEsteps=$(($dimP - 1))                         #If GRAPPA is used this needs to
 #Total_readout=Echo_spacing*(#of_PE_steps-1)
 ro_time=`echo "${echo_spacing} / ${GRAPPA} * ${nPEsteps} " | bc -l`
 ro_time=`echo "scale=6; ${ro_time} / 1000" | bc -l`
-echo "Total readout time is $ro_time secs"
+log_Msg 3 "Total readout time is $ro_time secs"
 
 ################################################################################################
 ## Intensity Normalisation across Series
 ################################################################################################
-echo "Rescaling series to ensure consistency across baseline intensities"
+
+log_Msg 3 "Rescaling series to ensure consistency across baseline intensities"
 
 entry_cnt=0
 
@@ -73,7 +102,7 @@ for entry in ${Files}  #For each series, get the mean b0 and rescale to match th
 do
     basename=`imglob ${entry}`
 
-    echo "Processing $basename"
+    log_Msg 3 "Processing $basename"
     ${FSLDIR}/bin/fslmaths ${entry} -Xmean -Ymean -Zmean ${basename}_mean
 
     Posbvals=`cat ${basename}.bval`
@@ -108,7 +137,8 @@ done
 ################################################################################################
 ## b0 extraction and Creation of Index files for topup/eddy
 ################################################################################################
-echo "Extracting b0s from PE_Positive volumes and creating index and series files"
+
+log_Msg 3 "Extracting b0s from PE_Positive volumes and creating index and series files"
 
 declare -i sesdimt #declare sesdimt as integer
 tmp_indx=1
@@ -194,7 +224,7 @@ if [ ! $Apply_Topup = yes ] ; then
 fi
 
 if [ $Apply_Topup = yes ] ; then
-    echo "Extracting b0s from PE_Negative volumes and creating index and series files"
+    log_Msg 3 "Extracting b0s from PE_Negative volumes and creating index and series files"
     tmp_indx=1
 
     while read line ; do  #Read SeriesCorrespVolNum.txt file
@@ -269,7 +299,7 @@ ${FSLDIR}/bin/fslmerge -t ${rawdir}/Pos_b0 `${FSLDIR}/bin/imglob ${rawdir}/Pos_b
 ${FSLDIR}/bin/imrm ${rawdir}/Pos_b0_????
 
 if [ $Apply_Topup = yes ] ; then
-    echo "Merging Pos and Neg images"
+    log_Msg 3 "Merging Pos and Neg images"
 
     ${FSLDIR}/bin/fslmerge -t ${rawdir}/Neg_b0 `${FSLDIR}/bin/imglob ${rawdir}/Neg_b0_????.*`
     ${FSLDIR}/bin/imrm ${rawdir}/Neg_b0_????
@@ -289,7 +319,7 @@ fi
 
 dimz=`${FSLDIR}/bin/fslval ${rawdir}/Pos dim3`
 if [ `isodd $dimz` -eq 1 ];then
-    echo "Remove one slice from data to get even number of slices"
+    log_Msg 3 "Remove one slice from data to get even number of slices"
 
     ${FSLDIR}/bin/fslroi ${rawdir}/Pos ${rawdir}/Posn 0 -1 0 -1 1 -1
     ${FSLDIR}/bin/fslroi ${rawdir}/Pos_b0 ${rawdir}/Pos_b0n 0 -1 0 -1 1 -1
@@ -313,7 +343,7 @@ if [ `isodd $dimz` -eq 1 ];then
 fi
 
 if [ $Apply_Topup = yes ] ; then
-    echo "Perform final merge"
+    log_Msg 3 "Perform final merge"
     ${FSLDIR}/bin/fslmerge -t ${rawdir}/Pos_Neg_b0 ${rawdir}/Pos_b0 ${rawdir}/Neg_b0
     ${FSLDIR}/bin/fslmerge -t ${rawdir}/Pos_Neg ${rawdir}/Pos ${rawdir}/Neg
     paste ${rawdir}/Pos.bval ${rawdir}/Neg.bval >${rawdir}/Pos_Neg.bvals
@@ -326,7 +356,7 @@ fi
 ## Move files to appropriate directories
 ################################################################################################
 
-echo "Move files to appropriate directories"
+log_Msg 3 "Move files to appropriate directories"
 
 if [ $Apply_Topup = yes ] ; then
     mv ${rawdir}/extractedb0.txt ${topupdir}
@@ -352,4 +382,12 @@ else
   mv ${rawdir}/Pos.bv?? ${eddydir}
 fi
 
-echo -e "\n END: basic_preproc"
+log_Msg 3 ""
+log_Msg 3 "                         END: Basic Preprocessing"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
+
+################################################################################################
+## Cleanup
+################################################################################################

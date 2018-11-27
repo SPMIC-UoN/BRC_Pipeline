@@ -1,11 +1,13 @@
 #!/bin/bash
-# Last update: 02/10/2018
+# Last update: 28/09/2018
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
 # Copyright 2018 University of Nottingham
 #
 set -e
+
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
 
 # function for parsing options
 getopt1()
@@ -29,12 +31,26 @@ qcdir=`getopt1 "--qcdir" $@`
 Slice2Volume=`getopt1 "--slice2vol" $@`
 topupFolder=`getopt1 "--topupdir" $@`
 SliceSpec=`getopt1 "--slspec" $@`
+LogFile=`getopt1 "--logfile" $@`
 
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                        +"
-echo "+         START: Eddy for correcting eddy currents and movements         +"
-echo "+                                                                        +"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_SetPath "${LogFile}"
+
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+         START: Eddy for correcting eddy currents and movements         +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "WD:$WD"
+log_Msg 2 "Apply_Topup:$Apply_Topup"
+log_Msg 2 "do_QC:$do_QC"
+log_Msg 2 "qcdir:$qcdir"
+log_Msg 2 "Slice2Volume:$Slice2Volume"
+log_Msg 2 "topupFolder:$topupFolder"
+log_Msg 2 "SliceSpec:$SliceSpec"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 if [[ $Slice2Volume == yes ]]; then
     MPOrder=4
@@ -45,7 +61,7 @@ fi
 if [ $Apply_Topup = yes ] ; then
     ${FSLDIR}/bin/imcp ${topupFolder}/nodif_brain_mask ${WD}/
 else
-    echo "Running BET on the Pos b0"
+    log_Msg 3 "Running BET on the Pos b0"
     ${FSLDIR}/bin/fslroi ${WD}/Pos_b0 ${WD}/Pos_b01 0 1
     ${FSLDIR}/bin/bet ${WD}/Pos_b01 ${WD}/nodif_brain -m -f 0.2
 fi
@@ -78,9 +94,9 @@ if [ ! $SliceSpec = "NONE" ] ; then
     if [ -e ${WD}/slspec.txt ] ; then
         EDDY_arg="${EDDY_arg} --slspec=${WD}/slspec.txt"
     else
-        echo ""
-        echo "WARNING: Slice Timing information does not exist in the json file"
-        echo ""
+        log_Msg 3 ""
+        log_Msg 3 "WARNING: Slice Timing information does not exist in the json file"
+        log_Msg 3 ""
     fi
 fi
 
@@ -138,4 +154,13 @@ if [ $do_QC = yes ] ; then
     rm -r ${WD}/eddy_unwarped_images.qc
 fi
 
-echo -e "\n END: eddy"
+log_Msg 3 ""
+log_Msg 3 "           END: Eddy for correcting eddy currents and movements"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
+
+
+################################################################################################
+## Cleanup
+################################################################################################

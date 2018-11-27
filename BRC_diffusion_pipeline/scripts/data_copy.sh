@@ -1,13 +1,19 @@
 #!/bin/bash
 # Last update: 28/09/2018
 
+# Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
+#
+# Copyright 2018 University of Nottingham
+#
 set -e
-echo -e "\n START: data_copy"
+
+source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
 
 MissingFileFlag="EMPTY" #String used in the input arguments to indicate that a complete series is missing
 
 # function for parsing options
-getopt1() {
+getopt1()
+{
     sopt="$1"
     shift 1
     for fn in $@ ; do
@@ -27,12 +33,32 @@ min()
   fi
 }
 
-outdir=`getopt1 "--workingdir" $@`
+# parse arguments
+dMRIrawFolder=`getopt1 "--dmrirawfolder" $@`
+eddyFolder=`getopt1 "--eddyfolder" $@`
 InputImages=`getopt1 "--inputimage" $@`
 InputImages2=`getopt1 "--inputimage2" $@`
 PEdir=`getopt1 "--pedirection" $@`
 Apply_Topup=`getopt1 "--applytopup" $@`
+LogFile=`getopt1 "--logfile" $@`
 
+log_SetPath "${LogFile}"
+
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "+                          START: Data Handling                          +"
+log_Msg 3 "+                                                                        +"
+log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "dMRIrawFolder:$dMRIrawFolder"
+log_Msg 2 "eddyFolder:$eddyFolder"
+log_Msg 2 "InputImages:$InputImages"
+log_Msg 2 "InputImages2:$InputImages2"
+log_Msg 2 "PEdir:$PEdir"
+log_Msg 2 "Apply_Topup:$Apply_Topup"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 if [ ${PEdir} -eq 1 ]; then    #RL/LR phase encoding
     basePos="RL"
@@ -42,7 +68,7 @@ elif [ ${PEdir} -eq 2 ]; then  #AP/PA phase encoding
     baseNeg="PA"
 fi
 
-echo "Copying raw data"
+log_Msg 3 "Copying raw data"
 
 #Copy RL/AP images to workingdir
 InputImages=`echo ${InputImages} | sed 's/@/ /g'`
@@ -60,9 +86,9 @@ for Image in ${InputImages} ; do
     else
 	      PosVols[${Pos_count}]=`${FSLDIR}/bin/fslval ${Image} dim4`
         absname=`${FSLDIR}/bin/imglob ${Image}`
-        ${FSLDIR}/bin/imcp ${absname} ${outdir}/raw/${basePos}_${Pos_count}
-        cp ${absname}.bval ${outdir}/raw/${basePos}_${Pos_count}.bval
-        cp ${absname}.bvec ${outdir}/raw/${basePos}_${Pos_count}.bvec
+        ${FSLDIR}/bin/imcp ${absname} ${dMRIrawFolder}/${basePos}_${Pos_count}
+        cp ${absname}.bval ${dMRIrawFolder}/${basePos}_${Pos_count}.bval
+        cp ${absname}.bvec ${dMRIrawFolder}/${basePos}_${Pos_count}.bvec
     fi
 
     Pos_count=$((${Pos_count} + 1))
@@ -86,9 +112,9 @@ if [ $Apply_Topup = yes ] ; then
         else
            NegVols[${Neg_count}]=`${FSLDIR}/bin/fslval ${Image} dim4`
            absname=`${FSLDIR}/bin/imglob ${Image}`
-           ${FSLDIR}/bin/imcp ${absname} ${outdir}/raw/${baseNeg}_${Neg_count}
-           cp ${absname}.bval ${outdir}/raw/${baseNeg}_${Neg_count}.bval
-           cp ${absname}.bvec ${outdir}/raw/${baseNeg}_${Neg_count}.bvec
+           ${FSLDIR}/bin/imcp ${absname} ${dMRIrawFolder}/${baseNeg}_${Neg_count}
+           cp ${absname}.bval ${dMRIrawFolder}/${baseNeg}_${Neg_count}.bval
+           cp ${absname}.bvec ${dMRIrawFolder}/${baseNeg}_${Neg_count}.bvec
         fi
 
         Neg_count=$((${Neg_count} + 1))
@@ -100,12 +126,14 @@ else
 fi
 
 
-echo "Copying raw data"
+log_Msg 3 "Copying raw data"
 
 if [ $Apply_Topup = yes ] ; then
     if [ ${Pos_count} -ne ${Neg_count} ]; then
-        echo "Wrong number of input datasets! Make sure that you provide pairs of input filenames."
-        echo "If the respective file does not exist, use EMPTY in the input arguments."
+        log_Msg 3 ""
+        log_Msg 3 "Wrong number of input datasets! Make sure that you provide pairs of input filenames."
+        log_Msg 3 "If the respective file does not exist, use EMPTY in the input arguments."
+        log_Msg 3 ""
         exit 1
     fi
 fi
@@ -118,10 +146,10 @@ Paired_flag=0
 
 for (( j=1; j<${Pos_count}; j++ )) ; do
     CorrVols=`min ${NegVols[${j}]} ${PosVols[${j}]}`
-    echo ${CorrVols} ${PosVols[${j}]} >> ${outdir}/preprocess/eddy/Pos_SeriesVolNum.txt
+    echo ${CorrVols} ${PosVols[${j}]} >> ${eddyFolder}/Pos_SeriesVolNum.txt
 
     if [ ${PosVols[${j}]} -ne 0 ]; then
-      	echo ${CorrVols} >> ${outdir}/raw/${basePos}_SeriesCorrespVolNum.txt
+      	echo ${CorrVols} >> ${dMRIrawFolder}/${basePos}_SeriesCorrespVolNum.txt
       	if [ ${CorrVols} -ne 0 ]; then
       	    Paired_flag=1
       	fi
@@ -130,17 +158,29 @@ done
 
 for (( j=1; j<${Neg_count}; j++ )) ; do
     CorrVols=`min ${NegVols[${j}]} ${PosVols[${j}]}`
-    echo ${CorrVols} ${NegVols[${j}]} >> ${outdir}/preprocess/eddy/Neg_SeriesVolNum.txt
+    echo ${CorrVols} ${NegVols[${j}]} >> ${eddyFolder}/Neg_SeriesVolNum.txt
 
     if [ ${NegVols[${j}]} -ne 0 ]; then
-      	echo ${CorrVols} >> ${outdir}/raw/${baseNeg}_SeriesCorrespVolNum.txt
+      	echo ${CorrVols} >> ${dMRIrawFolder}/${baseNeg}_SeriesCorrespVolNum.txt
     fi
 done
 
 if [ $Apply_Topup = yes ] ; then
     if [ ${Paired_flag} -eq 0 ]; then
-        echo "Wrong Input! No pairs of phase encoding directions have been found!"
-        echo "At least one pair is needed!"
+        log_Msg 3 ""
+        log_Msg 3 "Wrong Input! No pairs of phase encoding directions have been found!"
+        log_Msg 3 "At least one pair is needed!"
+        log_Msg 3 ""
         exit 1
     fi
 fi
+
+log_Msg 3 ""
+log_Msg 3 "                            END: Data Handling"
+log_Msg 3 "                    END: `date`"
+log_Msg 3 "=========================================================================="
+log_Msg 3 "                             ===============                              "
+
+################################################################################################
+## Cleanup
+################################################################################################
