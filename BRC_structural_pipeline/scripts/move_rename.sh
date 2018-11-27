@@ -31,11 +31,13 @@ do_Sub_seg=`getopt1 "--dosubseg" $@`
 do_tissue_seg=`getopt1 "--dotissueseg" $@`
 anatFolder=`getopt1 "--anatname" $@`
 dataT1folder=`getopt1 "--datat1folder" $@`
+data2stdT1Folder=`getopt1 "--data2stdt1folder" $@`
 segT1Folder=`getopt1 "--segt1folder" $@`
 do_Sub_seg=`getopt1 "--dosubseg" $@`
 regT1Folder=`getopt1 "--regt1folder" $@`
 TempT1Folder=`getopt1 "--tempt1folder" $@`
 dataT2Folder=`getopt1 "--datat2folder" $@`
+data2stdT2Folder=`getopt1 "--data2stdt2folder" $@`
 regT2Folder=`getopt1 "--regt2folder" $@`
 TempT2Folder=`getopt1 "--tempt2folder" $@`
 LogFile=`getopt1 "--logfile" $@`
@@ -54,11 +56,13 @@ log_Msg 2 "do_Sub_seg=$do_Sub_seg"
 log_Msg 2 "do_tissue_seg=$do_tissue_seg"
 log_Msg 2 "anatFolder=$anatFolder"
 log_Msg 2 "dataT1folder=$dataT1folder"
+log_Msg 2 "data2stdT1Folder=$data2stdT1Folder"
 log_Msg 2 "segT1Folder=$segT1Folder"
 log_Msg 2 "do_Sub_seg=$do_Sub_seg"
 log_Msg 2 "regT1Folder=$regT1Folder"
 log_Msg 2 "TempT1Folder=$TempT1Folder"
 log_Msg 2 "dataT2Folder=$dataT2Folder"
+log_Msg 2 "data2stdT2Folder=$data2stdT2Folder"
 log_Msg 2 "regT2Folder=$regT2Folder"
 log_Msg 2 "TempT2Folder=$TempT2Folder"
 log_Msg 2 "LogFile=$LogFile"
@@ -86,8 +90,6 @@ SinChanFolder=${TissueFolder}/${SingChanFolderName}
 MultChanFolder=${TissueFolder}/${MultChanFolderName}
 SubFolder=${segT1Folder}/${SubFolderName}
 ShapeFolder=${SubFolder}/${ShapeFolderName}
-LinRegFolder=${regT1Folder}/${LinFolderName}
-NonLinRegFolder=${regT1Folder}/${NonLinFolderName}
 FSLanatFolder=${TempT1Folder}/${fslanatFolderName}
 
 if [ ! -d ${TissueFolder} ]; then mkdir ${TissueFolder}; fi
@@ -95,18 +97,12 @@ if [ ! -d ${SinChanFolder} ]; then mkdir ${SinChanFolder}; fi
 if [ ! -d ${MultChanFolder} ]; then mkdir ${MultChanFolder}; fi
 if [ ! -d ${SubFolder} ]; then mkdir ${SubFolder}; fi
 if [ ! -d ${ShapeFolder} ]; then mkdir ${ShapeFolder}; fi
-if [ ! -d ${LinRegFolder} ]; then mkdir ${LinRegFolder}; fi
-if [ ! -d ${NonLinRegFolder} ]; then mkdir ${NonLinRegFolder}; fi
 if [ ! -d ${FSLanatFolder} ]; then mkdir ${FSLanatFolder}; fi
 
 if [[ $T2_exist == yes ]]; then
-    LinRegT2Folder=${regT2Folder}/${LinFolderName}
-    NonLinRegT2Folder=${regT2Folder}/${NonLinFolderName}
     FSLanatT2Folder=${TempT2Folder}/${fslanatFolderName}
     MultiChanFolder=${TempT1Folder}/${MultiChanFolderName}
 
-    if [ ! -d ${LinRegT2Folder} ]; then mkdir ${LinRegT2Folder}; fi
-    if [ ! -d ${NonLinRegT2Folder} ]; then mkdir ${NonLinRegT2Folder}; fi
     if [ ! -d ${FSLanatT2Folder} ]; then mkdir ${FSLanatT2Folder}; fi
     if [ ! -d ${MultiChanFolder} ]; then mkdir ${MultiChanFolder}; fi
 fi
@@ -177,23 +173,23 @@ if [ $do_Sub_seg = yes ] ; then
   mv $sourcdir/T1_first-R_Thal_first.vtk  ${ShapeFolder}/T1_R_Thal.vtk
   mv $sourcdir/T1_first-L_Thal_first.vtk  ${ShapeFolder}/T1_L_Thal.vtk
 
-  mv $datadir/T1_biascorr_to_std_sub.mat  ${LinRegFolder}/T1_2_std_sub.mat
+  mv $datadir/T1_biascorr_to_std_sub.mat  ${regT1Folder}/T1_2_std_sub.mat
 #  $FSLDIR/bin/immv $datadir/T1_biascorr_to_std_sub  $T1Folder/reg/lin/T1_2_std_sub
 fi
 
 log_Msg 3 "Organizing T1 linear registration folder"
 
-$FSLDIR/bin/immv $datadir/T1_to_MNI_lin  ${LinRegFolder}/T1_2_std
-mv $datadir/T1_to_MNI_lin.mat  ${LinRegFolder}/T1_2_std.mat
-$FSLDIR/bin/convert_xfm -inverse ${LinRegFolder}/T1_2_std.mat -omat ${LinRegFolder}/std_2_T1.mat
+$FSLDIR/bin/immv $datadir/T1_to_MNI_lin  ${data2stdT1Folder}/T1_2_std
+mv $datadir/T1_to_MNI_lin.mat  ${regT1Folder}/T1_2_std.mat
+$FSLDIR/bin/convert_xfm -inverse ${regT1Folder}/T1_2_std.mat -omat ${regT1Folder}/std_2_T1.mat
 
 log_Msg 3 "Organizing T1 non-linear registration folder"
 
-$FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin  ${NonLinRegFolder}/T1_2_std_warp
-$FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin_coeff  ${NonLinRegFolder}/T1_2_std_warp_coeff
-$FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin_field  ${NonLinRegFolder}/T1_2_std_warp_field
-$FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin_jac  ${NonLinRegFolder}/T1_2_std_warp_jac
-$FSLDIR/bin/immv $datadir/MNI_to_T1_nonlin_field  ${NonLinRegFolder}/std_2_T1_warp_field
+$FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin  ${data2stdT1Folder}/T1_2_std_warp
+$FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin_coeff  ${regT1Folder}/T1_2_std_warp_coeff
+$FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin_field  ${regT1Folder}/T1_2_std_warp_field
+$FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin_jac  ${regT1Folder}/T1_2_std_warp_jac
+$FSLDIR/bin/immv $datadir/MNI_to_T1_nonlin_field  ${regT1Folder}/std_2_T1_warp_field
 
 cp -r $datadir/* ${FSLanatFolder}/
 rm -rf $datadir
@@ -213,14 +209,14 @@ if [[ $T2_exist == yes ]]; then
     log_Msg 3  `date`
     log_Msg 3 "Organizing T2 linear registration folder"
 
-    ${FSLDIR}/bin/epi_reg --epi=${dataT2Folder}/T2_brain --t1=${dataT1folder}/T1 --t1brain=${dataT1folder}/T1_brain --out=${LinRegT2Folder}/T2_2_T1_init --wmseg=${SinChanFolder}/T1_pve_thr_WM
-    ${FSLDIR}/bin/flirt -in ${dataT2Folder}/T2_brain -ref ${dataT1folder}/T1_brain -init ${LinRegT2Folder}/T2_2_T1_init.mat -out ${LinRegT2Folder}/T2_2_T1 -omat ${LinRegT2Folder}/T2_2_T1.mat -dof 6
+    ${FSLDIR}/bin/epi_reg --epi=${dataT2Folder}/T2_brain --t1=${dataT1folder}/T1 --t1brain=${dataT1folder}/T1_brain --out=${regT2Folder}/T2_2_T1_init --wmseg=${SinChanFolder}/T1_pve_thr_WM
+    ${FSLDIR}/bin/flirt -in ${dataT2Folder}/T2_brain -ref ${dataT1folder}/T1_brain -init ${regT2Folder}/T2_2_T1_init.mat -out ${regT2Folder}/T2_2_T1 -omat ${regT2Folder}/T2_2_T1.mat -dof 6
 
     if [ $do_tissue_seg = "yes" ] ; then
         log_Msg 3  `date`
         log_Msg 3 "Multichanel tissue segmentation of T1 using T2"
 
-        $FSLDIR/bin/fast -o ${MultiChanFolder}/FAST -g -N -S 2 ${dataT1folder}/T1_brain  ${LinRegT2Folder}/T2_2_T1
+        $FSLDIR/bin/fast -o ${MultiChanFolder}/FAST -g -N -S 2 ${dataT1folder}/T1_brain  ${regT2Folder}/T2_2_T1
 
         $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pve_0  ${MultChanFolder}/T1_pve_CSF
         $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pve_1  ${MultChanFolder}/T1_pve_WM
@@ -236,20 +232,20 @@ if [[ $T2_exist == yes ]]; then
         log_Msg 3  `date`
         log_Msg 3 "Main registration: between corrected T2w and corrected T1w"
 
-        ${FSLDIR}/bin/epi_reg --epi=${dataT2Folder}/T2_brain --t1=${dataT1folder}/T1 --t1brain=${dataT1folder}/T1_brain --out=${LinRegT2Folder}/T2_2_T1_init --wmseg=${MultChanFolder}/T1_pve_thr_WM
-        ${FSLDIR}/bin/flirt -in ${dataT2Folder}/T2_brain -ref ${dataT1folder}/T1_brain -init ${LinRegT2Folder}/T2_2_T1_init.mat -out ${LinRegT2Folder}/T2_2_T1 -omat ${LinRegT2Folder}/T2_2_T1.mat -dof 6
+        ${FSLDIR}/bin/epi_reg --epi=${dataT2Folder}/T2_brain --t1=${dataT1folder}/T1 --t1brain=${dataT1folder}/T1_brain --out=${regT2Folder}/T2_2_T1_init --wmseg=${MultChanFolder}/T1_pve_thr_WM
+        ${FSLDIR}/bin/flirt -in ${dataT2Folder}/T2_brain -ref ${dataT1folder}/T1_brain -init ${regT2Folder}/T2_2_T1_init.mat -out ${regT2Folder}/T2_2_T1 -omat ${regT2Folder}/T2_2_T1.mat -dof 6
     fi
 
     log_Msg 3  `date`
     log_Msg 3 "Organizing T2 non-linear registration folder"
 
-    ${FSLDIR}/bin/applywarp --rel --in=${dataT2Folder}/T2 --ref=$FSLDIR/data/standard/MNI152_T1_1mm --premat=${LinRegT2Folder}/T2_2_T1.mat --warp=${NonLinRegFolder}/T1_2_std_warp_coeff --out=${NonLinRegT2Folder}/T2_to_std_warp --interp=spline
+    ${FSLDIR}/bin/applywarp --rel --in=${dataT2Folder}/T2 --ref=$FSLDIR/data/standard/MNI152_T1_1mm --premat=${regT2Folder}/T2_2_T1.mat --warp=${regT1Folder}/T1_2_std_warp_coeff --out=${data2stdT2Folder}/T2_to_std_warp --interp=spline
 
-    ${FSLDIR}/bin/invwarp --ref=${dataT1folder}/T1 -w ${NonLinRegFolder}/T1_2_std_warp_coeff -o ${NonLinRegFolder}/std_2_T1_warp
+#    ${FSLDIR}/bin/invwarp --ref=${dataT1folder}/T1 -w ${regT1Folder}/T1_2_std_warp_coeff -o ${regT1Folder}/std_2_T1_warp
 
-    ${FSLDIR}/bin/convert_xfm -inverse ${LinRegT2Folder}/T2_2_T1.mat -omat ${LinRegT2Folder}/T1_2_T2.mat
+    ${FSLDIR}/bin/convert_xfm -inverse ${regT2Folder}/T2_2_T1.mat -omat ${regT2Folder}/T1_2_T2.mat
 
-    ${FSLDIR}/bin/applywarp --rel --in=$FSLDIR/data/standard/MNI152_T1_1mm_brain_mask --ref=${dataT2Folder}/T2 --warp=${NonLinRegFolder}/std_2_T1_warp --postmat=${LinRegT2Folder}/T1_2_T2.mat --out=${dataT2Folder}/T2_brain_mask --interp=spline
+    ${FSLDIR}/bin/applywarp --rel --in=$FSLDIR/data/standard/MNI152_T1_1mm_brain_mask --ref=${dataT2Folder}/T2 --warp=${regT1Folder}/std_2_T1_warp_field --postmat=${regT2Folder}/T1_2_T2.mat --out=${dataT2Folder}/T2_brain_mask --interp=spline
 
     ${FSLDIR}/bin/fslmaths ${dataT2Folder}/T2 -mul ${dataT2Folder}/T2_brain_mask ${dataT2Folder}/T2_brain
 
@@ -267,3 +263,5 @@ log_Msg 3 "                             ===============                         
 ################################################################################################
 ## Cleanup
 ################################################################################################
+
+${FSLDIR}/bin/imrm ${regT2Folder}/T2_2_T1_init*
