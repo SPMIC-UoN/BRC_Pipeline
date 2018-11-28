@@ -69,6 +69,12 @@ mkdir -p $WD
 
 #check dimensions of phase versus sbref images
 #should we also check spacing info? could be off by tiny fractions, so probably not
+
+if [[ `${FSLDIR}/bin/fslhd $PhaseEncodeOne | grep '^pixdim[123]'` != `${FSLDIR}/bin/fslhd $ScoutInputName | grep '^pixdim[123]'` ]]
+then
+    log_Msg 3 "Error: Spin echo fieldmap (Neg) has different pixel size than scout image, this requires a manual fix"
+    exit 1
+fi
 if [[ `${FSLDIR}/bin/fslhd $PhaseEncodeOne | grep '^dim[123]'` != `${FSLDIR}/bin/fslhd $ScoutInputName | grep '^dim[123]'` ]]
 then
     log_Msg 3 "Error: Spin echo fieldmap has different dimensions than scout image, this requires a manual fix"
