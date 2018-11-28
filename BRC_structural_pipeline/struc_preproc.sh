@@ -109,7 +109,6 @@ while [ "$1" != "" ]; do
                                 ;;
 
         --nocrop)               do_crop="no";
-                                shift
                                 ;;
 
         -h | --help )           Usage
