@@ -550,17 +550,17 @@ log_Msg 3 "EPI Distortion Correction"
 if [ ! $DistortionCorrection = "NONE" ] ; then
     log_Msg 3 "Performing EPI Distortion Correction"
 
-#    ${RUN} ${BRC_FMRI_SCR}/EPI_Distortion_Correction.sh \
-#           --workingdir=${DCFolder} \
-#           --topupfoldername=${topupFolderName} \
-#           --scoutin=${gdcFolder}/${ScoutName}_gdc \
-#           --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
-#           --SEPhasePos=${SpinEchoPhaseEncodePositive} \
-#           --echospacing=${EchoSpacing} \
-#           --unwarpdir=${UnwarpDir} \
-#           --gdcoeffs=${GradientDistortionCoeffs} \
-#           --method=${DistortionCorrection} \
-#           --logfile=${logFolder}/${log_Name}
+    ${RUN} ${BRC_FMRI_SCR}/EPI_Distortion_Correction.sh \
+           --workingdir=${DCFolder} \
+           --topupfoldername=${topupFolderName} \
+           --scoutin=${gdcFolder}/${ScoutName}_gdc \
+           --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
+           --SEPhasePos=${SpinEchoPhaseEncodePositive} \
+           --echospacing=${EchoSpacing} \
+           --unwarpdir=${UnwarpDir} \
+           --gdcoeffs=${GradientDistortionCoeffs} \
+           --method=${DistortionCorrection} \
+           --logfile=${logFolder}/${log_Name}
 else
     log_Msg 3 "NOT Performing EPI Distortion Correction"
 
@@ -604,24 +604,24 @@ case $MotionCorrectionType in
         fMRI_2_str_Input=${EddyFolder}/${EddyOutput}
         OSR_Scout_In=${EddyFolder}/SBRef_dc
 
-#        ${RUN} ${BRC_FMRI_SCR}/EddyPreprocessing.sh \
-#              --workingdir=${EddyFolder} \
-#              --inputfile=${gdcFolder}/${NameOffMRI}_gdc \
-#              --inscout=${gdcFolder}/${ScoutName}_gdc \
-#              --fmriname=${NameOffMRI} \
-#              --dcmethod=${DistortionCorrection} \
-#              --topupfodername=${topupFolderName} \
-#              --dcfolder=${DCFolder} \
-#              --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
-#              --SEPhasePos=${SpinEchoPhaseEncodePositive} \
-#              --unwarpdir=${UnwarpDir} \
-#              --echospacing=${EchoSpacing} \
-#              --echospacingfmri=${EchoSpacing_fMRI} \
-#              --slice2vol=${Slice2Volume} \
-#              --slspec=${SliceSpec} \
-#              --output_eddy=${EddyOutput} \
-#              --outfolder=${DCFolder} \
-#              --logfile=${logFolder}/${log_Name}
+        ${RUN} ${BRC_FMRI_SCR}/EddyPreprocessing.sh \
+              --workingdir=${EddyFolder} \
+              --inputfile=${gdcFolder}/${NameOffMRI}_gdc \
+              --inscout=${gdcFolder}/${ScoutName}_gdc \
+              --fmriname=${NameOffMRI} \
+              --dcmethod=${DistortionCorrection} \
+              --topupfodername=${topupFolderName} \
+              --dcfolder=${DCFolder} \
+              --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
+              --SEPhasePos=${SpinEchoPhaseEncodePositive} \
+              --unwarpdir=${UnwarpDir} \
+              --echospacing=${EchoSpacing} \
+              --echospacingfmri=${EchoSpacing_fMRI} \
+              --slice2vol=${Slice2Volume} \
+              --slspec=${SliceSpec} \
+              --output_eddy=${EddyOutput} \
+              --outfolder=${DCFolder} \
+              --logfile=${logFolder}/${log_Name}
 
     ;;
 
