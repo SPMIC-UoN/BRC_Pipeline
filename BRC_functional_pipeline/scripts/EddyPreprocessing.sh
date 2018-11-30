@@ -83,28 +83,20 @@ fi
 
 TR_vol=`${FSLDIR}/bin/fslval ${InputfMRI} pixdim4 | cut -d " " -f 1`
 
+
 #Concatenate SE_PE_POS and SE_PE_NEG to the original data
-#if [[ ${DCMethod} == "TOPUP" ]]; then
-    ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SE_Neg_Pos ${PhaseEncodeOne} ${PhaseEncodeTwo} $TR_vol
-    ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos ${InputfMRI} ${EddyFolder}/SE_Neg_Pos $TR_vol
-    ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos ${InputSBref} ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos $TR_vol
-    Eddy_Input=${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos
+${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SE_Neg_Pos ${PhaseEncodeOne} ${PhaseEncodeTwo} $TR_vol
+${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos ${InputfMRI} ${EddyFolder}/SE_Neg_Pos $TR_vol
+${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos ${InputSBref} ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos $TR_vol
+Eddy_Input=${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos
 
-#    ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SBref_${NameOffMRI} ${InputSBref} ${InputfMRI} $TR_vol
-#    Eddy_Input=${EddyFolder}/SBref_${NameOffMRI}
-
-
-#else
-#    ${FSLDIR}/bin/fslmerge -tr ${EddyFolder}/SBref_${NameOffMRI} ${InputSBref} ${InputfMRI} $TR_vol
-#    Eddy_Input=${EddyFolder}/SBref_${NameOffMRI}
-#fi
 
 if [[ ${DCMethod} == "TOPUP" ]]; then
     BrainMask=$DCFolder/${topupFolderName}/Magnitude_brain_mask.nii.gz
 else
-    log_Msg 3 "generating brain mask using the 1st fMRI volume"
+   log_Msg 3 "generating brain mask using the 1st fMRI volume"
     ${FSLDIR}/bin/fslmaths ${InputfMRI} -Tmean ${EddyFolder}/${NameOffMRI}_mean
-    ${FSLDIR}/bin/bet2 ${EddyFolder}/${NameOffMRI}_mean ${EddyFolder}/${NameOffMRI}_brain -f 0.3 -m -n
+    ${FSLDIR}/bin/bet2 ${EddyFolder}/${NameOffMRI}_mean ${EddyFolder}/${NameOffMRI}_brain -f 0.30 -m -n
     BrainMask=${EddyFolder}/${NameOffMRI}_brain_mask.nii.gz
 
     ${FSLDIR}/bin/imrm ${EddyFolder}/${NameOffMRI}_mean
@@ -141,33 +133,6 @@ else
     txtfname=$DCFolder/${topupFolderName}/acqparams.txt
 fi
 
-
-#Final_EchoSpacing=${EchoSpacing}
-#if [ $EchoSpacing_fMRI != 0.0 ]; then
-#    echo $Final_EchoSpacing
-#    Final_EchoSpacing=${EchoSpacing_fMRI}
-#fi
-#
-#if [ $EchoSpacing_fMRI != 0.0 ] || [ ! -e $DCFolder/FieldMap/acqparams.txt ]; then
-#
-#    # Calculate the readout time and populate the parameter file appropriately
-#    txtfname=${EddyFolder}/acqparams.txt
-#
-#    echo $Final_EchoSpacing
-#
-#    ${BRC_FMRI_SCR}/Generate_Parameter_File.sh \
-#                  --workingdir=${EddyFolder} \
-#                  --phaseone=${PhaseEncodeOne} \
-#                  --phasetwo=${PhaseEncodeTwo} \
-#                  --unwarpdir=${UnwarpDir} \
-#                  --echospacing=${Final_EchoSpacing} \
-#                  --out=${txtfname}
-#
-#else
-#    txtfname=$DCFolder/FieldMap/acqparams.txt
-#fi
-#
-#echo $txtfname
 
 log_Msg 3 "generating index, bval, and bvec files"
 
