@@ -288,7 +288,9 @@ source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
 log_SetPath "${logFolder}/${log_Name}"
 
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "Original command:"
 log_Msg 2 "$log"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 2 "Parsing Command Line Options"
 log_Msg 2 "Path: $Path"
 log_Msg 2 "Subject: $Subject"
