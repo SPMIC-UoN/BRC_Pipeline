@@ -87,10 +87,6 @@ log_Msg 2 "DistortionCorrection:$DistortionCorrection"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-if [[ $MotionCorrectionType == "EDDY" ]]; then
-    Eddy_Folder=${fMRIFolder}/Eddy
-fi
-
 #error check bias correction opt
 case "$BiasCorrection" in
     NONE)
@@ -193,6 +189,7 @@ case $DistortionCorrection in
         log_Msg 3 "UNKNOWN DISTORTION CORRECTION METHOD: ${DistortionCorrection}"
         exit 1
 esac
+
 
 if [[ $UseJacobian == "true" ]] ; then
 
