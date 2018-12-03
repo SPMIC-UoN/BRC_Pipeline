@@ -103,7 +103,7 @@ for ((k=0; k < $NumFrames; k++)); do
 
     vnum=`${FSLDIR}/bin/zeropad $k 4`
 
-    if [[ $MotionCorrectionType == "MCFLIRT" ]]; then
+    if [ $MotionCorrectionType == "MCFLIRT6" ] || [ $MotionCorrectionType == "MCFLIRT12" ] ; then
         rmsdiff ${MotionMatrixFolder}/${MotionMatrixPrefix}${vnum} ${MotionMatrixFolder}/${MotionMatrixPrefix}0000 ${ScoutInputgdc} ${ScoutInputgdc}_mask.nii.gz | tail -n 1 >> ${WD}/Movement_AbsoluteRMS.txt
 
         if [ $k -eq 0 ] ; then
@@ -137,7 +137,7 @@ fslmaths ${OutputfMRI}_mask -Tmin ${OutputfMRI}_mask
 
 #${FSLDIR}/bin/applywarp --rel --interp=nn -i ${ScoutInputgdc}_mask.nii.gz -r ${ResampRefImMask} -w ${OutputTransform} -o ${OutputfMRI}_mask
 
-if [[ $MotionCorrectionType == "MCFLIRT" ]]; then
+if [ $MotionCorrectionType == "MCFLIRT6" ] || [ $MotionCorrectionType == "MCFLIRT12" ] ; then
     ###Add stuff for RMS###
     cat ${WD}/Movement_RelativeRMS.txt | awk '{ sum += $1} END { print sum / NR }' >> ${WD}/Movement_RelativeRMS_mean.txt
     cat ${WD}/Movement_AbsoluteRMS.txt | awk '{ sum += $1} END { print sum / NR }' >> ${WD}/Movement_AbsoluteRMS_mean.txt
