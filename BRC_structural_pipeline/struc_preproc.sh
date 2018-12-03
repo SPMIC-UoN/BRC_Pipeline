@@ -239,7 +239,10 @@ Start_Time="$(date -u +%s)"
 source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
 log_SetPath "${logT1Folder}/${log_Name}"
 
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "Original command:"
 log_Msg 2 "$log"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 2 "Parsing Command Line Options"
 log_Msg 2 "Sub_ID: $Sub_ID"
 log_Msg 2 "Path: $Path"
@@ -250,6 +253,7 @@ log_Msg 2 "do_QC: $do_QC"
 log_Msg 2 "do_tissue_seg: $do_tissue_seg"
 log_Msg 2 "do_freesurfer: $do_freesurfer"
 log_Msg 2 "FAST_t: $FAST_t"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 #=====================================================================================
 ###                                   DO WORK
@@ -282,6 +286,10 @@ fi
 Opt_args="$Opt_args -o ${T1Folder} -orig ${rawT1Folder}/T1_orig.nii.gz -logfile "${logT1Folder}/${log_Name}""
 
 
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "arguments are:"
+log_Msg 2 "${Opt_args}"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 ${BRC_SCTRUC_SCR}/FSL_anat.sh ""$Opt_args""
 
 
