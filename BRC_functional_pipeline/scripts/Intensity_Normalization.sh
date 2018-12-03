@@ -40,11 +40,6 @@ getopt1()
 
 ################################################## OPTION PARSING #####################################################
 
-# Just give usage if no arguments specified
-if [ $# -eq 0 ] ; then Usage; exit 0; fi
-# check for correct options
-if [ $# -lt 4 ] ; then Usage; exit 1; fi
-
 # parse arguments
 WD=`getopt1 "--workingdir" $@`
 InputfMRI=`getopt1 "--infmri" $@`
