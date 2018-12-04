@@ -40,7 +40,7 @@ OutputfMRIBasename=`basename ${OutputfMRI}`
 log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 3 "+                                                                        +"
 log_Msg 3 "+                        START: Motion Correction                        +"
-log_Msg 3 "+                     Motion correction type: $MotionCorrectionType              +"
+log_Msg 3 "+                     Motion correction type: $MotionCorrectionType                  +"
 log_Msg 3 "+                                                                        +"
 log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -58,9 +58,19 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Do motion correction
 
+if [[ $MotionCorrectionType == "MCFLIRT6" ]] ; then
+    DOF=6
+elif [[ $MotionCorrectionType == "MCFLIRT12" ]] ; then
+    DOF=12
+fi
+
 case "$MotionCorrectionType" in
-    MCFLIRT)
-        ${BRC_FMRI_SCR}/mcflirt.sh ${InputfMRI} ${WorkingDirectory}/${OutputfMRIBasename} ${Scout}
+    MCFLIRT6 | MCFLIRT12)
+        ${BRC_FMRI_SCR}/mcflirt.sh \
+              --input=${InputfMRI} \
+              --output=${WorkingDirectory}/${OutputfMRIBasename} \
+              --ref=${Scout} \
+              --dof=${DOF}
     ;;
 
     FLIRT)
