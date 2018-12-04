@@ -164,7 +164,7 @@ if [ $FWHM -ne 0 ]; then
 
 else
 
-    mkdir ${nrFolder}/ICA_AROMA
+    mkdir ${WD}/ICA_AROMA
     ${FSLDIR}/bin/imcp ${WD}/${fmriName} ${WD}/ICA_AROMA/denoised_func_data_nonaggr
 
 fi
