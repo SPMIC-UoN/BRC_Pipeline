@@ -29,7 +29,10 @@ Usage()
   echo " --fmripath <Path>                    full path of the filename of fMRI image"
   echo " --path <Path>                        output path"
   echo " --subject <Subject name>             output directory is a subject name folder in input image directory"
-  echo " --mctype <Type>                      Type of motion correction. Values: MCFLIRT: between volumes (default), and EDDY: within/between volumes"
+  echo " --mctype <Type>                      Motion correction method. MCFLIRT: between volumes (default), and EDDY: within/between volumes"
+  echo "                                           MCFLIRT6: between volumes with 6 degree of freedon (default),"
+  echo "                                           MCFLIRT12: between volumes with 12 degree of freedon,"
+  echo "                                           EDDY: within/between volumes"
   echo " --dcmethod <method>                  Susceptibility distortion correction method (required for accurate processing)"
   echo "                                      Values: TOPUP, SiemensFieldMap (same as FIELDMAP), GeneralElectricFieldMap, and NONE (default)"
   echo " "
@@ -96,7 +99,7 @@ log=`echo "$@"`
 
 # default values
 fMRIScout="NONE"
-MotionCorrectionType="MCFLIRT"
+MotionCorrectionType="MCFLIRT6"
 Slice2Volume="no"
 SliceSpec="NONE"
 MagnitudeInputName="NONE"
@@ -452,7 +455,9 @@ source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
 log_SetPath "${logFolder}/${log_Name}"
 
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "Original command:"
 log_Msg 2 "$log"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 2 "Parsing Command Line Options"
 log_Msg 2 "Path: $Path"
 log_Msg 2 "Subject: $Subject"
@@ -579,7 +584,7 @@ fi
 log_Msg 3 "MOTION CORRECTION"
 case $MotionCorrectionType in
 
-    MCFLIRT)
+    MCFLIRT6 | MCFLIRT12)
         STC_Input=${mcFolder}/${NameOffMRI}_mc
         SSNR_motionparam=${mcFolder}/${NameOffMRI}_mc.par
         fMRI_2_str_Input=${regFolder}/${fMRI2strOutputTransform}
@@ -649,6 +654,7 @@ else
 fi
 
 
+log_Msg 3 "EPI to T1 registration"
 ${RUN} ${BRC_FMRI_SCR}/EPI_2_T1_Registration.sh \
       --workingdir=${DCFolder} \
       --fmriname=${NameOffMRI} \
@@ -692,28 +698,17 @@ ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --logfile=${logFolder}/${log_Name}
 
 
-if [ $smoothingfwhm -ne 0 ]; then
-
-    log_Msg 3 "Spatial Smoothing and Artifact/Physiological Noise Removal"
-
-    ${RUN} ${BRC_FMRI_SCR}/Spatial_Smoothing_Noise_Removal.sh \
-          --workingdir=${nrFolder} \
-          --infmri=${stcFolder}/${NameOffMRI}_stc \
-          --fmriname=${NameOffMRI} \
-          --fwhm=${smoothingfwhm} \
-          --motionparam=${SSNR_motionparam} \
-          --fmri2structin=${DCFolder}/fMRI2str.mat \
-          --struct2std=${regT1Folder}/T1_2_std_warp_field.nii.gz \
-          --motioncorrectiontype=${MotionCorrectionType} \
-          --logfile=${logFolder}/${log_Name}
-
-else
-
-    log_Msg 3 "Not performing Spatial Smoothing and Artifact/Physiological Noise Removal"
-    mkdir ${nrFolder}/ICA_AROMA
-    ${FSLDIR}/bin/imcp ${stcFolder}/${NameOffMRI}_stc ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr
-    ${FSLDIR}/bin/imcp ${OSR_Scout_In}_mask ${nrFolder}/${fmriName}_mask
-fi
+log_Msg 3 "Spatial Smoothing and Artifact/Physiological Noise Removal"
+${RUN} ${BRC_FMRI_SCR}/Spatial_Smoothing_Noise_Removal.sh \
+        --workingdir=${nrFolder} \
+        --infmri=${stcFolder}/${NameOffMRI}_stc \
+        --fmriname=${NameOffMRI} \
+        --fwhm=${smoothingfwhm} \
+        --motionparam=${SSNR_motionparam} \
+        --fmri2structin=${DCFolder}/fMRI2str.mat \
+        --struct2std=${regT1Folder}/T1_2_std_warp_field.nii.gz \
+        --motioncorrectiontype=${MotionCorrectionType} \
+        --logfile=${logFolder}/${log_Name}
 
 
 if [[ ${DistortionCorrection} == "TOPUP" ]]
@@ -725,16 +720,23 @@ then
     #create MNINonLinear final fMRI resolution bias field outputs
     if [[ ${BiasCorrection} == "SEBASED" ]]
     then
-        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/sebased_bias_dil.nii.gz -r ${OsrFolder}/${NameOffMRI}_SBRef_nonlin -w ${regT1Folder}/T1_2_std_warp_field -o ${SE_BF_Folder}/${NameOffMRI}2std_sebased_bias.nii.gz
-        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2std_sebased_bias.nii.gz -mas ${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution}.nii.gz ${SE_BF_Folder}/${NameOffMRI}2std_sebased_bias.nii.gz
+        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/sebased_bias_dil -r ${OsrFolder}/${NameOffMRI}_SBRef_nonlin -w ${regT1Folder}/T1_2_std_warp_field -o ${SE_BF_Folder}/${NameOffMRI}2std_se_bias
+#        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2std_se_bias -mas ${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution}.nii.gz ${SE_BF_Folder}/${NameOffMRI}2std_se_bias
 
-        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/sebased_reference_dil.nii.gz -r ${OsrFolder}/${NameOffMRI}_SBRef_nonlin -w ${regT1Folder}/T1_2_std_warp_field -o ${SE_BF_Folder}/${NameOffMRI}2std_sebased_reference.nii.gz
-        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2std_sebased_reference.nii.gz -mas ${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution}.nii.gz ${SE_BF_Folder}/${NameOffMRI}2std_sebased_reference.nii.gz
+        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/sebased_reference_dil -r ${OsrFolder}/${NameOffMRI}_SBRef_nonlin -w ${regT1Folder}/T1_2_std_warp_field -o ${SE_BF_Folder}/${NameOffMRI}2std_se_ref
+#        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2std_se_ref -mas ${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution} ${SE_BF_Folder}/${NameOffMRI}2std_se_ref
 
-        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/${NameOffMRI}_dropouts.nii.gz -r ${OsrFolder}/${NameOffMRI}_SBRef_nonlin -w ${regT1Folder}/T1_2_std_warp_field -o ${SE_BF_Folder}/${NameOffMRI}2std_dropouts.nii.gz
+        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/${NameOffMRI}_dropouts -r ${OsrFolder}/${NameOffMRI}_SBRef_nonlin -w ${regT1Folder}/T1_2_std_warp_field -o ${SE_BF_Folder}/${NameOffMRI}2std_dropouts
 
-        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/${NameOffMRI}2std_sebased_bias -r ${gdcFolder}/${ScoutName}_gdc -w ${regFolder}/${Standard2OutputfMRITransform} -o ${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias.nii.gz
-        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias.nii.gz -mas ${OSR_Scout_In}_mask ${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias.nii.gz
+        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/${NameOffMRI}2std_se_bias -r ${gdcFolder}/${ScoutName}_gdc -w ${regFolder}/${Standard2OutputfMRITransform} -o ${SE_BF_Folder}/${NameOffMRI}2func_se_bias
+        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -thr 0.5 -bin ${SE_BF_Folder}/mask_1
+        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -thr 0.0000001 -bin ${SE_BF_Folder}/mask_2
+        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/mask_2 -sub ${SE_BF_Folder}/mask_1 -bin ${SE_BF_Folder}/mask_3
+        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -mas ${SE_BF_Folder}/mask_1 -add ${SE_BF_Folder}/mask_3 ${SE_BF_Folder}/${NameOffMRI}2func_se_bias
+
+#        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -mas ${SE_BF_Folder}/mask ${SE_BF_Folder}/${NameOffMRI}2func_se_bias_masked
+#        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -mas ${OSR_Scout_In}_mask ${SE_BF_Folder}/${NameOffMRI}2func_se_bias
+#        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -mas ${nrFolder}/${NameOffMRI}_mask ${SE_BF_Folder}/${NameOffMRI}2func_se_bias
     fi
 
     if [[ $UseJacobian == "true" ]] ; then
@@ -744,7 +746,7 @@ then
 fi
 
 
-if [[ ${MotionCorrectionType} == "MCFLIRT" ]] ; then
+if [ $MotionCorrectionType == "MCFLIRT6" ] || [ $MotionCorrectionType == "MCFLIRT12" ] ; then
     if [[ ${DistortionCorrection} == "TOPUP" ]] ; then
         In_Norm_Scout_In=${DCFolder}/${topupFolderName}/SBRef_dc
     else
@@ -755,30 +757,20 @@ elif [[ ${MotionCorrectionType} == "EDDY" ]] ; then
 fi
 
 
-if [[ $Do_intensity_norm == yes ]]; then
-
-    log_Msg 3 "Intensity Normalization and Bias Removal"
-
-    ${RUN} ${BRC_FMRI_SCR}/Intensity_Normalization.sh \
-          --workingdir=${In_Nrm_Folder} \
-          --infmri=${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr \
-          --inscout=${In_Norm_Scout_In} \
-          --brainmask=${OSR_Scout_In}_mask \
-          --biascorrection=${BiasCorrection} \
-          --biasfield=${SE_BF_Folder}/${NameOffMRI}2func_sebased_bias \
-          --usejacobian=${UseJacobian} \
-          --jacobian=${OsrFolder}/${JacobianOut}_func \
-          --ofmri=${NameOffMRI}_intnorm \
-          --oscout=SBRef_intnorm \
-          --logfile=${logFolder}/${log_Name}
-
-else
-
-    log_Msg 3 "Not performing Intensity Normalization and Bias Removal"
-
-    ${FSLDIR}/bin/imcp ${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr ${In_Nrm_Folder}/${NameOffMRI}_intnorm
-    ${FSLDIR}/bin/imcp ${OSR_Scout_In} ${In_Nrm_Folder}/SBRef_intnorm
-fi
+log_Msg 3 "Intensity normalization and Bias removal"
+${RUN} ${BRC_FMRI_SCR}/Intensity_Normalization.sh \
+        --workingdir=${In_Nrm_Folder} \
+        --intensitynorm=${Do_intensity_norm} \
+        --infmri=${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr \
+        --inscout=${In_Norm_Scout_In} \
+        --brainmask=${nrFolder}/${NameOffMRI}_mask \
+        --biascorrection=${BiasCorrection} \
+        --biasfield=${SE_BF_Folder}/${NameOffMRI}2func_se_bias \
+        --usejacobian=${UseJacobian} \
+        --jacobian=${OsrFolder}/${JacobianOut}_func \
+        --ofmri=${NameOffMRI}_intnorm \
+        --oscout=SBRef_intnorm \
+        --logfile=${logFolder}/${log_Name}
 
 
 if [ $Temp_Filter_Cutoff -ne 0 ]; then
