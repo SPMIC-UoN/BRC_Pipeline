@@ -97,6 +97,7 @@ log_Msg 3 "Create brain masks in this space (changing resolution)"
 #${FSLDIR}/bin/applywarp --rel --interp=nn -i ${T1wBrainMask}.nii.gz -r ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${T1wBrainMaskFile}.${FinalfMRIResolution}.nii.gz
 #${FSLDIR}/bin/flirt  -interp nearestneighbour -in ${T1wBrainMask}.nii.gz -ref ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} -out ${WD}/${T1wBrainMaskFile}.${FinalfMRIResolution}.nii.gz -omat ${WD}/${T1wBrainMaskFile}.${FinalfMRIResolution}.mat
 #${FSLDIR}/bin/flirt  -interp nearestneighbour -in ${WD}/${T1w2StdImageFile}_mask.nii.gz -ref ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} -out ${WD}/${T1wBrainMaskFile}.${FinalfMRIResolution}.nii.gz -omat ${WD}/${T1wBrainMaskFile}.${FinalfMRIResolution}.mat
+
 ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${WD}/${T1w2StdImageFile}_mask.nii.gz -r ${WD}/${T1w2StdImageFile}.${FinalfMRIResolution} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${T1wBrainMaskFile}.${FinalfMRIResolution}.nii.gz
 
 
