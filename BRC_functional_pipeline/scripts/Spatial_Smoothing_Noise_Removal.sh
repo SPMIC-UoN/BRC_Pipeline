@@ -68,9 +68,6 @@ ${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -Tmean ${WD}/${fmriName}_mean
 log_Msg 3 "Perform bet2 on the mean_func data ..."
 ${FSLDIR}/bin/bet2 ${WD}/${fmriName}_mean ${WD}/${fmriName}_brain -f 0.3 -n -m
 
-# Perform bet2 on the mean_func data, use a threshold of .3 (.225 used for anatomical)
-#echo "calculate the mask ..."
-#${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_mean -thr 1 -bin ${WD}/${fmriName}_mask
 
 # Mask the motion corrected functional data with the mask to create the masked (bet) motion corrected functional data
 log_Msg 3 "Mask the input functional data ..."
@@ -106,62 +103,71 @@ log_Msg 3 "meanintensity: $meanintensity"
 # I don't completely understand why we would filter one image with itself...
 ${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_mask -dilF ${WD}/${fmriName}_mask
 
-# We are now masking the motion corrected functional data with the mask to produce
-# functional data that is motion corrected and thresholded based on the highpass filter
-${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -mas ${WD}/${fmriName}_mask ${WD}/${fmriName}_thresh
+if [ $FWHM -ne 0 ]; then
 
-# We now take this functional data that is motion corrected, high pass filtered, and
-# create a "mean_func" image that is the mean across time (Tmean)
-${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_thresh -Tmean ${WD}/${fmriName}_mean
+    # We are now masking the motion corrected functional data with the mask to produce
+    # functional data that is motion corrected and thresholded based on the highpass filter
+    ${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -mas ${WD}/${fmriName}_mask ${WD}/${fmriName}_thresh
 
-# To run susan, FSLs tool for noise reduction, we need a brightness threshold.  Here is how to calculate:
-# After thresholding, the values in the image are between $upperp-lowerp and $thresholdp
-# If we set the expected noise level to .66, then anything below (($upperp-$lowerp)-$thresholdp)/0.66 should be noise.
-# This is saying that we want the brightness threshold to be 66% of the median value.
-# Note that the FSL "standard" is 75% (.75)
-# This is the value that we use for bt, the "brightness threshold" in susan
-log_Msg 3 "calculate brightness threshold"
-uppert=`echo "scale=6; ${upperp} - ${lowerp}" | bc`
+    # We now take this functional data that is motion corrected, high pass filtered, and
+    # create a "mean_func" image that is the mean across time (Tmean)
+    ${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_thresh -Tmean ${WD}/${fmriName}_mean
 
-#thresholdpdifft=`echo "scale=8; ${uppert} - ${thresholdp}" | bc`
-thresholdpdifft=`echo "scale=8; (${meanintensity} - ${lowerp}) * 0.75" | bc`
+    # To run susan, FSLs tool for noise reduction, we need a brightness threshold.  Here is how to calculate:
+    # After thresholding, the values in the image are between $upperp-lowerp and $thresholdp
+    # If we set the expected noise level to .66, then anything below (($upperp-$lowerp)-$thresholdp)/0.66 should be noise.
+    # This is saying that we want the brightness threshold to be 66% of the median value.
+    # Note that the FSL "standard" is 75% (.75)
+    # This is the value that we use for bt, the "brightness threshold" in susan
+    log_Msg 3 "calculate brightness threshold"
+    uppert=`echo "scale=6; ${upperp} - ${lowerp}" | bc`
 
-log_Msg 3 "brightness threshold: ${thresholdpdifft}"
+    #thresholdpdifft=`echo "scale=8; ${uppert} - ${thresholdp}" | bc`
+    thresholdpdifft=`echo "scale=8; (${meanintensity} - ${lowerp}) * 0.75" | bc`
 
-# We also need to calculate the spatial size based on the smoothing.
-# FWHM = 2.355*spatial size. So if desired FWHM = 6mm, spatial size = 2.54...
-log_Msg 3 "calculate the spatial size based on the smoothing"
-ssize=`echo "scale=11; ${FWHM} / 2.355" | bc`
+    log_Msg 3 "brightness threshold: ${thresholdpdifft}"
 
-log_Msg 3 "spatial size: ${ssize}"
+    # We also need to calculate the spatial size based on the smoothing.
+    # FWHM = 2.355*spatial size. So if desired FWHM = 6mm, spatial size = 2.54...
+    log_Msg 3 "calculate the spatial size based on the smoothing"
+    ssize=`echo "scale=11; ${FWHM} / 2.355" | bc`
 
-# susan uses nonlinear filtering to reduce noise
-# by only averaging a voxel with local voxels which have similar intensity
-log_Msg 3 "Nonlinear filtering to reduce noise using 3D smmoothing, local median filter"
-log_Msg 3 "determine the smoothing area from 1 secondary image"
+    log_Msg 3 "spatial size: ${ssize}"
 
-${FSLDIR}/bin/susan ${WD}/${fmriName}_thresh $thresholdpdifft $ssize 3 1 1 ${WD}/${fmriName}_mean $thresholdpdifft ${WD}/${fmriName}_thresh_smooth
-#${FSLDIR}/bin/imcp ${WD}/${fmriName} ${WD}/${fmriName}_thresh_smooth
-#${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -kernel gauss $ssize -fmean ${WD}/${fmriName}_thresh_smooth_fslmaths
+    # susan uses nonlinear filtering to reduce noise
+    # by only averaging a voxel with local voxels which have similar intensity
+    log_Msg 3 "Nonlinear filtering to reduce noise using 3D smmoothing, local median filter"
+    log_Msg 3 "determine the smoothing area from 1 secondary image"
 
-
-# 3 means 3D smoothing
-# 1 says to use a local median filter
-# 1 says that we determine the smoothing area from 1 secondary image, "mean_func" and then we use the same brightness threshold for the secondary image.
-# prefiltered_func_data_smooth is the output image
-
-${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_thresh_smooth -mas ${WD}/${fmriName}_mask ${WD}/${fmriName}_thresh_smooth
+    ${FSLDIR}/bin/susan ${WD}/${fmriName}_thresh $thresholdpdifft $ssize 3 1 1 ${WD}/${fmriName}_mean $thresholdpdifft ${WD}/${fmriName}_thresh_smooth
+    #${FSLDIR}/bin/imcp ${WD}/${fmriName} ${WD}/${fmriName}_thresh_smooth
+    #${FSLDIR}/bin/fslmaths ${WD}/${fmriName} -kernel gauss $ssize -fmean ${WD}/${fmriName}_thresh_smooth_fslmaths
 
 
-if [ -e ${WD}/ICA_AROMA ] ; then
-    ${RUN} rm -r ${WD}/ICA_AROMA
+    # 3 means 3D smoothing
+    # 1 says to use a local median filter
+    # 1 says that we determine the smoothing area from 1 secondary image, "mean_func" and then we use the same brightness threshold for the secondary image.
+    # prefiltered_func_data_smooth is the output image
+
+    ${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_thresh_smooth -mas ${WD}/${fmriName}_mask ${WD}/${fmriName}_thresh_smooth
+
+
+    if [ -e ${WD}/ICA_AROMA ] ; then
+        ${RUN} rm -r ${WD}/ICA_AROMA
+    fi
+
+
+    MC_arg="-in ${WD}/${fmriName}_thresh_smooth.nii.gz -out ${WD}/ICA_AROMA -tr ${RepetitionTime} -mc ${MotionParam} -m ${WD}/${fmriName}_mask.nii.gz -affmat ${fMRI2StructMat} -warp ${Struct2StdWarp}"
+
+
+    ${RUN} python2.7 ${BRC_FMRI_SCR}/ICA_AROMA/ICA_AROMA.py ""$MC_arg""
+
+else
+
+    mkdir ${nrFolder}/ICA_AROMA
+    ${FSLDIR}/bin/imcp ${WD}/${fmriName} ${WD}/ICA_AROMA/denoised_func_data_nonaggr
+
 fi
-
-
-MC_arg="-in ${WD}/${fmriName}_thresh_smooth.nii.gz -out ${WD}/ICA_AROMA -tr ${RepetitionTime} -mc ${MotionParam} -m ${WD}/${fmriName}_mask.nii.gz -affmat ${fMRI2StructMat} -warp ${Struct2StdWarp}"
-
-
-${RUN} python2.7 ${BRC_FMRI_SCR}/ICA_AROMA/ICA_AROMA.py ""$MC_arg""
 
 
 log_Msg 3 ""
