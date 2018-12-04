@@ -1,8 +1,11 @@
-#!/bin/bash -e
+#!/bin/bash
+# Last update: 28/09/2018
 
-#   Copyright (C) 2004-2011 University of Oxford
+# Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
-#   SHCOPYRIGHT
+# Copyright 2018 University of Nottingham
+#
+set -e
 
 Usage() {
     echo ""
@@ -22,10 +25,28 @@ Usage() {
     exit
 }
 
-[ "$2" = "" ] && Usage
+# function for parsing options
+getopt1()
+{
+    sopt="$1"
+    shift 1
+    for fn in $@ ; do
+        if [ `echo $fn | grep -- "^${sopt}=" | wc -w` -gt 0 ] ; then
+            echo $fn | sed "s/^${sopt}=//"
+            return 0
+        fi
+    done
+}
 
-input=`${FSLDIR}/bin/remove_ext ${1}`
-output=`${FSLDIR}/bin/remove_ext ${2}`
+# parse arguments
+Input=`getopt1 "--input" $@`
+Onput=`getopt1 "--output" $@`
+Ref=`getopt1 "--ref" $@`
+mcref=`getopt1 "--mcref" $@`
+DOF=`getopt1 "--dof" $@`
+
+input=`${FSLDIR}/bin/remove_ext ${Input}`
+output=`${FSLDIR}/bin/remove_ext ${Onput}`
 TR=`fslval $input pixdim4`
 
 if [ `${FSLDIR}/bin/imtest $input` -eq 0 ];then
@@ -37,21 +58,21 @@ fi
 /bin/rm -rf $output.mat
 
 # If no <scout_image>, generate one from volumes 11-20
-if [ x$3 = x ]; then
+if [ x${Ref} = x ]; then
     ref=${output}_ref
     ${FSLDIR}/bin/fslroi ${input} ${ref} 10 10
     ${FSLDIR}/bin/mcflirt -in $ref -refvol 0 -o ${output}_tmp >> ${output}.ecclog
     ${FSLDIR}/bin/immv ${output}_tmp $ref
     ${FSLDIR}/bin/fslmaths $ref -Tmean $ref
 else
-    ref=$3
+    ref=${Ref}
 fi
 
 # If no <mcref_image>, use <scout_image> as the motion correction target
-if [ x$4 = x ] ; then
+if [ x${mcref} = x ] ; then
     mcref=$ref
 else
-    mcref=$4
+    mcref=${mcref}
 fi
 
 mcref2scout=${output}_mcref2scout.mat
@@ -67,7 +88,7 @@ else  # Derive transform from $mcref to $ref
 fi
 
 # Do motion correction using $mcref as the target for registration
-${FSLDIR}/bin/mcflirt -in ${input} -r ${mcref} -mats -plots -o $output >> ${output}.ecclog
+${FSLDIR}/bin/mcflirt -in ${input} -r ${mcref} -mats -plots -dof $DOF -o $output >> ${output}.ecclog
 
 # Concatenate transforms to $ref space and make masks reflecting valid data for each volume
 pi=$(echo "scale=10; 4*a(1)" | bc -l)
