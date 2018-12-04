@@ -42,6 +42,7 @@ getopt1()
 
 # parse arguments
 WD=`getopt1 "--workingdir" $@`
+Do_intensity_norm=`getopt1 "--intensitynorm" $@`
 InputfMRI=`getopt1 "--infmri" $@`
 BiasField=`getopt1 "--biasfield" $@`
 Jacobian=`getopt1 "--jacobian" $@`
@@ -57,12 +58,13 @@ log_SetPath "${LogFile}"
 
 log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 3 "+                                                                        +"
-log_Msg 3 "+                    START: Intensity Normalization                      +"
+log_Msg 3 "+            START: Intensity Normalization and Bias removal             +"
 log_Msg 3 "+                                                                        +"
 log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 2 "WD:$WD"
+log_Msg 2 "Do_intensity_norm:$Do_intensity_norm"
 log_Msg 2 "InputfMRI:$InputfMRI"
 log_Msg 2 "BiasField:$BiasField"
 log_Msg 2 "Jacobian:$Jacobian"
@@ -88,6 +90,11 @@ if [[ ${BiasCorrection} == "SEBASED" ]] ; then
     biascom="-div $BiasField"
 fi
 
+IntensityNormalization=""
+if [[ ${Do_intensity_norm} == "yes" ]] ; then
+    IntensityNormalization="-ing 10000"
+fi
+
 # sanity checking
 if [ X${ScoutInput} != X ] ; then
     if [ X${ScoutOutput} = X ] ; then
@@ -99,18 +106,15 @@ fi
 ########################################## DO WORK ##########################################
 
 # Run intensity normalisation, with bias field correction and optional jacobian modulation, for the main fmri timeseries and the scout images (pre-saturation images)
-${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -thr 0 -ing 10000 ${WD}/${OutputfMRI} -odt float
+${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -thr 0 ${IntensityNormalization} ${WD}/${OutputfMRI} -odt float
 
 if [ X${ScoutInput} != X ] ; then
-    ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -thr 0 -ing 10000 ${WD}/${ScoutOutput} -odt float
+    ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -thr 0 ${IntensityNormalization} ${WD}/${ScoutOutput} -odt float
 fi
 
-#Basic Cleanup
-#rm ${InputfMRI}.nii.*
-#${FSLDIR}/bin/imrm ${WD}/rfMRI_temp
 
 log_Msg 3 ""
-log_Msg 3 "                     START: Intensity Normalization"
+log_Msg 3 "              END: Intensity Normalization and Bias removal"
 log_Msg 3 "                    END: `date`"
 log_Msg 3 "=========================================================================="
 log_Msg 3 "                             ===============                              "
