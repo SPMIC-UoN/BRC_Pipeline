@@ -54,7 +54,7 @@ Usage()
   echo "                                 if for a LR/RL (AP/PA) pair one of the two files are missing set the entry to EMPTY)"
   echo " --path <output directory>       output durectory. Please provide absolute path"
   echo " --subject <Subject name>        output directory is a subject name folder in output path directory"
-  echo " -e | --echo_s <value>           EchoSpacing should be in msecs"
+  echo " --echospacing <value>           EchoSpacing should be in Sec"
   echo " -p | --pe_dir <1..2>            PhaseEncodingDir"
   echo "                                      1 for LR/RL,"
   echo "                                      2 for AP/PA"
@@ -130,7 +130,7 @@ while [ "$1" != "" ]; do
                                 SliceSpec=$1
                                 ;;
 
-        -e | --echo_s )         shift
+        --echospacing )         shift
                                 echospacing=$1
                                 ;;
 
@@ -163,7 +163,7 @@ done
 
 if [ X$Subject = X ] || [ X$InputImages = X ] || [ X$Path = X ] || [ X$echospacing = X ] || [ X$PEdir = X ] ; then
     echo ""
-    echo "All of the compulsory arguments --path, -i1, -s, --echo_s, and --echo_s MUST be used"
+    echo "All of the compulsory arguments --path, -i1, --subject, --pe_dir, and --echospacing MUST be used"
     echo ""
     exit 1;
 fi

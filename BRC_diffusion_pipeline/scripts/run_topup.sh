@@ -40,8 +40,8 @@ log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 
-topup_config_file=${FSLDIR}/etc/flirtsch/b02b0.cnf
-
+#topup_config_file=${FSLDIR}/etc/flirtsch/b02b0.cnf
+topup_config_file=${BRC_GLOBAL_DIR}/config/b02b0.cnf.txt
 
 ${FSLDIR}/bin/topup --imain=${WD}/Pos_Neg_b0 \
                     --datain=${WD}/acqparams.txt \

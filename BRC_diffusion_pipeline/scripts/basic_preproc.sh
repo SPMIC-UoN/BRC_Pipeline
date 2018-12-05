@@ -80,8 +80,8 @@ fi
 
 nPEsteps=$(($dimP - 1))                         #If GRAPPA is used this needs to include the GRAPPA factor!
 #Total_readout=Echo_spacing*(#of_PE_steps-1)
-ro_time=`echo "${echo_spacing} / ${GRAPPA} * ${nPEsteps} " | bc -l`
-ro_time=`echo "scale=6; ${ro_time} / 1000" | bc -l`
+ro_time=`echo "scale=6; ${echo_spacing} / ${GRAPPA} * ${nPEsteps} " | bc -l`
+#ro_time=`echo "scale=6; ${ro_time} / 1000" | bc -l`
 log_Msg 3 "Total readout time is $ro_time secs"
 
 ################################################################################################
@@ -317,30 +317,30 @@ if [ $Apply_Topup = yes ] ; then
     paste `echo ${rawdir}/${baseNeg}*.bvec` >${rawdir}/Neg.bvec
 fi
 
-dimz=`${FSLDIR}/bin/fslval ${rawdir}/Pos dim3`
-if [ `isodd $dimz` -eq 1 ];then
-    log_Msg 3 "Remove one slice from data to get even number of slices"
-
-    ${FSLDIR}/bin/fslroi ${rawdir}/Pos ${rawdir}/Posn 0 -1 0 -1 1 -1
-    ${FSLDIR}/bin/fslroi ${rawdir}/Pos_b0 ${rawdir}/Pos_b0n 0 -1 0 -1 1 -1
-
-    ${FSLDIR}/bin/imrm ${rawdir}/Pos
-    ${FSLDIR}/bin/imrm ${rawdir}/Pos_b0
-
-    ${FSLDIR}/bin/immv ${rawdir}/Posn ${rawdir}/Pos
-    ${FSLDIR}/bin/immv ${rawdir}/Pos_b0n ${rawdir}/Pos_b0
-
-    if [ $Apply_Topup = yes ] ; then
-        ${FSLDIR}/bin/fslroi ${rawdir}/Neg ${rawdir}/Negn 0 -1 0 -1 1 -1
-        ${FSLDIR}/bin/fslroi ${rawdir}/Neg_b0 ${rawdir}/Neg_b0n 0 -1 0 -1 1 -1
-
-        ${FSLDIR}/bin/imrm ${rawdir}/Neg
-        ${FSLDIR}/bin/imrm ${rawdir}/Neg_b0
-
-        ${FSLDIR}/bin/immv ${rawdir}/Negn ${rawdir}/Neg
-        ${FSLDIR}/bin/immv ${rawdir}/Neg_b0n ${rawdir}/Neg_b0
-    fi
-fi
+#dimz=`${FSLDIR}/bin/fslval ${rawdir}/Pos dim3`
+#if [ `isodd $dimz` -eq 1 ];then
+#    log_Msg 3 "Remove one slice from data to get even number of slices"
+#
+#    ${FSLDIR}/bin/fslroi ${rawdir}/Pos ${rawdir}/Posn 0 -1 0 -1 1 -1
+#    ${FSLDIR}/bin/fslroi ${rawdir}/Pos_b0 ${rawdir}/Pos_b0n 0 -1 0 -1 1 -1
+#
+#    ${FSLDIR}/bin/imrm ${rawdir}/Pos
+#    ${FSLDIR}/bin/imrm ${rawdir}/Pos_b0
+#
+#    ${FSLDIR}/bin/immv ${rawdir}/Posn ${rawdir}/Pos
+#    ${FSLDIR}/bin/immv ${rawdir}/Pos_b0n ${rawdir}/Pos_b0
+#
+#    if [ $Apply_Topup = yes ] ; then
+#        ${FSLDIR}/bin/fslroi ${rawdir}/Neg ${rawdir}/Negn 0 -1 0 -1 1 -1
+#        ${FSLDIR}/bin/fslroi ${rawdir}/Neg_b0 ${rawdir}/Neg_b0n 0 -1 0 -1 1 -1
+#
+#        ${FSLDIR}/bin/imrm ${rawdir}/Neg
+#        ${FSLDIR}/bin/imrm ${rawdir}/Neg_b0
+#
+#        ${FSLDIR}/bin/immv ${rawdir}/Negn ${rawdir}/Neg
+#        ${FSLDIR}/bin/immv ${rawdir}/Neg_b0n ${rawdir}/Neg_b0
+#    fi
+#fi
 
 if [ $Apply_Topup = yes ] ; then
     log_Msg 3 "Perform final merge"
