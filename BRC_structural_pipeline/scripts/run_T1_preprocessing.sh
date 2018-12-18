@@ -196,8 +196,8 @@ if [ $dosubseg = "yes" ] ; then
 
     if [ -e ${FirstT1Folder} ] ; then rm -r ${FirstT1Folder}; fi; mkdir ${FirstT1Folder}
 
-    echo "Creates a link inside T1_first to ./T1_unbiased_brain.nii.gz (In the present working directory)"
-    ln -s ../T1_unbiased_brain.nii.gz ${FirstT1Folder}/T1_unbiased_brain.nii.gz
+#    echo "Creates a link inside T1_first to ./T1_unbiased_brain.nii.gz (In the present working directory)"
+    $FSLDIR/bin/imcp ${WD}/T1_unbiased_brain.nii.gz ${FirstT1Folder}/T1_unbiased_brain.nii.gz
     ${FSLDIR}/bin/run_first_all -i ${FirstT1Folder}/T1_unbiased_brain -b -o ${FirstT1Folder}/T1_first
 fi
 
