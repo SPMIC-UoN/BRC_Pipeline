@@ -494,16 +494,16 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 log_Msg 3 "OutputDir is: ${rfMRIFolder}"
 
 #Check WM segment exist or no
-if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_pve_thr_WM` = 1 ] ; then
-    wmseg="${MultChanT1Folder}/T1_pve_thr_WM"
-elif [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_pve_thr_WM` = 1 ]]; then
-    wmseg="${SinChanT1Folder}/T1_pve_thr_WM"
+if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_WM_mask` = 1 ] ; then
+    wmseg="${MultChanT1Folder}/T1_WM_mask"
+elif [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_WM_mask` = 1 ]]; then
+    wmseg="${SinChanT1Folder}/T1_WM_mask"
 fi
 
-if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_GM` = 1 ] ; then
-    GMseg="${MultChanT1Folder}/T1_GM"
-elif [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_pve_thr_GM` = 1 ]]; then
-    GMseg="${SinChanT1Folder}/T1_pve_thr_GM"
+if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_GM_mask` = 1 ] ; then
+    GMseg="${MultChanT1Folder}/T1_GM_mask"
+elif [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_GM_mask` = 1 ]]; then
+    GMseg="${SinChanT1Folder}/T1_GM_mask"
 fi
 
 $FSLDIR/bin/imcp ${PathOffMRI} ${rfMRIrawFolder}/${OrigTCSName}
