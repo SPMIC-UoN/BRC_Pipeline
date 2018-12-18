@@ -33,8 +33,8 @@ Usage()
   echo " --strongbias                     Turn on for images with very strong bias fields"
   echo " --noreg                          Turn off steps that do registration to standard (FLIRT and FNIRT)"
   echo " --noseg                          Turn off the step that does tissue-type segmentation (FAST)"
-  echo " -ft | --FAST_t <type>            Specify the type of image (choose one of T1 T2 PD - default is T1)"
   echo " --nocrop                         Turn off the step that does automated cropping"
+  echo " --nodefacing                     Turn off the step that does automated brain defacing"
   echo " -h | --help                      help"
   echo " "
   echo " "
@@ -59,11 +59,10 @@ do_QC="no"
 do_freesurfer="no"
 do_tissue_seg="yes"
 do_anat_based_on_FS="yes"
-do_crop="yes";
+do_crop="yes"
+do_defacing="yes"
 
 Opt_args="--clobber"
-
-FAST_t=1  # For FAST: 1 = T1w, 2 = T2w, 3 = PD
 
 # parse arguments
 while [ "$1" != "" ]; do
@@ -111,6 +110,9 @@ while [ "$1" != "" ]; do
         --nocrop)               do_crop="no";
                                 ;;
 
+        --nodefacing)           do_defacing="no";
+                                ;;
+
         -h | --help )           Usage
                                 exit
                                 ;;
@@ -154,10 +156,13 @@ tempFolderName="temp"
 logFolderName="log"
 regFolderName="reg"
 qcFolderName="qc"
+biasFolderName="bias"
 dataFolderName="data"
 data2stdFolderName="data2std"
 segFolderName="seg"
 FSFolderName="FS"
+FastFolderName="FAST"
+FirstFolderName="FIRST"
 
 log_Name="log.txt"
 
@@ -183,8 +188,12 @@ preprocT1Folder=${T1Folder}/${preprocessFolderName}
 processedT1Folder=${T1Folder}/${processedFolderName}
 logT1Folder=${T1Folder}/${logFolderName}
 TempT1Folder=${T1Folder}/${tempFolderName}
+FastT1Folder=${TempT1Folder}/${FastFolderName}
+FirstT1Folder=${TempT1Folder}/${FirstFolderName}
+regTempT1Folder=${TempT1Folder}/${regFolderName}
 regT1Folder=${preprocT1Folder}/${regFolderName}
 qcT1Folder=${preprocT1Folder}/${qcFolderName}
+biasT1Folder=${preprocT1Folder}/${biasFolderName}
 dataT1Folder=${processedT1Folder}/${dataFolderName}
 data2stdT1Folder=${processedT1Folder}/${data2stdFolderName}
 segT1Folder=${processedT1Folder}/${segFolderName}
@@ -197,6 +206,7 @@ dataT2Folder=${processedT2Folder}/${dataFolderName}
 data2stdT2Folder=${processedT2Folder}/${data2stdFolderName}
 regT2Folder=${preprocT2Folder}/${regFolderName}
 TempT2Folder=${T2Folder}/${tempFolderName}
+regTempT2Folder=${TempT2Folder}/${regFolderName}
 
 #Check existance of foldersa= and then create them
 if [ ! -d ${AnalysisFolder} ]; then mkdir ${AnalysisFolder}; fi
@@ -211,6 +221,7 @@ if [ -e ${logT1Folder} ] ; then rm -r ${logT1Folder}; fi; mkdir ${logT1Folder}
 if [ ! -d ${TempT1Folder} ]; then mkdir ${TempT1Folder}; fi
 if [ ! -d ${regT1Folder} ]; then mkdir ${regT1Folder}; fi
 if [ ! -d ${qcT1Folder} ]; then mkdir ${qcT1Folder}; fi
+if [ ! -d ${biasT1Folder} ]; then mkdir ${biasT1Folder}; fi
 if [ ! -d ${dataT1Folder} ]; then mkdir ${dataT1Folder}; fi
 if [ ! -d ${data2stdT1Folder} ]; then mkdir ${data2stdT1Folder}; fi
 if [ ! -d ${segT1Folder} ]; then mkdir ${segT1Folder}; fi
@@ -252,7 +263,6 @@ log_Msg 2 "do_Sub_seg: $do_Sub_seg"
 log_Msg 2 "do_QC: $do_QC"
 log_Msg 2 "do_tissue_seg: $do_tissue_seg"
 log_Msg 2 "do_freesurfer: $do_freesurfer"
-log_Msg 2 "FAST_t: $FAST_t"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 #=====================================================================================
@@ -267,63 +277,55 @@ if [[ $T2 == "yes" ]]; then
     $FSLDIR/bin/imcp $T2_IN_Img ${rawT2Folder}/T2_orig.nii.gz
 fi
 
-
-if [[ $do_anat_based_on_FS == "yes" ]]; then
-
-    ${BRC_SCTRUC_SCR}/run_preprocessing.sh \
-          --workingdir=${processedT1Folder} \
-          --t1input=${rawT1Folder}/T1_orig.nii.gz \
-          --fsfoldername=${FSFolderName} \
-          --outnorm=${dataT1Folder} \
-          --logfile=${logT1Folder}/${log_Name}
-
-          Opt_args="$Opt_args --anatbasedFS"
-          Opt_args="$Opt_args -i ${FSFolder}/mri/T1.nii.gz -mridir ${FSFolder}/mri "
-else
-    Opt_args="$Opt_args -i ${rawT1Folder}/T1_orig.nii.gz"
-fi
-
-Opt_args="$Opt_args -o ${T1Folder} -orig ${rawT1Folder}/T1_orig.nii.gz -logfile "${logT1Folder}/${log_Name}""
-
-
-log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-log_Msg 2 "arguments are:"
-log_Msg 2 "${Opt_args}"
-log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-${BRC_SCTRUC_SCR}/FSL_anat.sh ""$Opt_args""
+${BRC_SCTRUC_SCR}/run_T1_preprocessing.sh \
+      --workingdir=${TempT1Folder} \
+      --t1input=${rawT1Folder}/T1_orig.nii.gz \
+      --dosubseg=${do_Sub_seg} \
+      --dotissueseg=${do_tissue_seg} \
+      --docrop=${do_crop} \
+      --dodefacing=${do_defacing} \
+      --fastfolder=${FastT1Folder} \
+      --firstfolder=${FirstT1Folder} \
+      --regtempt1folder=${regTempT1Folder} \
+      --logfile=${logT1Folder}/${log_Name}
 
 
 if [[ $T2 == "yes" ]]; then
 
-    log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    log_Msg 3 "+                                                                        +"
-    log_Msg 3 "+                     START: T2w image preprocessing                     +"
-    log_Msg 3 "+                                                                        +"
-    log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-
-    log_Msg 2 "fsl_anat -i ${rawT2Folder}/T2_orig.nii.gz -o ${T2Folder}/temp -t T2 --nononlinreg --nosubcortseg --noreg --noseg --clobber"
-
-    ${FSLDIR}/bin/fsl_anat  -i ${rawT2Folder}/T2_orig.nii.gz -o ${T2Folder}/temp -t T2 --nononlinreg --nosubcortseg --noreg --noseg --clobber
+      ${BRC_SCTRUC_SCR}/run_T2_preprocessing.sh \
+            --workingdir=${TempT2Folder} \
+            --t2input=${rawT2Folder}/T2_orig.nii.gz \
+            --tempt1folder=${TempT1Folder} \
+            --fastfolder=${FastT1Folder} \
+            --regtempt1folder=${regTempT1Folder} \
+            --regtempt2folder=${regTempT2Folder} \
+            --dodefacing=${do_defacing} \
+            --logfile=${logT1Folder}/${log_Name}
 fi
 
 
-${BRC_SCTRUC_SCR}/move_rename.sh \
+${BRC_SCTRUC_SCR}/output_organization.sh \
       --t1folder=${T1Folder} \
       --t2folder=${T2Folder} \
-      --t2exist=${T2} \
+      --rawt1folder=${rawT1Folder} \
+      --fastfolder=${FastT1Folder} \
+      --firstfolder=${FirstT1Folder} \
+      --regtempt1folder=${regTempT1Folder} \
+      --biast1folder=${biasT1Folder} \
       --dosubseg=${do_Sub_seg} \
-      --anatname=temp.anat \
       --datat1folder=${dataT1Folder} \
       --data2stdt1folder=${data2stdT1Folder} \
       --segt1folder=${segT1Folder} \
-      --dosubseg=${do_Sub_seg} \
-      --dotissueseg=${do_tissue_seg} \
       --regt1folder=${regT1Folder} \
       --tempt1folder=${TempT1Folder} \
+      --t2exist=${T2} \
+      --tempt2folder=${TempT2Folder} \
+      --rawt2folder=${rawT2Folder} \
+      --dotissueseg=${do_tissue_seg} \
       --datat2folder=${dataT2Folder} \
       --data2stdt2folder=${data2stdT2Folder} \
       --regt2folder=${regT2Folder} \
-      --tempt2folder=${TempT2Folder} \
+      --regtempt2folder=${regTempT2Folder} \
       --logfile=${logT1Folder}/${log_Name}
 
 
@@ -336,16 +338,17 @@ if [[ $do_freesurfer == "yes" ]]; then
     log_Msg 3 "+                                                                        +"
     log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-#    if [[ $T2 == yes ]]; then
-#      recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s FS -FLAIR ${rawT2Folder}/T2_orig.nii.gz -all
-#    else
-        recon-all -s ${FSFolderName} -autorecon2
+    if [ -e "${processedT1Folder}/${FSFolderName}" ] ; then
+        rm -r ${processedT1Folder}/${FSFolderName}
+    fi
 
-        recon-all -s ${FSFolderName} -autorecon3
+    if [[ $T2 == yes ]]; then
+        recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s FS -FLAIR ${rawT2Folder}/T2_orig.nii.gz -all
+    else
+        recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s FS -all
+    fi
 
-        rm -r ${processedT1Folder}/fsaverage
-#      recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s FS -all
-#    fi
+    rm -r ${processedT1Folder}/fsaverage
 fi
 
 
@@ -359,6 +362,5 @@ ${RUN} ${BRCDIR}/Show_version.sh \
       --subject=${Sub_ID} \
       --type=1 \
       --logfile=${logT1Folder}/${log_Name}
-
 
 #: <<'COMMENT'
