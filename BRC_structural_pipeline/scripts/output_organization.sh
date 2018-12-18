@@ -45,6 +45,7 @@ dataT2Folder=`getopt1 "--datat2folder" $@`
 data2stdT2Folder=`getopt1 "--data2stdt2folder" $@`
 regT2Folder=`getopt1 "--regt2folder" $@`
 regTempT2Folder=`getopt1 "--regtempt2folder" $@`
+do_defacing=`getopt1 "--dodefacing" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -75,6 +76,7 @@ log_Msg 2 "dataT2Folder=$dataT2Folder"
 log_Msg 2 "data2stdT2Folder=$data2stdT2Folder"
 log_Msg 2 "regT2Folder=$regT2Folder"
 log_Msg 2 "regTempT2Folder=$regTempT2Folder"
+log_Msg 2 "do_defacing=$do_defacing"
 log_Msg 2 "LogFile=$LogFile"
 
 #=====================================================================================
@@ -125,7 +127,9 @@ $FSLDIR/bin/immv ${TempT1Folder}/T1_brain_mask  ${dataT1folder}/T1_brain_mask
 $FSLDIR/bin/immv ${TempT1Folder}/T1_unbiased  ${dataT1folder}/T1_unbiased
 $FSLDIR/bin/immv ${TempT1Folder}/T1_unbiased_brain  ${dataT1folder}/T1_unbiased_brain
 
-$FSLDIR/bin/immv ${TempT1Folder}/T1_orig_defaced  ${rawT1Folder}/T1_orig_defaced
+if [ $do_defacing = "yes" ] ; then
+    $FSLDIR/bin/immv ${TempT1Folder}/T1_orig_defaced  ${rawT1Folder}/T1_orig_defaced
+fi
 
 log_Msg 3 "Organizing T1 seg folder"
 

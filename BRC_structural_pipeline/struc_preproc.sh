@@ -301,6 +301,7 @@ if [[ $T2 == "yes" ]]; then
             --regtempt2folder=${regTempT2Folder} \
             --dodefacing=${do_defacing} \
             --logfile=${logT1Folder}/${log_Name}
+
 fi
 
 
@@ -326,6 +327,7 @@ ${BRC_SCTRUC_SCR}/output_organization.sh \
       --data2stdt2folder=${data2stdT2Folder} \
       --regt2folder=${regT2Folder} \
       --regtempt2folder=${regTempT2Folder} \
+      --dodefacing=${do_defacing} \
       --logfile=${logT1Folder}/${log_Name}
 
 
