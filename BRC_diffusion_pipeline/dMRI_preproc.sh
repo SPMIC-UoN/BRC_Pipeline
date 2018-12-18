@@ -364,10 +364,10 @@ ${BRC_DMRI_SCR}/eddy_postproc.sh \
 
 if [[ $do_REG == yes ]]; then
 
-    if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_pve_thr_WM` = 1 ] ; then
-        wmseg="${MultChanT1Folder}/T1_pve_thr_WM"
-    elif [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_pve_thr_WM` = 1 ]]; then
-        wmseg="${SinChanT1Folder}/T1_pve_thr_WM"
+    if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_WM_mask` = 1 ] ; then
+        wmseg="${MultChanT1Folder}/T1_WM_mask"
+    elif [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_WM_mask` = 1 ]]; then
+        wmseg="${SinChanT1Folder}/T1_WM_mask"
     fi
 
     ${BRC_DMRI_SCR}/diff_reg.sh \
