@@ -8,7 +8,7 @@
 # Preprocessing Pipeline for resting-state fMRI. Generates the "data" directory that can be used as input to fibre orientation estimation.
 # Ali-Reza Mohammadi-Nejad, SPMIC, Queens Medical Centre, School of Medicine, University of Nottingham, 2018.
 #Example:
-#./fMRI_preproc.sh --path ~/main/analysis --subject Sub_003 --fmripath ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180522_GE/NIFTI/5_rfMRI_2.4mm3_TR3.5_200vols/__resting_state_fMRI_96x2.4mm_20180522141148_8.nii.gz --echospacing 0.00058 --unwarpdir y- --dcmethod NONE --fmrires 3 --mctype EDDY --slice2vol --slspec ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180522_GE/NIFTI/5_rfMRI_2.4mm3_TR3.5_200vols/__resting_state_fMRI_96x2.4mm_20180522141148_8.json --stcmethod 6 --fwhm 3 --intensitynorm
+#./fMRI_preproc.sh --path ~/main/analysis --subject Sub_003 --input ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180522_GE/NIFTI/5_rfMRI_2.4mm3_TR3.5_200vols/__resting_state_fMRI_96x2.4mm_20180522141148_8.nii.gz --echospacing 0.00058 --unwarpdir y- --dcmethod NONE --fmrires 3 --mctype EDDY --slice2vol --slspec ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180522_GE/NIFTI/5_rfMRI_2.4mm3_TR3.5_200vols/__resting_state_fMRI_96x2.4mm_20180522141148_8.json --stcmethod 6 --fwhm 3 --intensitynorm
 
 #clear
 
@@ -26,32 +26,32 @@ Usage()
   echo " "
   echo "Usage: `basename $0`"
   echo "Compulsory arguments (You MUST set one or more of):"
-  echo " --fmripath <Path>                    full path of the filename of fMRI image"
-  echo " --path <Path>                        output path"
-  echo " --subject <Subject name>             output directory is a subject name folder in input image directory"
+  echo " --input <path>                       full path of the filename of fMRI image"
+  echo " --path <path>                        output directory"
+  echo " --subject <subject name>             output directory is a subject name folder in input image directory"
+  echo " "
+  echo "Optional arguments (You may optionally specify one or more of):"
   echo " --mctype <Type>                      Motion correction method. MCFLIRT: between volumes (default), and EDDY: within/between volumes"
   echo "                                           MCFLIRT6: between volumes with 6 degrees of freedom (default),"
   echo "                                           MCFLIRT12: between volumes with 12 degrees of freedom,"
   echo "                                           EDDY: within/between volumes"
   echo " --dcmethod <method>                  Susceptibility distortion correction method (required for accurate processing)"
   echo "                                      Values: TOPUP, SiemensFieldMap (same as FIELDMAP), GeneralElectricFieldMap, and NONE (default)"
-  echo " "
-  echo "Optional arguments (You may optionally specify one or more of):"
-  echo " --fmriscout <Image path>             A single band reference image (SBRef) is recommended if available. Set to NONE if not available (default)"
+  echo " --fmriscout <path>                   A single band reference image (SBRef) is recommended if available. Set to NONE if not available (default)"
   echo "                                      Set to NONE if you want to use the first volume of the timeseries for motion correction"
   echo " --slice2vol                          If one wants to do slice-to-volome motion correction"
-  echo " --slspec <json path>                 Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
+  echo " --slspec <path>                      Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
   echo "                                      slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction"
-  echo " --fmapmag <data path>                Expects 4D Magnitude volume with two 3D volumes (differing echo times). Set to NONE (default) if using TOPUP"
-  echo " --fmapphase <data path>              Expects a 3D Phase difference volume (Siemens style). Set to NONE (default) if using TOPUP"
+  echo " --fmapmag <path>                     Expects 4D Magnitude volume with two 3D volumes (differing echo times). Set to NONE (default) if using TOPUP"
+  echo " --fmapphase <path>                   Expects a 3D Phase difference volume (Siemens style). Set to NONE (default) if using TOPUP"
   echo " --fmapgeneralelectric                Path to General Electric style B0 fieldmap with two volumes"
   echo "                                           1. field map in degrees"
   echo "                                           2. magnitude"
   echo "                                      Set to 'NONE' (default) if not using 'GeneralElectricFieldMap' as the value for the DistortionCorrection variable"
   echo " --echodiff <value>                   Set to NONE if using TOPUP"
-  echo " --SEPhaseNeg <Image path>            For the SE field map volume with a 'negative' phase encoding direction (the same direction of fMRI data)"
+  echo " --SEPhaseNeg <path>                  For the SE field map volume with a 'negative' phase encoding direction (the same direction of fMRI data)"
   echo "                                      Set to NONE if using regular FIELDMAP"
-  echo " --SEPhasePos <Image path>            For the SE field map volume with a 'positive' phase encoding direction (the opposite direction of fMRI data)"
+  echo " --SEPhasePos <path>                  For the SE field map volume with a 'positive' phase encoding direction (the opposite direction of fMRI data)"
   echo "                                      Set to NONE if using regular FIELDMAP"
   echo " --echospacing <value>                Effective Echo Spacing of spin echo field map acquisitions (in sec)"
   echo "                                           NOTE: The pipeline expects you to have used the same phase encoding axis and echo spacing in the fMRI data"
@@ -77,15 +77,15 @@ Usage()
   echo "                                           8: (FSL) If a slice timings file is to be used, put one value (ie for each slice) on each line of a text file."
   echo "                                                    The units are in TRs, with 0.5 corresponding to no shift. Therefore a sensible range of values will be between 0 and 1."
   echo "                                                    The file path should be specified using --slstiming"
-  echo " --slstiming <file path>              file path of a single-column custom interleave order/timing file"
+  echo " --slstiming <path>                   file path of a single-column custom interleave order/timing file"
   echo " --fwhm <value>                       Spatial size (sigma, i.e., half-width) of smoothing, in mm. Set to 0 (default) for no spatial smooting"
-  echo "                                      Non-zero value of this option, automatically enables ICA-AROMA for Artifact/Physiological Noise Removal"
+  echo " --noaroma                            disable ICA-AROMA for Artifact/Physiological Noise Removal"
   echo " --fmrires <value>                    Target final resolution of fMRI data in mm (default is 2 mm)"
   echo " --tempfilter <value>                 Non-zero value of this option means that one wants to do temporal filtering with High pass filter curoff <value> in Sec"
   echo "                                      default value is 0, means No Temporal Filtering"
   echo " --echospacing_fMRI <value>           Echo Spacing of fMRI image (in sec)"
   echo " --printcom                           use 'echo' for just printing everything and not running the commands (default is to run)"
-  echo " -h | --help                          help"
+  echo " --help                               help"
   echo " "
   echo " "
 }
@@ -110,6 +110,7 @@ GradientDistortionCoeffs="NONE"
 DistortionCorrection="NONE"
 BiasCorrection="NONE"
 SliceTimingFile="NONE"
+Do_ica_aroma="yes"
 dof=6
 FinalfMRIResolution=2
 SliceTimingCorrection=0
@@ -132,7 +133,7 @@ while [ "$1" != "" ]; do
                               Subject=$1
                               ;;
 
-      --fmripath )            shift
+      --input )               shift
                               PathOffMRI=$1
                               ;;
 
@@ -218,6 +219,9 @@ while [ "$1" != "" ]; do
                               smoothingfwhm=$1
                               ;;
 
+      --noaroma )             Do_ica_aroma="no"
+                              ;;
+
       --fmrires )             shift
                               FinalfMRIResolution=$1
                               ;;
@@ -228,6 +232,10 @@ while [ "$1" != "" ]; do
 
       --printcom )            shift
                               RUN=$1
+                              ;;
+
+      --help )                Usage
+                              exit
                               ;;
 
       * )                     Usage
@@ -243,7 +251,7 @@ done
 
 if [ X$Path = X ] || [ X$Subject = X ] || [ X$PathOffMRI = X ] ; then
     echo ""
-    echo "All of the compulsory arguments --path, -subject and -fmripath MUST be used"
+    echo "All of the compulsory arguments --path, --subject and --input MUST be used"
     echo ""
     exit 1;
 fi
@@ -295,6 +303,15 @@ if [[ ${BiasCorrection} == "SEBASED" ]]; then
     if [ $EchoSpacing_fMRI != 0.0 ]; then
         echo ""
         echo "ERROR: Spin Echo-based bias field correction of the Receive coil just works with the same Echospacing for SE and fMRI data"
+        echo ""
+        exit 1;
+    fi
+fi
+
+if [[ ${Do_ica_aroma} == "yes" ]]; then
+    if [ $FWHM -e 0 ]; then
+        echo ""
+        echo "ERROR: AROMA has to be applied ater after spatial smoothing. Please set sigma size in --fwhm option"
         echo ""
         exit 1;
     fi
@@ -353,8 +370,9 @@ data2stdFolderName="data2std"
 
 NameOffMRI="rfMRI"
 T1wImage="T1"                                                          #<input T1-weighted image>
-T1wRestoreImage="T1"                                                   #<input bias-corrected T1-weighted image>
-T1wRestoreImageBrain="T1_brain"                                        #<input bias-corrected, brain-extracted T1-weighted image>
+T1wImageBrainMask="T1_brain_mask"                                                          #<input T1-weighted image>
+T1wRestoreImage="T1_unbiased"                                                   #<input bias-corrected T1-weighted image>
+T1wRestoreImageBrain="T1_unbiased_brain"                                        #<input bias-corrected, brain-extracted T1-weighted image>
 ScoutName="Scout"
 OrigTCSName="${NameOffMRI}_orig"
 OrigSE_Pos_Name="SE_PE_Pos_orig"
@@ -482,6 +500,7 @@ log_Msg 2 "SliceTimingFile: $SliceTimingFile"
 log_Msg 2 "Do_intensity_norm: $Do_intensity_norm"
 log_Msg 2 "Temp_Filter_Cutoff: $Temp_Filter_Cutoff"
 log_Msg 2 "smoothingfwhm: $smoothingfwhm"
+log_Msg 2 "Do_ica_aroma: $Do_ica_aroma"
 log_Msg 2 "FinalfMRIResolution: $FinalfMRIResolution"
 log_Msg 2 "EchoSpacing_fMRI: $EchoSpacing_fMRI"
 log_Msg 2 "RUN: $RUN"
@@ -687,7 +706,7 @@ ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --scoutgdcin=${OSR_Scout_In} \
       --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
       --t12std=${data2stdT1Folder}/T1_2_std_warp \
-      --t1brainmask=${dataT1Folder}/${T1wRestoreImageBrain}_mask \
+      --t1brainmask=${dataT1Folder}/${T1wImageBrainMask} \
       --fmriresout=${FinalfMRIResolution} \
       --fmri2structin=${regFolder}/${fMRI2strOutputTransform} \
       --struct2std=${regT1Folder}/T1_2_std_warp_field \
@@ -704,6 +723,7 @@ ${RUN} ${BRC_FMRI_SCR}/Spatial_Smoothing_Noise_Removal.sh \
         --infmri=${stcFolder}/${NameOffMRI}_stc \
         --fmriname=${NameOffMRI} \
         --fwhm=${smoothingfwhm} \
+        --icaaroma=${Do_ica_aroma} \
         --motionparam=${SSNR_motionparam} \
         --fmri2structin=${DCFolder}/fMRI2str.mat \
         --struct2std=${regT1Folder}/T1_2_std_warp_field.nii.gz \

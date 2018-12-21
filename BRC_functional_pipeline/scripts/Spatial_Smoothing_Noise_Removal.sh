@@ -28,6 +28,7 @@ getopt1()
 WD=`getopt1 "--workingdir" $@`
 InputfMRI=`getopt1 "--infmri" $@`
 FWHM=`getopt1 "--fwhm" $@`
+Do_ica_aroma=`getopt1 "--icaaroma" $@`
 MotionParam=`getopt1 "--motionparam" $@`
 fmriName=`getopt1 "--fmriname" $@`
 fMRI2StructMat=`getopt1 "--fmri2structin" $@`
@@ -47,6 +48,7 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 log_Msg 2 "WD:$WD"
 log_Msg 2 "InputfMRI:$InputfMRI"
 log_Msg 2 "FWHM:$FWHM"
+log_Msg 2 "Do_ica_aroma:$Do_ica_aroma"
 log_Msg 2 "MotionParam:$MotionParam"
 log_Msg 2 "fmriName:$fmriName"
 log_Msg 2 "fMRI2StructMat:$fMRI2StructMat"
@@ -149,18 +151,27 @@ if [ $FWHM -ne 0 ]; then
     # 1 says that we determine the smoothing area from 1 secondary image, "mean_func" and then we use the same brightness threshold for the secondary image.
     # prefiltered_func_data_smooth is the output image
 
-    ${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_thresh_smooth -mas ${WD}/${fmriName}_mask ${WD}/${fmriName}_thresh_smooth
-
-
     if [ -e ${WD}/ICA_AROMA ] ; then
         ${RUN} rm -r ${WD}/ICA_AROMA
     fi
 
 
-    MC_arg="-in ${WD}/${fmriName}_thresh_smooth.nii.gz -out ${WD}/ICA_AROMA -tr ${RepetitionTime} -mc ${MotionParam} -m ${WD}/${fmriName}_mask.nii.gz -affmat ${fMRI2StructMat} -warp ${Struct2StdWarp}"
+    if [[ ${Do_ica_aroma} == "yes" ]]; then
+
+        ${FSLDIR}/bin/fslmaths ${WD}/${fmriName}_thresh_smooth -mas ${WD}/${fmriName}_mask ${WD}/${fmriName}_thresh_smooth
 
 
-    ${RUN} python2.7 ${BRC_FMRI_SCR}/ICA_AROMA/ICA_AROMA.py ""$MC_arg""
+        MC_arg="-in ${WD}/${fmriName}_thresh_smooth.nii.gz -out ${WD}/ICA_AROMA -tr ${RepetitionTime} -mc ${MotionParam} -m ${WD}/${fmriName}_mask.nii.gz -affmat ${fMRI2StructMat} -warp ${Struct2StdWarp}"
+
+
+        ${RUN} python2.7 ${BRC_FMRI_SCR}/ICA_AROMA/ICA_AROMA.py ""$MC_arg""
+
+    else
+
+        mkdir ${WD}/ICA_AROMA
+        ${FSLDIR}/bin/imcp ${WD}/${fmriName}_thresh_smooth ${WD}/ICA_AROMA/denoised_func_data_nonaggr
+
+    fi
 
 else
 
