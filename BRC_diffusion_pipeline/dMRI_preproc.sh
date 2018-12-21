@@ -50,30 +50,30 @@ Usage()
   echo " "
   echo "Usage: `basename $0`"
   echo "Compulsory arguments (You MUST set one or more of):"
-  echo " -i1| --in_1 <input image>	     dataLR(AP)1@dataLR(AP)2@...dataLR(AP)N, filenames of input images (For input filenames,"
+  echo " --input <path>	                 dataLR(AP)1@dataLR(AP)2@...dataLR(AP)N, filenames of input images (For input filenames,"
   echo "                                 if for a LR/RL (AP/PA) pair one of the two files are missing set the entry to EMPTY)"
-  echo " --path <output directory>       output durectory. Please provide absolute path"
-  echo " --subject <Subject name>        output directory is a subject name folder in output path directory"
+  echo " --path <path>                   output durectory. Please provide absolute path"
+  echo " --subject <subject name>        output directory is a subject name folder in output path directory"
   echo " --echospacing <value>           EchoSpacing should be in Sec"
-  echo " -p | --pe_dir <1..2>            PhaseEncodingDir"
+  echo " --pe_dir <value>                Phase Encoding Direction"
   echo "                                      1 for LR/RL,"
   echo "                                      2 for AP/PA"
   echo " "
   echo "Optional arguments (You may optionally specify one or more of):"
-  echo " -i2| --in_2 <input image>       dataRL(PA)1@dataRL(PA)2@...dataRL(PA)N, filenames of input images (reverse phase encoding direction),"
+  echo " --input_2 <path>                dataRL(PA)1@dataRL(PA)2@...dataRL(PA)N, filenames of input images (reverse phase encoding direction),"
   echo "                                 Set to NONE if not available (default)"
   echo " --qc                            turn on steps that do quality control of dMRI data"
   echo " --reg                           turn on steps that do registration to standard (FLIRT and FNIRT)"
   echo " --slice2vol                     If one wants to do slice-to-volome motion correction"
-  echo " --slspec <json path>            Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
+  echo " --slspec <path>                 Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
   echo "                                 slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction"
-  echo " -c | --cm_flag <0..2>           CombineMatchedFlag"
+  echo " --cm_flag <value>               CombineMatchedFlag"
   echo "                                      2 for including in the output all volumes uncombined,"
   echo "                                      1 for including in the output and combine only volumes where both LR/RL (or AP/PA) pairs have been acquired,"
   echo "                                      0 for including (uncombined) single volumes as well (default)"
-  echo " -g | --p_im                     ParallelImaging_Factor, In-plane parallel imaging factor"
+  echo " --p_im <value>                  ParallelImaging_Factor, In-plane parallel imaging factor"
   echo "                                      1 for No_Parallel_Imaging"
-  echo " -h | --help                     help"
+  echo " --help                          help"
   echo " "
   echo " "
 }
@@ -109,11 +109,11 @@ while [ "$1" != "" ]; do
                                 Subject=$1
                                 ;;
 
-        -i1 | --in_1 )          shift
+        --input )               shift
                                 InputImages=$1
                                 ;;
 
-        -i2 | --in_2 )          shift
+        --input_2 )             shift
                                 InputImages2=$1
                                 ;;
 
@@ -134,19 +134,19 @@ while [ "$1" != "" ]; do
                                 echospacing=$1
                                 ;;
 
-        -p | --pe_dir )         shift
+        --pe_dir )              shift
                                 PEdir=$1
                                 ;;
 
-        -c | --cm_flag )        shift
+        --cm_flag )             shift
                                 CombineMatched=$1
                                 ;;
 
-        -g | --p_im )           shift
+        --p_im )                shift
                                 PIFactor=$1
                                 ;;
 
-        -h | --help )           Usage
+        --help )                Usage
                                 exit
                                 ;;
 
@@ -163,7 +163,7 @@ done
 
 if [ X$Subject = X ] || [ X$InputImages = X ] || [ X$Path = X ] || [ X$echospacing = X ] || [ X$PEdir = X ] ; then
     echo ""
-    echo "All of the compulsory arguments --path, -i1, --subject, --pe_dir, and --echospacing MUST be used"
+    echo "All of the compulsory arguments --path, --input, --subject, --pe_dir, and --echospacing MUST be used"
     echo ""
     exit 1;
 fi
