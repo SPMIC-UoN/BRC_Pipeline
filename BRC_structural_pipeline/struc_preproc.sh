@@ -21,12 +21,12 @@ Usage()
   echo " "
   echo "Usage: `basename $0`"
   echo "Compulsory arguments (You MUST set one or more of):"
-  echo " --input <T1W image>              Full path of the input image (for one image only)"
-  echo " --path <full path>               Output path"
-  echo " --subject <Subject name>         Output directory is a subject name folder in output path directory"
+  echo " --input <path>                   Full path of the input T1w image (for one image only)"
+  echo " --path <path>                    Output path"
+  echo " --subject <subject name>         Output directory is a subject name folder in output path directory"
   echo " "
   echo "Optional arguments (You may optionally specify one or more of):"
-  echo " -t2 <T2W image>                  Full path of the input T2W image (for processing of T2 data)"
+  echo " --t2 <path>                      Full path of the input T2W image (for processing of T2 data)"
   echo " --freesurfer                     Turn on Freesurfer processing pipeline"
   echo " --subseg                         Turn on subcortical segmentation by FIRST"
   echo " --qc                             Turn on quality control of T1 data"
@@ -35,7 +35,7 @@ Usage()
   echo " --noseg                          Turn off the step that does tissue-type segmentation (FAST)"
   echo " --nocrop                         Turn off the step that does automated cropping"
   echo " --nodefacing                     Turn off the step that does automated brain defacing"
-  echo " -h | --help                      help"
+  echo " --help                           help"
   echo " "
   echo " "
 }
@@ -79,7 +79,7 @@ while [ "$1" != "" ]; do
 				                        IN_Img=$1
                                 ;;
 
-        -t2 )                   shift
+        --t2 )                   shift
 				                        T2_IN_Img=$1
                 		            T2=yes
                                 ;;
@@ -103,17 +103,13 @@ while [ "$1" != "" ]; do
         --freesurfer )         	do_freesurfer=yes
                                 ;;
 
-        -ft | --FAST_t )        shift
-				                        FAST_t=$1
-                                ;;
-
         --nocrop)               do_crop="no";
                                 ;;
 
         --nodefacing)           do_defacing="no";
                                 ;;
 
-        -h | --help )           Usage
+        --help )                Usage
                                 exit
                                 ;;
 
