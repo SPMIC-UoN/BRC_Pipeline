@@ -62,7 +62,7 @@ ${FSLDIR}/bin/flirt -in ${datadir}/nodif_brain -ref ${dataT1Folder}/T1_brain -in
 
 ${FSLDIR}/bin/convert_xfm -omat ${regdir}/diff_2_std.mat -concat ${regT1Folder}/T1_2_std.mat ${regdir}/diff_2_T1.mat
 
-${FSLDIR}/bin/flirt  --interp=spline --in=${datadir}/data_brain --ref=${Standard}_brain --out=${regdir}/diff_2_stf -applyxfm --init=${regdir}/diff_2_std.mat -cost bbr -dof 6
+${FSLDIR}/bin/flirt  -interp spline -in ${datadir}/data_brain -ref ${Standard}_brain -out ${regdir}/diff_2_stf -applyxfm -init ${regdir}/diff_2_std.mat -cost bbr -dof 6
 
 $FSLDIR/bin/convert_xfm -inverse ${regdir}/diff_2_T1.mat -omat ${regdir}/T1_2_diff.mat
 $FSLDIR/bin/convert_xfm -inverse ${regdir}/diff_2_std.mat -omat ${regdir}/std_2_diff.mat
