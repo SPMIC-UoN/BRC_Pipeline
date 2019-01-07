@@ -187,7 +187,7 @@ fi
 
 #${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${regTempT1Folder}/T1_to_MNI_linear --premat=${regTempT1Folder}/T1_to_MNI_linear.mat --interp=spline
 #log_Msg 3 "test"
-${FSLDIR}/bin/flirt -interp spline -dof 12 -in ${WD}/T1_unbiased -ref $FSLDIR/data/standard/MNI152_T1_1mm -omat ${WD}/T1_to_MNI_linear_temp.mat -out ${WD}/T1_to_MNI_linear
+${FSLDIR}/bin/flirt -interp spline -dof 12 -in ${WD}/T1_unbiased -ref $FSLDIR/data/standard/MNI152_T1_1mm -omat ${regTempT1Folder}/T1_to_MNI_linear_temp.mat -out ${regTempT1Folder}/T1_to_MNI_linear
 
 ${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${regTempT1Folder}/T1_to_MNI_nonlin -w ${regTempT1Folder}/T1_to_MNI_nonlin_field --interp=spline
 ${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased_brain -r $FSLDIR/data/standard/MNI152_T1_1mm_brain -o ${regTempT1Folder}/T1_brain_to_MNI_nonlin -w ${regTempT1Folder}/T1_to_MNI_nonlin_field --interp=spline
