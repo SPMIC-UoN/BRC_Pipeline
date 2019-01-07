@@ -85,7 +85,7 @@ ${FSLDIR}/bin/immv ${WD}/T1_tmp2 ${WD}/T1
 log_Msg 3 `date`
 log_Msg 3 "Registering to standard space (linear)"
 #Generate the actual affine from the orig_ud volume to the cut version we have now and combine it to have an affine matrix from orig_ud to MNI
-${FSLDIR}/bin/flirt -in ${WD}/T1 -ref ${WD}/T1_orig_ud -omat ${WD}/T1_to_T1_orig_ud.mat -schedule $FSLDIR/etc/flirtsch/xyztrans.sch
+${FSLDIR}/bin/flirt  -in ${WD}/T1 -ref ${WD}/T1_orig_ud -omat ${WD}/T1_to_T1_orig_ud.mat -schedule $FSLDIR/etc/flirtsch/xyztrans.sch
 ${FSLDIR}/bin/convert_xfm -omat ${WD}/T1_orig_ud_to_T1.mat -inverse ${WD}/T1_to_T1_orig_ud.mat
 ${FSLDIR}/bin/convert_xfm -omat ${WD}/T1_to_MNI_linear.mat -concat ${WD}/T1_tmp2_tmp_to_std.mat ${WD}/T1_to_T1_orig_ud.mat
 
@@ -148,7 +148,7 @@ fi
 
 
 #Clean and reorganize
-rm ${WD}/*tmp*
+#rm ${WD}/*tmp*
 if [ -e ${regTempT1Folder} ] ; then rm -r ${regTempT1Folder}; fi; mkdir ${regTempT1Folder}
 mv ${WD}/*MNI* ${regTempT1Folder}
 ##mv ${WD}/*warp*.* ${regTempT1Folder}
@@ -185,8 +185,12 @@ else
 fi
 
 
-${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${regTempT1Folder}/T1_to_MNI_linear --premat=${regTempT1Folder}/T1_to_MNI_linear.mat --interp=spline
+#${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${regTempT1Folder}/T1_to_MNI_linear --premat=${regTempT1Folder}/T1_to_MNI_linear.mat --interp=spline
+#log_Msg 3 "test"
+${FSLDIR}/bin/flirt -interp spline -dof 12 -in ${WD}/T1_unbiased -ref $FSLDIR/data/standard/MNI152_T1_1mm -omat ${WD}/T1_to_MNI_linear_temp.mat -out ${WD}/T1_to_MNI_linear
+
 ${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${regTempT1Folder}/T1_to_MNI_nonlin -w ${regTempT1Folder}/T1_to_MNI_nonlin_field --interp=spline
+${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased_brain -r $FSLDIR/data/standard/MNI152_T1_1mm_brain -o ${regTempT1Folder}/T1_brain_to_MNI_nonlin -w ${regTempT1Folder}/T1_to_MNI_nonlin_field --interp=spline
 
 
 if [ $dosubseg = "yes" ] ; then

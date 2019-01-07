@@ -179,13 +179,14 @@ fi
 
 log_Msg 3 "Organizing T1 linear registration folder"
 
-$FSLDIR/bin/immv $datadir/T1_to_MNI_lin  ${data2stdT1Folder}/T1_2_std
-mv $datadir/T1_to_MNI_lin.mat  ${regT1Folder}/T1_2_std.mat
+$FSLDIR/bin/immv $datadir/T1_to_MNI_linear  ${data2stdT1Folder}/T1_2_std
+mv $datadir/T1_to_MNI_linear_temp.mat  ${regT1Folder}/T1_2_std.mat
 $FSLDIR/bin/convert_xfm -inverse ${regT1Folder}/T1_2_std.mat -omat ${regT1Folder}/std_2_T1.mat
 
 log_Msg 3 "Organizing T1 non-linear registration folder"
 
 $FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin  ${data2stdT1Folder}/T1_2_std_warp
+$FSLDIR/bin/immv $datadir/T1_brain_to_MNI_nonlin  ${data2stdT1Folder}/T1_brain_2_std_warp
 $FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin_coeff  ${regT1Folder}/T1_2_std_warp_coeff
 $FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin_field  ${regT1Folder}/T1_2_std_warp_field
 $FSLDIR/bin/immv $datadir/T1_to_MNI_nonlin_jac  ${regT1Folder}/T1_2_std_warp_jac
