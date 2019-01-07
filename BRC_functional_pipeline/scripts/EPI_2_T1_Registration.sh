@@ -36,6 +36,7 @@ ScoutInputName=`getopt1 "--scoutin" $@`
 ScoutReference=`getopt1 "--scoutrefin" $@`
 T1wImage=`getopt1 "--t1" $@`
 T1wBrainImage=`getopt1 "--t1brain" $@`
+T1wBrainMask=`getopt1 "--t1brainmask" $@`
 WMseg=`getopt1 "--wmseg" $@`
 GMseg=`getopt1 "--gmseg" $@`
 dof=`getopt1 "--dof" $@`
@@ -70,6 +71,7 @@ log_Msg 2 "ScoutInputName:$ScoutInputName"
 log_Msg 2 "ScoutReference:$ScoutReference"
 log_Msg 2 "T1wImage:$T1wImage"
 log_Msg 2 "T1wBrainImage:$T1wBrainImage"
+log_Msg 2 "T1wBrainMask:$T1wBrainMask"
 log_Msg 2 "WMseg:$WMseg"
 log_Msg 2 "GMseg:$GMseg"
 log_Msg 2 "dof:$dof"
@@ -177,7 +179,7 @@ case $DistortionCorrection in
                   --fmriname="$NameOffMRI" \
                   --smoothingfwhm="2" \
                   --inputdir="$WD" \
-                  --t1brain=${T1wBrainImage} \
+                  --t1brainmask=${T1wBrainMask} \
                   --gmseg=${GMseg} \
                   --logfile=${LogFile}
 

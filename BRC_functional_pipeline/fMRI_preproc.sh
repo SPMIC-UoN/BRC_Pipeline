@@ -685,6 +685,7 @@ ${RUN} ${BRC_FMRI_SCR}/EPI_2_T1_Registration.sh \
       --scoutrefin=${OSR_Scout_In} \
       --t1=${dataT1Folder}/${T1wImage} \
       --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} \
+      --t1brainmask=${dataT1Folder}/${T1wImageBrainMask} \
       --wmseg=$wmseg \
       --gmseg=${GMseg} \
       --dof=${dof} \
