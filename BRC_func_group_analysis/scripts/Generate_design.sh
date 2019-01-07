@@ -116,5 +116,7 @@ log_Msg 2 "                             ===============                         
 ## Cleanup
 ################################################################################################
 
-rm ${DesignFolder}/${contrast_name}.txt
-rm ${DesignFolder}/${design_name}.txt
+if [ $DO_GLM == "yes" ]; then
+    rm ${DesignFolder}/${contrast_name}.txt
+    rm ${DesignFolder}/${design_name}.txt
+fi

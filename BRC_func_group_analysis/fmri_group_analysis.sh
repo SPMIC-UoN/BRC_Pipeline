@@ -66,6 +66,7 @@ Usage()
   echo "                                       concat:	temporally-concatenated group-ICA using MIGP (default)"
   echo "                                       tica:  	tensor-ICA"
   echo " --dim <value>                   Dimensionality reduction into #num dimensions (default: automatic estimation)"
+  echo " --help                          help"
   echo " "
   echo " "
 }

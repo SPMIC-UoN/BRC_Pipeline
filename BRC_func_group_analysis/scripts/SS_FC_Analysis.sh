@@ -55,7 +55,7 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ########################################## DO WORK ##########################################
 
-${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSLNets'); \
+test=`${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSLNets'); \
                                     addpath('${LIBSVMpath}'); \
                                     run_SS_FSL_Nets('${BRC_FMRI_GP_SCR}/FSLNets' , \
                                     '${BRC_FMRI_GP_SCR}/L1precision' , \
@@ -66,4 +66,4 @@ ${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSLNets')
                                     ${VarNorm} , \
                                     '${CorrType}' , \
                                     ${RegVal}); \
-                                    exit"
+                                    exit"`

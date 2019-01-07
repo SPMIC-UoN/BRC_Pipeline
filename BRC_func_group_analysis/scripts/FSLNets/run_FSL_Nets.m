@@ -71,7 +71,7 @@ nets_netweb(Znet , Znet , ts.DD , group_maps , NetWebFolder);
 
 %%% cross-subject GLM, with inference in randomise (assuming you already have the GLM design.mat and design.con files).
 %%% arg4 determines whether to view the corrected-p-values, with non-significant entries removed above the diagonal.
-if (DO_GLM == 'yes')
+if (strcmp(DO_GLM , 'yes'))
     [p_uncorrected , p_corrected] = nets_glm(out_netmats , DesignMatrix , ContrastMatrix , 1);  % returns matrices of 1-p
     print(strcat(work_dir , '/Group_diff.png') , '-dpng' , '-r300');
 
