@@ -435,6 +435,7 @@ for Subject in $(cat ${ListFolder}/${SubjectList_name}) ; do
               --varnorm=${VarNorm} \
               --corrtype=${CorrType} \
               --regval=${RegVal} \
+              --labellist=${LabelList} \
               --logfile=${logFolder}/${log_Name}
     fi
 
@@ -511,4 +512,4 @@ ${RUN} ${BRCDIR}/Show_version.sh \
 ${FSLDIR}/bin/imrm ${ResampRefIm}*
 
 
-: <<'COMMENT'
+#: <<'COMMENT'

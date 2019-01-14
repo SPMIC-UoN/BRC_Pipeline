@@ -25,7 +25,7 @@
 % and <design.con> you will call later.
 % In this case you will make later analysis easier if you name the .txt
 % files in a logical order, for example so that all controls are listed
-% before all patients:  
+% before all patients:
 %   CON_N00300_TS.txt
 %   CON_N00302_TS.txt
 %   CON_N00499_TS.txt
@@ -34,14 +34,14 @@
 %   PAT_N03600_TS.txt
 %
 
-function [ts] = nets_load(indir,tr,varnorm,varargin);
+function [ts] = nets_load(indir,tr,varnorm,listpath,varargin);
 
 Nruns=1;
-if nargin>3
+if nargin>4
   Nruns=varargin{1};
 end
 ts.NtimepointsPerSubject=0;
-if nargin>4
+if nargin>5
   ts.NtimepointsPerSubject=varargin{2};
 end
 
@@ -83,6 +83,21 @@ for i=1:Nsubjects
 end
 
 Labels=find(any(TS,1));
+Zero_Labels=find(~any(TS,1));
+Label_List = dlmread(listpath);
+
+fprintf('The excluded labels are: %d\n' , find(~any(TS,1)));
+
+if ( sum(ismember(Zero_Labels , Label_List)) )
+    fileID = fopen(strcat(indir , '/zero_labels.txt') , 'w');
+    fprintf(fileID , 'The excluded labels are: %d\n' , Zero_Labels);
+    fclose(fileID);
+%else
+%    fileID = fopen(strcat(indir , '/zero_labels.txt') , 'w');
+%    fprintf(fileID , 'Everything is fine\n');
+%    fclose(fileID);
+end
+
 TS( :, ~any(TS,1) ) = []; %columns
 
 ts.ts=TS;
@@ -97,4 +112,3 @@ ts.Labels=Labels;
 ts.UNK=[];
 
 cd(startdir);
-

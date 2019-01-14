@@ -33,13 +33,14 @@ TR=`getopt1 "--repetitiontime" $@`
 VarNorm=`getopt1 "--varnorm" $@`
 CorrType=`getopt1 "--corrtype" $@`
 RegVal=`getopt1 "--regval" $@`
+LabelList=`getopt1 "--labellist" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
 
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 2 "+                                                                        +"
-log_Msg 2 "+                   START: Generate design matrix                        +"
+log_Msg 2 "+         START: Single subject functional connectivity analysis         +"
 log_Msg 2 "+                                                                        +"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -50,6 +51,7 @@ log_Msg 2 "TR:$TR"
 log_Msg 2 "VarNorm:$VarNorm"
 log_Msg 2 "CorrType:$CorrType"
 log_Msg 2 "RegVal:$RegVal"
+log_Msg 2 "LabelList:$LabelList"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -65,5 +67,12 @@ test=`${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSL
                                     ${TR} , \
                                     ${VarNorm} , \
                                     '${CorrType}' , \
-                                    ${RegVal}); \
+                                    ${RegVal} , \
+                                    '${LabelList}'); \
                                     exit"`
+
+if [ -e $WD/zero_labels.txt ] ; then
+    log_Msg 3 ""
+    log_Msg 3 "WARNING: This subject has a label without any timeseries on it"
+    log_Msg 3 ""
+fi
