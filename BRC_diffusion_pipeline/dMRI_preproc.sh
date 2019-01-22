@@ -97,6 +97,7 @@ PIFactor=1
 do_QC=no
 do_REG=no
 Apply_Topup=yes
+dof=6
 
 # parse arguments
 while [ "$1" != "" ]; do
@@ -207,8 +208,13 @@ eddyFolderName="eddy"
 regFolderName="reg"
 qcFolderName="qc"
 dataFolderName="data"
+data2strFolderName="data2str"
 data2stdFolderName="data2std"
 log_Name="log.txt"
+
+T1wImage="T1"
+T1wRestoreImage="T1_unbiased"
+T1wRestoreImageBrain="T1_unbiased_brain"
 
 #=====================================================================================
 ###                                  Setup PATHS
@@ -246,6 +252,7 @@ eddyFolder=${preprocFolder}/${eddyFolderName}
 qcFolder=${preprocFolder}/${qcFolderName}
 regFolder=${preprocFolder}/${regFolderName}
 dataFolder=${processedFolder}/${dataFolderName}
+data2strFolder=${processedFolder}/${data2strFolderName}
 data2stdFolder=${processedFolder}/${data2stdFolderName}
 
 preprocT1Folder=${T1Folder}/${preprocessFolderName}
@@ -259,6 +266,7 @@ regT1Folder=${preprocT1Folder}/${regFolderName}
 
 if [ ! -d ${dMRIrawFolder} ]; then mkdir ${dMRIrawFolder}; fi
 if [ -d ${dMRIFolder} ]; then rm -rf ${dMRIFolder}; fi; mkdir -p ${dMRIFolder}
+#if [ ! -d ${dMRIFolder} ]; then mkdir ${dMRIFolder}; fi
 if [ -e ${logFolder} ] ; then rm -r ${logFolder}; fi; mkdir ${logFolder}
 if [ ! -d ${preprocFolder} ]; then mkdir ${preprocFolder}; fi
 if [ ! -d ${processedFolder} ]; then mkdir ${processedFolder}; fi
@@ -268,6 +276,7 @@ fi
 if [ ! -d ${eddyFolder} ]; then mkdir ${eddyFolder}; fi
 if [ $do_REG = yes ] ; then
     if [ ! -d ${regFolder} ]; then mkdir ${regFolder}; fi
+    if [ ! -d ${data2strFolder} ]; then mkdir ${data2strFolder}; fi
     if [ ! -d ${data2stdFolder} ]; then mkdir ${data2stdFolder}; fi
 fi
 if [ $do_QC = yes ] ; then
@@ -373,9 +382,15 @@ if [[ $do_REG == yes ]]; then
     ${BRC_DMRI_SCR}/diff_reg.sh \
           --datafolder=${dataFolder} \
           --regfolder=${regFolder} \
+          --t1=${dataT1Folder}/${T1wImage} \
+          --t1restore=${dataT1Folder}/${T1wRestoreImage} \
+          --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} \
           --wmseg=${wmseg} \
+          --dof=${dof} \
           --datat1folder=${dataT1Folder} \
           --regt1folder=${regT1Folder} \
+          --outstr=${data2strFolder} \
+          --outstd=${data2stdFolder} \
           --logfile=${logFolder}/${log_Name}
 fi
 
