@@ -84,18 +84,22 @@ end
 
 Labels=find(any(TS,1));
 Zero_Labels=find(~any(TS,1));
-Label_List = dlmread(listpath);
 
 fprintf('The excluded labels are: %d\n' , find(~any(TS,1)));
 
-if ( sum(ismember(Zero_Labels , Label_List)) )
-    fileID = fopen(strcat(indir , '/zero_labels.txt') , 'w');
-    fprintf(fileID , 'The excluded labels are: %d\n' , Zero_Labels);
-    fclose(fileID);
-%else
-%    fileID = fopen(strcat(indir , '/zero_labels.txt') , 'w');
-%    fprintf(fileID , 'Everything is fine\n');
-%    fclose(fileID);
+if nargin>3
+
+    Label_List = dlmread(listpath);
+
+    if ( sum(ismember(Zero_Labels , Label_List)) )
+        fileID = fopen(strcat(indir , '/zero_labels.txt') , 'w');
+        fprintf(fileID , 'The excluded labels are: %d\n' , Zero_Labels);
+        fclose(fileID);
+    %else
+    %    fileID = fopen(strcat(indir , '/zero_labels.txt') , 'w');
+    %    fprintf(fileID , 'Everything is fine\n');
+    %    fclose(fileID);
+    end
 end
 
 TS( :, ~any(TS,1) ) = []; %columns

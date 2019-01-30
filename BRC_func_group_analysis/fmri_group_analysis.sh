@@ -32,10 +32,8 @@ Usage()
   echo "                                           This atlas is in the functional native space."
   echo "                                       FS_DA:	This atlas is known as the 'Destrieux' cortical atlas in FreeSurfer."
   echo "                                           This atlas is in the functional native space."
-  echo "                                       AAL_116: This atlas is known as AAL 'Automated Anatomical Labeling' atlas"
+  echo "                                       AAL: This atlas is known as AAL 'Automated Anatomical Labeling' atlas"
   echo "                                           This atlas is in the standard MNI152 space and contains 116 ROIs."
-  echo "                                       AAL_90: This atlas is known as AAL 'Automated Anatomical Labeling' atlas"
-  echo "                                           This atlas is in the standard MNI152 space and contains 90 ROIs."
   echo "                                       SHEN: a functional atlas that covering both cortical and sub-cortical brain regions"
   echo "                                           This atlas is in the standard MNI152 space and contains 268 ROIs."
   echo "                                       MELODIC: Multivariate Exploratory Linear Optimised Decomposition into Independent Components"
@@ -226,7 +224,14 @@ dualregFolder=${GroupFCFolder}/${dualregFolderName}
         SHEN)
             AtlasFile=${AtlasFolder}/shen_${DataResolution}mm_268_parcellation.nii.gz
             if [ X${LabelList} = X ] ; then
-                LabelList=${BRCDIR}/${TemplateFolderName}/shen_268_labels.txt
+                LabelList=${AtlasFolder}/shen_268_labels.txt
+            fi
+        ;;
+
+        AAL)
+            AtlasFile=${AtlasFolder}/AAL.nii.gz
+            if [ X${LabelList} = X ] ; then
+                LabelList=${AtlasFolder}/AAL_labels.txt
             fi
         ;;
 
@@ -318,6 +323,13 @@ else
     ResampRefIm=${GroupFCFolder}/MNI152_T1_${DataResolution}mm
     ${FSLDIR}/bin/applywarp --rel --interp=nn -i $FSLDIR/data/standard/MNI152_T1_1mm_brain_mask -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${GroupFCFolder}/MNI152_T1_${DataResolution}mm_brain_mask
     ResampRefIm_mask=${ResampRefIm}_brain_mask
+
+    if [ ${ParcelAtlas} = "AAL" ] ; then
+
+        ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${AtlasFile} -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${GroupFCFolder}/AAL_${DataResolution}mm
+        AtlasFile=${GroupFCFolder}/AAL_${DataResolution}mm.nii.gz
+
+    fi
 fi
 
 

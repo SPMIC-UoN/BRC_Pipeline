@@ -85,7 +85,7 @@ if [ -e ${GroupMapsFolder} ] ; then
     rm -r ${GroupMapsFolder}
 fi
 mkdir -p $GroupMapsFolder
-${FSLDIR}/bin/slices_summary ${WD}/Image_4D 4 ${ResampRefIm} ${GroupMapsFolder}
+${FSLDIR}/bin/slices_summary ${WD}/Image_4D 4 ${ResampRefIm} ${GroupMapsFolder} -1
 
 log_Msg 3 ""
 log_Msg 3 "                         END: Extract Label Maps"
