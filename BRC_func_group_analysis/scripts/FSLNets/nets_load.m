@@ -85,9 +85,10 @@ end
 Labels=find(any(TS,1));
 Zero_Labels=find(~any(TS,1));
 
-fprintf('The excluded labels are: %d\n' , find(~any(TS,1)));
-
 if nargin>3
+    
+    fprintf('The excluded labels are: %d\n' , find(~any(TS,1)));
+
 
     Label_List = dlmread(listpath);
 

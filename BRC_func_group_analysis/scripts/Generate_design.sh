@@ -63,7 +63,8 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 cut -d' ' -f1 < $InputList > ${ListFolder}/${SubjectList_name}
 
 if [ $DO_GLM == "yes" ]; then
-    cut -d' ' -f2 < ${InputList} > ${ListFolder}/${GroupList_name}
+#    cut -d' ' -f2 < ${InputList} > ${ListFolder}/${GroupList_name}
+    awk '{print $2}' ${InputList} > ${ListFolder}/${GroupList_name}
 
     group_num=`sort ${ListFolder}/${GroupList_name} | uniq | wc -l`
 

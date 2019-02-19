@@ -336,15 +336,15 @@ fi
 if [ ! ${ParcelAtlas} == "MELODIC" ]; then
 
     log_Msg 3 "Generate label maps"
-    ${RUN} ${BRC_FMRI_GP_SCR}/Generate_maps.sh \
-          --workingdir=${GroupFCFolder} \
-          --atlas=${AtlasFile} \
-          --resamprefim=${ResampRefIm} \
-          --resamprefimmask=${ResampRefIm_mask} \
-          --labellist=${LabelList} \
-          --dataresolution=${DataResolution} \
-          --groupmaps=${GroupMapsFolder} \
-          --logfile=${logFolder}/${log_Name}
+#    ${RUN} ${BRC_FMRI_GP_SCR}/Generate_maps.sh \
+#          --workingdir=${GroupFCFolder} \
+#          --atlas=${AtlasFile} \
+#          --resamprefim=${ResampRefIm} \
+#          --resamprefimmask=${ResampRefIm_mask} \
+#          --labellist=${LabelList} \
+#          --dataresolution=${DataResolution} \
+#          --groupmaps=${GroupMapsFolder} \
+#          --logfile=${logFolder}/${log_Name}
 
 fi
 
@@ -452,7 +452,6 @@ for Subject in $(cat ${ListFolder}/${SubjectList_name}) ; do
     fi
 
 done
-
 
 if [ ${ParcelAtlas} == "MELODIC" ]; then
 

@@ -2,7 +2,7 @@
 function [result] = run_FSL_Nets(FSLNets_Path , L1precision_Path , PWling_Path , work_dir , group_maps , ts_dir , TR , varnorm , method , RegVal , NetWebFolder , DO_GLM , DesignMatrix , ContrastMatrix)
 
 result = 0;
-%%% change the following paths according to your local setup
+%%% add the following paths according to input setup paths
 addpath(FSLNets_Path);              % wherever you've put this package
 addpath(L1precision_Path);          % L1precision toolbox
 % addpath(PWling_Path)                % pairwise causality toolbox
@@ -22,7 +22,7 @@ for i = 1 : ts.Nsubjects
     end
 end
 
-result=1;
+result = 1;
 ts_spectra=nets_spectra(ts);   % have a look at mean timeseries spectra
 print(strcat(work_dir , '/spectra.png') , '-dpng' , '-r300');
 
@@ -56,12 +56,17 @@ dlmwrite(strcat(work_dir , '/' , 'netmats_' , method , '.txt') , out_netmats , '
 dlmwrite(strcat(work_dir , '/' , 'Znet_' , method , '.txt') , Znet , 'delimiter' , ' ' , 'precision' , '%4d');
 dlmwrite(strcat(work_dir , '/' , 'Mnet_' , method , '.txt') , Mnet , 'delimiter' , ' ' , 'precision' , '%4d');
 
+% On the left, this figure shows the results from the group t-test, and on the right is a consistency scatter plot showing
+% how similar the results from each subject are to the group (i.e. the more this looks like a diagonal line, the more consistent
+% the relevant netmat is across subjects).
+
 print(strcat(work_dir , '/one-group-t-test-group-level_' , method , '.png') , '-dpng' , '-r300');
 
 
-%%% view hierarchical clustering of nodes
+%%% view hierarchical clustering of nodes. Clustering tree groups similar nodes.
 %%% netmatL=reshape(Znet(3,:,:) , size(Znet(3,:,:) ,2) , size(Znet(3,:,:) ,3));
 %%% netmatH=reshape(Znet(6,:,:) , size(Znet(6,:,:) ,2) , size(Znet(6,:,:) ,3));
+
 nets_hierarchy(Znet , Znet , ts.DD , group_maps);
 print(strcat(work_dir , '/hierarchy.png') , '-dpng' , '-r300');
 
@@ -71,6 +76,7 @@ nets_netweb(Znet , Znet , ts.DD , group_maps , NetWebFolder);
 
 %%% cross-subject GLM, with inference in randomise (assuming you already have the GLM design.mat and design.con files).
 %%% arg4 determines whether to view the corrected-p-values, with non-significant entries removed above the diagonal.
+
 if (strcmp(DO_GLM , 'yes'))
     [p_uncorrected , p_corrected] = nets_glm(out_netmats , DesignMatrix , ContrastMatrix , 1);  % returns matrices of 1-p
     print(strcat(work_dir , '/Group_diff.png') , '-dpng' , '-r300');
