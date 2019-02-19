@@ -84,6 +84,7 @@ Usage()
   echo " --tempfilter <value>                 Non-zero value of this option means that one wants to do temporal filtering with High pass filter curoff <value> in Sec"
   echo "                                      default value is 0, means No Temporal Filtering"
   echo " --echospacing_fMRI <value>           Echo Spacing of fMRI image (in sec)"
+  echo " --name <folder name>                 Output folder name of the functional analysis pipeline. Default: rfMRI"
   echo " --printcom                           use 'echo' for just printing everything and not running the commands (default is to run)"
   echo " --help                               help"
   echo " "
@@ -111,6 +112,7 @@ DistortionCorrection="NONE"
 BiasCorrection="NONE"
 SliceTimingFile="NONE"
 Do_ica_aroma="yes"
+OutFolderName="rfMRI"
 dof=6
 FinalfMRIResolution=2
 SliceTimingCorrection=0
@@ -230,6 +232,10 @@ while [ "$1" != "" ]; do
                               EchoSpacing_fMRI=$1
                               ;;
 
+      --name )                shift
+                              OutFolderName=$1
+                              ;;
+
       --printcom )            shift
                               RUN=$1
                               ;;
@@ -340,7 +346,7 @@ echo "After taking default value if necessary, UseJacobian: ${UseJacobian}"
 #=====================================================================================
 
 AnalysisFolderName="analysis"
-rfMRIFolderName="rfMRI"
+rfMRIFolderName=${OutFolderName}
 rawFolderName="raw"
 AnatMRIFolderName="anatMRI"
 T1FolderName="T1"
