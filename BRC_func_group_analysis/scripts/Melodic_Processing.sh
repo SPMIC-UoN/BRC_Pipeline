@@ -84,15 +84,15 @@ if [[ ! X$Dimensionality = X ]] ; then
 fi
 
 
-#$FSLDIR/bin/melodic \
-#        --in=${InputFiles} \
-#        --outdir=${Melodic_output} \
-#        --tr=${RepetitionTime} \
-#        --approach=${ICAapproach} \
-#        --verbose \
-#        --report \
-#        --Oall \
-#        ${Melodic_args}
+$FSLDIR/bin/melodic \
+        --in=${InputFiles} \
+        --outdir=${Melodic_output} \
+        --tr=${RepetitionTime} \
+        --approach=${ICAapproach} \
+        --verbose \
+        --report \
+        --Oall \
+        ${Melodic_args}
 
 
 Brain_Img_base=`basename ${BGImage}`
