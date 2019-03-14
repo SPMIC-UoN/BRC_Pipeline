@@ -38,7 +38,7 @@ log_SetPath "${LogFile}"
 
 log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 3 "+                                                                        +"
-log_Msg 3 "+      START: MELODIC to decopose multiple 4D datasets based on ICA      +"
+log_Msg 3 "+                         START: Dual Regression                         +"
 log_Msg 3 "+                                                                        +"
 log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -66,7 +66,7 @@ $FSLDIR/bin/dual_regression \
 
 
 log_Msg 3 ""
-log_Msg 3 "        END: MELODIC to decopose multiple 4D datasets based on ICA"
+log_Msg 3 "                         END: Dual Regression"
 log_Msg 3 "                    END: `date`"
 log_Msg 3 "=========================================================================="
 log_Msg 3 "                             ===============                              "
