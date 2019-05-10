@@ -137,7 +137,7 @@ ${MATLABpath}/matlab -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSLNets'); \
                                     exit"
 
 
-if [ `cat ${WD}/${FC_Anal_Folder_name}/result.txt` == 0 ]; then
+if [ `cat ${WD}/${FC_Anal_Folder_name}/result.txt` != 0 ]; then
     log_Msg 3 ""
     log_Msg 3 "ERROR: at least in one ROI, the time series Values are zero. Please check the ROI labels"
     log_Msg 3 ""

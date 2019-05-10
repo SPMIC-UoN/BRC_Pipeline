@@ -96,7 +96,7 @@ if [ $DO_GLM == "yes" ]; then
             if (( $i == $j )); then
                 printf "1 " >> ${DesignFolder}/${contrast_name}.txt
             else
-                printf "0 " >> ${DesignFolder}/${contrast_name}.txt
+                printf -- "-1 " >> ${DesignFolder}/${contrast_name}.txt
             fi
 
         done

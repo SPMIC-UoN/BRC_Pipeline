@@ -1,8 +1,8 @@
 
-function [result] = run_FSL_Nets(FSLNets_Path , L1precision_Path , PWling_Path , work_dir , group_maps , ts_dir , TR , varnorm , method , RegVal , NetWebFolder , DO_GLM , DesignMatrix , ContrastMatrix)
+function [Subject] = run_FSL_Nets(FSLNets_Path , L1precision_Path , PWling_Path , work_dir , group_maps , ts_dir , TR , varnorm , method , RegVal , NetWebFolder , DO_GLM , DesignMatrix , ContrastMatrix)
 
-result = 0;
-%%% add the following paths according to input setup paths
+%%% add
+% the following paths according to input setup paths
 addpath(FSLNets_Path);              % wherever you've put this package
 addpath(L1precision_Path);          % L1precision toolbox
 % addpath(PWling_Path)                % pairwise causality toolbox
@@ -12,17 +12,27 @@ addpath(sprintf('%s/etc/matlab',getenv('FSLDIR')))    % you don't need to edit t
 %%% load timeseries data from the dual regression output directory
 ts=nets_load(ts_dir , TR , varnorm);
 
+counter = 0;
+Subject = [];
+% ROIs = [];
 for i = 1 : ts.Nsubjects
     grot = ts.ts((i - 1) * ts.NtimepointsPerSubject + 1 : i*ts.NtimepointsPerSubject , :);
-    if (~ isempty(find(sum(grot , 1) == 0)))
-        fileID = fopen(strcat(work_dir , '/result.txt') , 'w');
-        fprintf(fileID , '%d' , result);
-        fclose(fileID);
-        return
+    if (~ isempty(find(all(grot) == 0)))
+        counter = counter + 1;
+        Subject = [Subject i];
+%         ROIs = [find(sum(grot , 1) == 0) ROIs];
     end
 end
 
-result = 1;
+if (counter ~= 0)
+    fileID = fopen(strcat(work_dir , '/result.txt') , 'w');
+    for i = 1 : counter
+        fprintf(fileID , 'Subject #%d and ROI ' , Subject(i));
+    end
+    fclose(fileID);
+    return
+end
+
 ts_spectra=nets_spectra(ts);   % have a look at mean timeseries spectra
 print(strcat(work_dir , '/spectra.png') , '-dpng' , '-r300');
 
@@ -98,7 +108,7 @@ if (strcmp(DO_GLM , 'yes'))
 end
 
 fileID = fopen(strcat(work_dir , '/result.txt') , 'w');
-fprintf(fileID , '%d' , result);
+fprintf(fileID , '%d' , 0);
 fclose(fileID);
 
 end
