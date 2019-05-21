@@ -254,6 +254,24 @@ ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/PhaseTwo_gdc_dc $(( 
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/${EddyOut} 1 $(( ${dimt} - 3 ))
 
 
+${FSLDIR}/bin/fslmaths ${EddyFolder}/SBRef_dc -thr 0 ${EddyFolder}/SBRef_dc
+${FSLDIR}/bin/fslmaths ${EddyFolder}/PhaseOne_gdc_dc -thr 0 ${EddyFolder}/PhaseOne_gdc_dc
+${FSLDIR}/bin/fslmaths ${EddyFolder}/PhaseTwo_gdc_dc -thr 0 ${EddyFolder}/PhaseTwo_gdc_dc
+${FSLDIR}/bin/fslmaths ${EddyFolder}/${EddyOut} -thr 0 ${EddyFolder}/${EddyOut}
+
+
+sed -i '1d' ${EddyFolder}/${EddyOut}.eddy_parameters
+sed -i '$d' ${EddyFolder}/${EddyOut}.eddy_parameters
+sed -i '$d' ${EddyFolder}/${EddyOut}.eddy_parameters
+
+sed -i '1d' ${EddyFolder}/${EddyOut}.eddy_movement_rms
+sed -i '$d' ${EddyFolder}/${EddyOut}.eddy_movement_rms
+sed -i '$d' ${EddyFolder}/${EddyOut}.eddy_movement_rms
+
+sed -i '1d' ${EddyFolder}/${EddyOut}.eddy_restricted_movement_rms
+sed -i '$d' ${EddyFolder}/${EddyOut}.eddy_restricted_movement_rms
+sed -i '$d' ${EddyFolder}/${EddyOut}.eddy_restricted_movement_rms
+
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${OutFolder}/WarpField 0 3
 ${FSLDIR}/bin/fslmaths ${OutFolder}/WarpField -mul 0 ${OutFolder}/WarpField
 
@@ -277,6 +295,7 @@ ${FSLDIR}/bin/imcp ${EddyFolder}/SBRef_dc.nii.gz ${OutFolder}/SBRef_dc.nii.gz
 ${FSLDIR}/bin/imcp ${EddyFolder}/PhaseOne_gdc_dc.nii.gz ${OutFolder}/PhaseOne_gdc_dc.nii.gz
 ${FSLDIR}/bin/imcp ${EddyFolder}/PhaseTwo_gdc_dc.nii.gz ${OutFolder}/PhaseTwo_gdc_dc.nii.gz
 
+
 log_Msg 3 ""
 log_Msg 3 "           END: Eddy for correcting eddy currents and movements"
 log_Msg 3 "                    END: `date`"
@@ -290,13 +309,13 @@ log_Msg 3 "                             ===============                         
 
 ${FSLDIR}/bin/imrm ${EddyFolder}/PhaseOne
 ${FSLDIR}/bin/imrm ${EddyFolder}/PhaseTwo
-if [ -e ${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos ] ; then
+if [ -e ${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos.nii.gz ] ; then
     ${FSLDIR}/bin/imrm ${EddyFolder}/SBref_${NameOffMRI}_SE_Neg_Pos
 fi
-if [ -e ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos ] ; then
+if [ -e ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos.nii.gz ] ; then
     ${FSLDIR}/bin/imrm ${EddyFolder}/${NameOffMRI}_SE_Neg_Pos
 fi
 #if [ -e ${EddyFolder}/SBref_${NameOffMRI} ] ; then
 #    ${FSLDIR}/bin/imrm ${EddyFolder}/SBref_${NameOffMRI}
 #fi
-#${FSLDIR}/bin/imrm ${EddyFolder}/SE_Neg_Pos
+${FSLDIR}/bin/imrm ${EddyFolder}/SE_Neg_Pos
