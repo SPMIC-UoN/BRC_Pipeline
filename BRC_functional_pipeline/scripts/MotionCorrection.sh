@@ -229,8 +229,8 @@ $FSLDIR/bin/fsl_tsplot -i ${WorkingDirectory}/${OutputfMRIBasename}.par -t 'MCFL
 log_Msg 3 "Plot the Mcflirt translational data"
 $FSLDIR/bin/fsl_tsplot -i ${WorkingDirectory}/${OutputfMRIBasename}.par -t 'MCFLIRT estimated translations (mm)' -u 1 --start=4 --finish=6 -a x,y,z -w 640 -h 144 -o ${WorkingDirectory}/trans.png
 
-#log_Msg 3 "Plot the Mcflirt mean displacement data"
-#$FSLDIR/bin/fsl_tsplot -i mc/prefiltered_func_data_mcf_abs.rms,mc/prefiltered_func_data_mcf_rel.rms -t 'MCFLIRT estimated mean displacement (mm)' -u 1 -w 640 -h 144 -a absolute,relative -o mc/disp.png
+log_Msg 3 "Plot the Mcflirt mean displacement data"
+$FSLDIR/bin/fsl_tsplot -i ${WorkingDirectory}/${OutputfMRIBasename}_abs.rms,${WorkingDirectory}/${OutputfMRIBasename}_rel.rms -t 'MCFLIRT estimated mean displacement (mm)' -u 1 -w 640 -h 144 -a absolute,relative -o ${WorkingDirectory}/disp.png
 
 log_Msg 3 ""
 log_Msg 3 "                         END: Motion Correction"
