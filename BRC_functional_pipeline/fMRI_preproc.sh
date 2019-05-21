@@ -77,14 +77,32 @@ Usage()
   echo "                                           8: (FSL) If a slice timings file is to be used, put one value (ie for each slice) on each line of a text file."
   echo "                                                    The units are in TRs, with 0.5 corresponding to no shift. Therefore a sensible range of values will be between 0 and 1."
   echo "                                                    The file path should be specified using --slstiming"
-  echo " --slstiming <path>                   file path of a single-column custom interleave order/timing file"
+  echo " --slstiming <path>                   File path of a single-column custom interleave order/timing file"
   echo " --fwhm <value>                       Spatial size (sigma, i.e., half-width) of smoothing, in mm. Set to 0 (default) for no spatial smooting"
-  echo " --noaroma                            disable ICA-AROMA for Artifact/Physiological Noise Removal"
+  echo " --noaroma                            Disable ICA-AROMA for Artifact/Physiological Noise Removal"
   echo " --fmrires <value>                    Target final resolution of fMRI data in mm (default is 2 mm)"
   echo " --tempfilter <value>                 Non-zero value of this option means that one wants to do temporal filtering with High pass filter curoff <value> in Sec"
-  echo "                                      default value is 0, means No Temporal Filtering"
+  echo "                                      Default value is 0, means No Temporal Filtering"
   echo " --echospacing_fMRI <value>           Echo Spacing of fMRI image (in sec)"
   echo " --name <folder name>                 Output folder name of the functional analysis pipeline. Default: rfMRI"
+
+  echo " --noqc                               Turn off quality control of fMRI data"
+
+  echo " --physin <file name>                 Input physiological data filename (text format)"
+  echo " --samplingrate <value>	              Sampling rate in Hz (default is 100Hz) [physiological data]"
+  echo " --smoothcard <value>	                Specify smoothing amount for cardiac (in seconds) (default is 0.1 sec) [physiological data]"
+  echo " --smoothresp <value>                 Specify smoothing amount for respiratory (in seconds) (default is 0.1 sec) [physiological data]"
+  echo " --resp <value>	                      Specify column number of respiratory input [physiological data]"
+  echo " --cardiac <value> 	                  Specify column number of cardiac input [physiological data]"
+  echo " --trigger <value>	                  Specify column number of trigger input [physiological data]"
+  echo " --rvt	                              Enable generating RVT data [physiological data]"
+  echo " --sliceorder	 <value>                Specify slice ordering (up/down/interleaved_up/interleaved_down) [physiological data]"
+  echo "                                           0: The slice order will be specified with a file path using --slstiming,"
+  echo "                                           1: Up,"
+  echo "                                           2: Down,"
+  echo "                                           3: Interleaved Up,"
+  echo "                                           4: Interleaved Down."
+
   echo " --printcom                           use 'echo' for just printing everything and not running the commands (default is to run)"
   echo " --help                               help"
   echo " "
@@ -113,12 +131,17 @@ BiasCorrection="NONE"
 SliceTimingFile="NONE"
 Do_ica_aroma="yes"
 OutFolderName="rfMRI"
+DO_RVT="no"
+DO_QC="yes"
 dof=6
 FinalfMRIResolution=2
 SliceTimingCorrection=0
 smoothingfwhm=0
 Temp_Filter_Cutoff=0
 EchoSpacing_fMRI=0.0
+SamplingRate=100
+SmoothCardiac=0.1
+SmoothResp=0.1
 
 opts_DefaultOpt()
 {
@@ -236,6 +259,44 @@ while [ "$1" != "" ]; do
                               OutFolderName=$1
                               ;;
 
+      --physin )              shift
+                              PhysInputTXT=$1
+                              ;;
+
+      --samplingrate )        shift
+                              SamplingRate=$1
+                              ;;
+
+      --smoothcard )          shift
+                              SmoothCardiac=$1
+                              ;;
+
+      --smoothresp )          shift
+                              SmoothResp=$1
+                              ;;
+
+      --resp )                shift
+                              ColResp=$1
+                              ;;
+
+      --cardiac )             shift
+                              ColCardiac=$1
+                              ;;
+
+      --trigger )             shift
+                              ColTrigger=$1
+                              ;;
+
+      --rvt )                 DO_RVT="yes"
+                              ;;
+
+      --sliceorder )          shift
+                              SliceOrder=$1
+                              ;;
+
+      --noqc )                DO_QC="no"
+                              ;;
+
       --printcom )            shift
                               RUN=$1
                               ;;
@@ -323,6 +384,15 @@ if [[ ${Do_ica_aroma} == "yes" ]]; then
     fi
 fi
 
+if [ X$PhysInputTXT != X ] ; then
+    if [ X$ColResp = X ] || [ X$ColCardiac = X ] || [ X$ColTrigger = X ] || [ X$SliceOrder = X ] ; then
+        echo ""
+        echo "For the physiological noise removal option, all of the compulsory arguments --resp, --cardiac, --sliceorder, and --trigger MUST be used"
+        echo ""
+        exit 1;
+    fi
+fi
+
 JacobianDefault="true"
 if [[ $DistortionCorrection != "TOPUP" ]]
 then
@@ -365,6 +435,8 @@ topupFolderName="topup"
 eddyFolderName="eddy"
 InNormfFolderName="inten_norm"
 nrFolderName="noise_removal"
+pnmFolderName="pnm"
+qcFolderName="qc"
 osrFolderName="one_step_resamp"
 stcFolderName="slice_time_corr"
 gdcFolderName="gdc"
@@ -435,6 +507,8 @@ mcFolder=${TempFolder}/${mcFolderName}
 regFolder=${TempFolder}/${regFolderName}
 stcFolder=${TempFolder}/${stcFolderName}
 nrFolder=${TempFolder}/${nrFolderName}
+pnmFolder=${TempFolder}/${pnmFolderName}
+qcFolder=${TempFolder}/${qcFolderName}
 DCFolder=${TempFolder}/${DCFolderName}
 EddyFolder=${TempFolder}/${eddyFolderName}
 OsrFolder=${TempFolder}/${osrFolderName}
@@ -724,7 +798,7 @@ ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --logfile=${logFolder}/${log_Name}
 
 
-log_Msg 3 "Spatial Smoothing and Artifact/Physiological Noise Removal"
+log_Msg 3 "Spatial Smoothing and Artifact Noise Removal"
 ${RUN} ${BRC_FMRI_SCR}/Spatial_Smoothing_Noise_Removal.sh \
         --workingdir=${nrFolder} \
         --infmri=${stcFolder}/${NameOffMRI}_stc \
@@ -736,6 +810,23 @@ ${RUN} ${BRC_FMRI_SCR}/Spatial_Smoothing_Noise_Removal.sh \
         --struct2std=${regT1Folder}/T1_2_std_warp_field.nii.gz \
         --motioncorrectiontype=${MotionCorrectionType} \
         --logfile=${logFolder}/${log_Name}
+
+
+log_Msg 3 "Physiological Noise Removal"
+#${RUN} ${BRC_FMRI_SCR}/Physiological_Noise_Removal.sh \
+#        --workingdir=${pnmFolder} \
+#        --infmri=${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr \
+#        --physinputtxt=${PhysInputTXT} \
+#        --samplingrate=${SamplingRate} \
+#        --smoothcardiac=${SmoothCardiac} \
+#        --smoothresp=${SmoothResp} \
+#        --colresp=${ColResp} \
+#        --colcardiac=${ColCardiac} \
+#        --coltrigger=${ColTrigger} \
+#        --dorvt=${DO_RVT} \
+#        --sliceorder=${SliceOrder} \
+#        --slicetimingfile=${SliceTimingFile} \
+#        --logfile=${logFolder}/${log_Name}
 
 
 if [[ ${DistortionCorrection} == "TOPUP" ]]
@@ -835,6 +926,18 @@ ${RUN} ${BRC_FMRI_SCR}/Apply_Registration.sh \
       --logfile=${logFolder}/${log_Name}
 
 
+if [[ ${DO_QC} == "yes" ]]; then
+
+    log_Msg 3 "Performing Quality Control and Outlier Detection"
+    ${RUN} ${BRC_FMRI_SCR}/QC_analysis.sh \
+          --workingdir=${qcFolder} \
+          --infmri=${Tmp_Filt_Folder}/${NameOffMRI}_tempfilt.nii.gz \
+          --motionparam=${SSNR_motionparam} \
+          --logfile=${logFolder}/${log_Name}
+
+fi
+
+
 log_Msg 3 "Organizing the outputs"
 ${RUN} ${BRC_FMRI_SCR}/Data_Organization.sh \
       --rfmrirawfolder=${rfMRIrawFolder} \
@@ -854,6 +957,7 @@ ${RUN} ${BRC_FMRI_SCR}/Data_Organization.sh \
       --regfolder=${regFolder} \
       --slicecorrfolder=${stcFolder} \
       --tempfiltfolder=${Tmp_Filt_Folder} \
+      --qcfolder=${qcFolder} \
       --nameoffmri=${NameOffMRI} \
       --rfmri2strtransf=${fMRI2strOutputTransform} \
       --str2rfmritransf=${str2fMRIOutputTransform} \
