@@ -41,6 +41,7 @@ OsrFolder=`getopt1 "--onestepfolder" $@`
 regFolder=`getopt1 "--regfolder" $@`
 stcFolder=`getopt1 "--slicecorrfolder" $@`
 Tmp_Filt_Folder=`getopt1 "--tempfiltfolder" $@`
+qcFolder=`getopt1 "--qcfolder" $@`
 NameOffMRI=`getopt1 "--nameoffmri" $@`
 rfMRI2strTransf=`getopt1 "--rfmri2strtransf" $@`
 Str2rfMRITransf=`getopt1 "--str2rfmritransf" $@`
@@ -74,6 +75,7 @@ log_Msg 2 "OsrFolder:$OsrFolder"
 log_Msg 2 "regFolder:$regFolder"
 log_Msg 2 "stcFolder:$stcFolder"
 log_Msg 2 "Tmp_Filt_Folder:$Tmp_Filt_Folder"
+log_Msg 2 "qcFolder:$qcFolder"
 log_Msg 2 "NameOffMRI:$NameOffMRI"
 log_Msg 2 "rfMRI2strTransf:$rfMRI2strTransf"
 log_Msg 2 "Str2rfMRITransf:$Str2rfMRITransf"
@@ -96,6 +98,7 @@ mcPreFolderName="mc"
 eddyPreFolderName="eddy"
 mcflirtPreFolderName="mcflirt"
 regPreFolderName="reg"
+qcPreFolderName="qc"
 dataProFolderName="data"
 data2stdProFolderName="data2std"
 
@@ -113,6 +116,7 @@ mcPreFolder=${preprocFolder}/${mcPreFolderName}
 eddyPreFolder=${mcPreFolder}/${eddyPreFolderName}
 mcflirtPreFolder=${mcPreFolder}/${mcflirtPreFolderName}
 regPreFolder=${preprocFolder}/${regPreFolderName}
+qcPreFolder=${preprocFolder}/${qcPreFolderName}
 dataProFolder=${processedFolder}/${dataProFolderName}
 data2stdProFolder=${processedFolder}/${data2stdProFolderName}
 
@@ -126,6 +130,7 @@ if [ ! -d ${mcPreFolder} ]; then mkdir ${mcPreFolder}; fi
 if [ ! -d ${eddyPreFolder} ]; then mkdir ${eddyPreFolder}; fi
 if [ ! -d ${mcflirtPreFolder} ]; then mkdir ${mcflirtPreFolder}; fi
 if [ ! -d ${regPreFolder} ]; then mkdir ${regPreFolder}; fi
+if [ ! -d ${qcPreFolder} ]; then mkdir ${qcPreFolder}; fi
 if [ ! -d ${dataProFolder} ]; then mkdir ${dataProFolder}; fi
 if [ ! -d ${data2stdProFolder} ]; then mkdir ${data2stdProFolder}; fi
 
@@ -154,6 +159,12 @@ fi
 if [ -n "$(ls -A ${mcFolder} 2>/dev/null)" ]; then
     cp -r ${mcFolder}/* ${mcflirtPreFolder}/
     rm -rf ${mcFolder}
+fi
+
+log_Msg 3 "Organizing qc folder"
+if [ -n "$(ls -A ${qcFolder} 2>/dev/null)" ]; then
+    cp -r ${qcFolder}/* ${qcPreFolder}/
+    rm -rf ${qcFolder}
 fi
 
 log_Msg 3 "Organizing registration folder"
