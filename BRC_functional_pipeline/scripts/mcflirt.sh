@@ -88,7 +88,7 @@ else  # Derive transform from $mcref to $ref
 fi
 
 # Do motion correction using $mcref as the target for registration
-${FSLDIR}/bin/mcflirt -in ${input} -r ${mcref} -mats -plots -dof $DOF -o $output >> ${output}.ecclog
+${FSLDIR}/bin/mcflirt -in ${input} -r ${mcref} -mats -plots -dof $DOF -rmsrel -rmsabs -spline_final -o $output >> ${output}.ecclog
 
 # Concatenate transforms to $ref space and make masks reflecting valid data for each volume
 pi=$(echo "scale=10; 4*a(1)" | bc -l)
