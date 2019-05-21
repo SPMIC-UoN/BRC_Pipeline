@@ -32,6 +32,7 @@ export FSLOUTPUTTYPE="NIFTI_GZ"
 export MATLABpath="/usr/local/matlab/R2017a/bin"            #TO BE MODIFIED BY USER
 export SPMpath="/usr/local/spm12"                           #TO BE MODIFIED BY USER
 export LIBSVMpath="/home/mszam12/main/fsl_docs/data/rest/octave/libsvm/matlab"   #TO BE MODIFIED BY USER
+export DVARSpath="/home/mszam12/main/matlab/MATLAB_Codes/DVARS"   #TO BE MODIFIED BY USER
 
 #SET DYNAMIC LIBRARIES FOR Eddy
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64    #TO BE MODIFIED BY USER
