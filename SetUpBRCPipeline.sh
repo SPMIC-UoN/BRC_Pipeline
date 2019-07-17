@@ -54,5 +54,4 @@ export BRC_GLOBAL_SCR=${BRC_GLOBAL_DIR}/scripts
 
 #SETUP MATLAB and LIBRARIES
 export SPMpath="/gpfs01/software/spm12"                                         #TO BE MODIFIED BY USER
-export LIBSVMpath="/home/mszam12/main/fsl_docs/data/rest/octave/libsvm/matlab"  #TO BE MODIFIED BY USER
 export DVARSpath="/gpfs01/software/imaging/DVARS"                 #TO BE MODIFIED BY USER
