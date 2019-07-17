@@ -16,29 +16,31 @@
 #                                         #
 ###########################################
 
-# Setup FSL (if not already done so in the running environment)
-# Uncomment the following 2 lines (remove the leading #) and correct the FSLDIR setting for your setup
-#export FSLDIR="/usr/local/fsl"                              #TO BE MODIFIED BY USER
-#. $FSLDIR/etc/fslconf/fsl.sh
-export FSLCONFDIR=${FSLDIR}/config
-export FSLOUTPUTTYPE="NIFTI_GZ"
+export CLUSTER_MODE="YES"                                                        #TO BE MODIFIED BY USER, "YES"/"NO"
 
-# Setup FreeSurfer (if not already done so in the running environment)
-# Uncomment the following 2 lines (remove the leading #) and correct the FREESURFER_HOME setting for your setup
-#export FREESURFER_HOME="/usr/local/freesurfer"              #TO BE MODIFIED BY USER
-#source $FREESURFER_HOME/SetUpFreeSurfer.sh
+if [ $CLUSTER_MODE = "YES" ] ; then
+    export JOBSUBpath="/gpfs01/software/imaging/jobsub"                          #TO BE MODIFIED BY USER
+else
+    # Setup FSL (if not already done so in the running environment)
+    # Uncomment the following 2 lines (remove the leading #) and correct the FSLDIR setting for your setup
+    export FSLDIR="/usr/local/fsl"                                             #TO BE MODIFIED BY USER
+    . $FSLDIR/etc/fslconf/fsl.sh
+    export FSLCONFDIR=${FSLDIR}/config
+    export FSLOUTPUTTYPE="NIFTI_GZ"
 
-#SETUP MATLAB
-export MATLABpath="/usr/local/matlab/R2017a/bin"            #TO BE MODIFIED BY USER
-export SPMpath="/usr/local/spm12"                           #TO BE MODIFIED BY USER
-export LIBSVMpath="/home/mszam12/main/fsl_docs/data/rest/octave/libsvm/matlab"   #TO BE MODIFIED BY USER
-export DVARSpath="/home/mszam12/main/matlab/MATLAB_Codes/DVARS"   #TO BE MODIFIED BY USER
+    # Setup FreeSurfer (if not already done so in the running environment)
+    # Uncomment the following 2 lines (remove the leading #) and correct the FREESURFER_HOME setting for your setup
+    export FREESURFER_HOME="/usr/local/freesurfer"                             #TO BE MODIFIED BY USER
+    source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
-#SET DYNAMIC LIBRARIES FOR Eddy
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64    #TO BE MODIFIED BY USER
+    export MATLABpath="/gpfs01/software/matlab_r2017a/bin"                          #TO BE MODIFIED BY USER
+
+    #SET DYNAMIC LIBRARIES FOR Eddy
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64                   #TO BE MODIFIED BY USER
+fi
 
 #ENV VARIABLES FOR THE BRC_PIPELINE
-export BRCDIR="/home/mszam12/main/BRC_Pipeline"                  #TO BE MODIFIED BY USER
+export BRCDIR="/gpfs01/home/mszam12/main/BRC_Pipeline"                          #TO BE MODIFIED BY USER
 export BRC_SCTRUC_DIR=${BRCDIR}/BRC_structural_pipeline
 export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
 export BRC_FMRI_DIR=${BRCDIR}/BRC_functional_pipeline
@@ -49,3 +51,8 @@ export BRC_DMRI_SCR=${BRC_DMRI_DIR}/scripts
 export BRC_FMRI_SCR=${BRC_FMRI_DIR}/scripts
 export BRC_FMRI_GP_SCR=${BRC_FMRI_GP_DIR}/scripts
 export BRC_GLOBAL_SCR=${BRC_GLOBAL_DIR}/scripts
+
+#SETUP MATLAB and LIBRARIES
+export SPMpath="/gpfs01/software/spm12"                                         #TO BE MODIFIED BY USER
+export LIBSVMpath="/home/mszam12/main/fsl_docs/data/rest/octave/libsvm/matlab"  #TO BE MODIFIED BY USER
+export DVARSpath="/gpfs01/software/imaging/DVARS"                 #TO BE MODIFIED BY USER
