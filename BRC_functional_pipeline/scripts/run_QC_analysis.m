@@ -1,8 +1,8 @@
-function run_QC_analysis(DVARS_Path , work_dir , infMRI , MovParFile)
+function run_QC_analysis(DVARS_Path , BRC_GLOBAL_DIR , work_dir , infMRI , MovParFile)
 
 %%% add the following paths according to input setup paths
 addpath(DVARS_Path);              % % L1precision toolbox
-addpath([DVARS_Path , '/Nifti_Util']);              % % L1precision toolbox
+addpath([BRC_GLOBAL_DIR , '/libs/Nifti_Util']);              % % L1precision toolbox
 
 
 % Path_to_Nifti='~/your/nifti/file/118730/rfMRI_REST1_LR.nii.gz';
