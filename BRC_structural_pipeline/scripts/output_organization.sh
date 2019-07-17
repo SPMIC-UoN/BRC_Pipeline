@@ -146,16 +146,16 @@ $FSLDIR/bin/immv ${FastT1Folder}/T1_brain_bias  ${biasT1Folder}/T1_brain_bias
 
 if [ $do_Sub_seg = yes ] ; then
 
-#  if [ -e ${FirstT1Folder}/T1_first_all_fast_firstseg ] ; then
+  if [ -e ${FirstT1Folder}/T1_first_all_fast_firstseg ] ; then
     $FSLDIR/bin/immv ${FirstT1Folder}/T1_first_all_fast_firstseg  ${SubFolder}/T1_subcort_seg
-#  fi
+  fi
 
 #  mv ${TempT1Folder}/T1_vols.txt  ${SubFolder}/T1_vols.txt
 
-#  if [ -e ${FirstT1Folder}/T1_first-BrStem_first.bvars ] ; then
+  if [ -e ${FirstT1Folder}/T1_first-BrStem_first.bvars ] ; then
       mv ${FirstT1Folder}/T1_first-BrStem_first.bvars  ${ShapeFolder}/T1_BrStem.bvars
       mv ${FirstT1Folder}/T1_first-BrStem_first.vtk  ${ShapeFolder}/T1_BrStem.vtk
-#  fi
+  fi
   mv ${FirstT1Folder}/T1_first-L_Accu_first.bvars  ${ShapeFolder}/T1_L_Accu.bvars
   mv ${FirstT1Folder}/T1_first-R_Accu_first.bvars  ${ShapeFolder}/T1_R_Accu.bvars
   mv ${FirstT1Folder}/T1_first-L_Accu_first.vtk  ${ShapeFolder}/T1_L_Accu.vtk
