@@ -164,7 +164,15 @@ if [ $FWHM -ne 0 ]; then
         MC_arg="-in ${WD}/${fmriName}_thresh_smooth.nii.gz -out ${WD}/ICA_AROMA -tr ${RepetitionTime} -mc ${MotionParam} -m ${WD}/${fmriName}_mask.nii.gz -affmat ${fMRI2StructMat} -warp ${Struct2StdWarp}"
 
 
-        ${RUN} python2.7 ${BRC_FMRI_SCR}/ICA_AROMA/ICA_AROMA.py ""$MC_arg""
+        if [ $CLUSTER_MODE = "YES" ] ; then
+
+            ICA_AROMA.py ""$MC_arg""
+
+        else
+
+            ${RUN} python2.7 ${BRC_FMRI_SCR}/ICA_AROMA/ICA_AROMA.py ""$MC_arg""
+
+        fi
 
     else
 
