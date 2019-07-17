@@ -1,30 +1,15 @@
 #!/bin/bash
-# Last update: 01/10/2018
+# Last update: 20/05/2019
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
 # Copyright 2018 University of Nottingham
-#
-
-# Preprocessing Pipeline for diffusion MRI. Generates the "data" directory that can be used as input to fibre orientation estimation.
-#Example:
-#./dMRI_preproc.sh -i1 ~/main/analysis/DTI/001/5_6_Diffusion_MB3_b1k_2k_100dir_b0rev/__DTI_Biobank_2mm_MB3S2_EPI_20180307162159_701.nii.gz -i2 ~/main/analysis/DTI/001/5_6_Diffusion_MB3_b1k_2k_100dir_b0rev/__blip_DTI_Biobank_2mm_MB3S2_EPI_20180307162159_601.nii.gz --path ~/main/analysis -s Sub_001 -p 2 -e 0.78 -c 2 --slice2vol --slspec ~/main/analysis/Orig/3_4_dMRI_b_1k_2k_100dir_b0rev/__DTI_Biobank_2mm_MB3S2_EPI_20180312094206_501.json
 
 set -e
 
 #Hard-Coded variables for the pipeline
 b0dist=150     #Minimum distance in volumes between b0s considered for preprocessing
 b0maxbval=50  #Volumes with a bvalue smaller than that will be considered as b0s
-
-#ScriptsDir=$(dirname "$(readlink -f "$0")") #Absolute path where scripts are
-
-if [ "x$SGE_ROOT" = "x" ] ; then
-    if [ -f /usr/local/share/sge/default/common/settings.sh ] ; then
-	. /usr/local/share/sge/default/common/settings.sh
-    elif [ -f /usr/local/sge/default/common/settings.sh ] ; then
-	. /usr/local/sge/default/common/settings.sh
-    fi
-fi
 
 make_absolute()
 {
@@ -89,15 +74,16 @@ log=`echo "$@"`
 InputImages2="NONE"
 Slice2Volume="no"
 SliceSpec="NONE"
-echospacing=
-PEdir=
+echospacing=""
+PEdir=""
 CombineMatched=0
 PIFactor=1
 
-do_QC=no
-do_REG=no
-Apply_Topup=yes
+do_QC="no"
+do_REG="no"
+Apply_Topup="yes"
 dof=6
+Opt_args=""
 
 # parse arguments
 while [ "$1" != "" ]; do
@@ -118,13 +104,13 @@ while [ "$1" != "" ]; do
                                 InputImages2=$1
                                 ;;
 
-        --qc )           	      do_QC=yes
+        --qc )           	      do_QC="yes"
                                 ;;
 
-        --reg )           	    do_REG=yes
+        --reg )           	    do_REG="yes"
                                 ;;
 
-        --slice2vol )           Slice2Volume=yes
+        --slice2vol )           Slice2Volume="yes"
                                 ;;
 
         --slspec )              shift
@@ -242,7 +228,7 @@ fi
 
 rawFolder=${Path}/${rawFolderName}
 dMRIrawFolder=${rawFolder}/${dMRIFolderName}
-dMRIFolder=${AnalysisFolder}/${dMRIFolderName};
+dMRIFolder=${AnalysisFolder}/${dMRIFolderName}
 logFolder=${dMRIFolder}/${logFolderName}
 preprocFolder=${dMRIFolder}/${preprocessFolderName}
 processedFolder=${dMRIFolder}/${processedFolderName}
@@ -321,87 +307,75 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 log_Msg 3 "OutputDir is: ${dMRIFolder}"
 
-${BRC_DMRI_SCR}/data_copy.sh \
-              --dmrirawfolder=${dMRIrawFolder} \
-              --eddyfolder=${eddyFolder} \
-              --inputimage=${InputImages} \
-              --inputimage2=${InputImages2} \
-              --pedirection=${PEdir} \
-              --applytopup=$Apply_Topup \
-              --logfile=${logFolder}/${log_Name}
+if [ $CLUSTER_MODE = "YES" ] ; then
+
+#    export MODULEPATH=/gpfs01/software/imaging/modulefiles:$MODULEPATH
+#
+#    module load cuda/local/9.2
+#    module load fsl-img/5.0.11
+#    module load matlab-uon
+
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_dMRI_${Subject} -t 00:12:00 -m 60 -c "${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh --dmrirawfolder=${dMRIrawFolder} --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --inputimage=${InputImages} --inputimage2=${InputImages2} --pedirection=${PEdir} --applytopup=${Apply_Topup} --echospacing=${echospacing} --b0dist=${b0dist} --b0maxbval=${b0maxbval} --pifactor=${PIFactor} --logfile=${logFolder}/${log_Name}" &`
+    jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
+    echo "jobID_1: ${jobID1}"
+
+    jobID2=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_2_dMRI_${Subject} -t 00:44:00 -m 60 -w ${jobID1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_2.sh --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --applytopup=${Apply_Topup} --doqc=${do_QC} --qcdir=${qcFolder} --slice2vol=${Slice2Volume} --slspec=${SliceSpec} --logfile=${logFolder}/${log_Name}" &`
+    jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
+    echo "jobID_2: ${jobID2}"
+
+    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t 00:15:00 -m 60 -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --logfile=${logFolder}/${log_Name}" &`
+    jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
+    echo "jobID_3: ${jobID3}"
+
+else
+#    ${BRC_DMRI_DIR}/dMRI_preproc.sh
+
+    ${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh \
+                    --dmrirawfolder=${dMRIrawFolder} \
+                    --eddyfolder=${eddyFolder} \
+                    --topupfolder=${topupFolder} \
+                    --inputimage=${InputImages} \
+                    --inputimage2=${InputImages2} \
+                    --pedirection=${PEdir} \
+                    --applytopup=${Apply_Topup} \
+                    --echospacing=${echospacing} \
+                    --b0dist=${b0dist} \
+                    --b0maxbval=${b0maxbval} \
+                    --pifactor=${PIFactor} \
+                    --logfile=${logFolder}/${log_Name}
 
 
-${BRC_DMRI_SCR}/basic_preproc.sh \
-              --dmrirawfolder=${dMRIrawFolder} \
-              --topupfolder=${topupFolder} \
-              --eddyfolder=${eddyFolder} \
-              --echospacing=${echospacing} \
-              --pedir=${PEdir} \
-              --b0dist=${b0dist} \
-              --b0maxbval=${b0maxbval} \
-              --pifactor=${PIFactor} \
-              --applytopup=$Apply_Topup \
-              --logfile=${logFolder}/${log_Name}
+    ${BRC_DMRI_SCR}/dMRI_preproc_part_2.sh \
+                    --eddyfolder=${eddyFolder} \
+                    --topupfolder=${topupFolder} \
+                    --applytopup=${Apply_Topup} \
+                    --doqc=${do_QC} \
+                    --qcdir=${qcFolder} \
+                    --slice2vol=${Slice2Volume} \
+                    --slspec=${SliceSpec} \
+                    --logfile=${logFolder}/${log_Name}
 
 
-if [ $Apply_Topup = yes ] ; then
-    ${BRC_DMRI_SCR}/run_topup.sh \
-          --workingdir=${topupFolder} \
-          --logfile=${logFolder}/${log_Name}
+     ${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh \
+                    --workingdir=${dMRIFolder} \
+                    --eddyfolder=${eddyFolder} \
+                    --datafolder=${dataFolder} \
+                    --combinematched=${CombineMatched} \
+                    --applytopup=${Apply_Topup} \
+                    --doreg=${do_REG} \
+                    --multchant1folder=${MultChanT1Folder} \
+                    --sinchant1folder=${SinChanT1Folder} \
+                    --regfolder=${regFolder} \
+                    --t1=${dataT1Folder}/${T1wImage} \
+                    --t1restore=${dataT1Folder}/${T1wRestoreImage} \
+                    --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} \
+                    --dof=${dof} \
+                    --datat1folder=${dataT1Folder} \
+                    --regt1folder=${regT1Folder} \
+                    --outstr=${data2strFolder} \
+                    --outstd=${data2stdFolder} \
+                    --start=${Start_Time} \
+                    --subject=${Subject} \
+                    --logfile=${logFolder}/${log_Name}
+
 fi
-
-
-${BRC_DMRI_SCR}/run_eddy.sh \
-      --workingdir=${eddyFolder} \
-      --applytopup=$Apply_Topup \
-      --doqc=$do_QC \
-      --qcdir=${qcFolder} \
-      --topupdir=${topupFolder} \
-      --slice2vol=${Slice2Volume} \
-      --slspec=${SliceSpec} \
-      --logfile=${logFolder}/${log_Name}
-
-
-${BRC_DMRI_SCR}/eddy_postproc.sh \
-      --workingdir=${dMRIFolder} \
-      --eddyfolder=${eddyFolder} \
-      --datafolder=${dataFolder} \
-      --combinematched=${CombineMatched} \
-      --Apply_Topup=${Apply_Topup} \
-      --logfile=${logFolder}/${log_Name}
-
-
-if [[ $do_REG == yes ]]; then
-
-    if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_WM_mask` = 1 ] ; then
-        wmseg="${MultChanT1Folder}/T1_WM_mask"
-    elif [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_WM_mask` = 1 ]]; then
-        wmseg="${SinChanT1Folder}/T1_WM_mask"
-    fi
-
-    ${BRC_DMRI_SCR}/diff_reg.sh \
-          --datafolder=${dataFolder} \
-          --regfolder=${regFolder} \
-          --t1=${dataT1Folder}/${T1wImage} \
-          --t1restore=${dataT1Folder}/${T1wRestoreImage} \
-          --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} \
-          --wmseg=${wmseg} \
-          --dof=${dof} \
-          --datat1folder=${dataT1Folder} \
-          --regt1folder=${regT1Folder} \
-          --outstr=${data2strFolder} \
-          --outstd=${data2stdFolder} \
-          --logfile=${logFolder}/${log_Name}
-fi
-
-
-END_Time="$(date -u +%s)"
-
-
-${RUN} ${BRCDIR}/Show_version.sh \
-      --showdiff="yes" \
-      --start=${Start_Time} \
-      --end=${END_Time} \
-      --subject=${Subject} \
-      --type=2 \
-      --logfile=${logFolder}/${log_Name}
