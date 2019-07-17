@@ -1,16 +1,9 @@
 #!/bin/bash
-# Last update: 11/10/2018
+# Last update: 05/07/2019
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
 # Copyright 2018 University of Nottingham
-#
-# Preprocessing Pipeline for resting-state fMRI. Generates the "data" directory that can be used as input to fibre orientation estimation.
-# Ali-Reza Mohammadi-Nejad, SPMIC, Queens Medical Centre, School of Medicine, University of Nottingham, 2018.
-#Example:
-#./fMRI_preproc.sh --path ~/main/analysis --subject Sub_003 --input ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180522_GE/NIFTI/5_rfMRI_2.4mm3_TR3.5_200vols/__resting_state_fMRI_96x2.4mm_20180522141148_8.nii.gz --echospacing 0.00058 --unwarpdir y- --dcmethod NONE --fmrires 3 --mctype EDDY --slice2vol --slspec ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180522_GE/NIFTI/5_rfMRI_2.4mm3_TR3.5_200vols/__resting_state_fMRI_96x2.4mm_20180522141148_8.json --stcmethod 6 --fwhm 3 --intensitynorm
-
-#clear
 
 set -e
 
@@ -590,6 +583,10 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ###                                   DO WORK
 #=====================================================================================
 
+#if [ $CLUSTER_MODE = "YES" ] ; then
+#    module load fsl-img/5.0.11
+#fi
+
 log_Msg 3 "OutputDir is: ${rfMRIFolder}"
 
 #Check WM segment exist or no
@@ -632,357 +629,143 @@ elif [[ $DistortionCorrection == "NONE" ]] ; then
 
 fi
 
+if [ $CLUSTER_MODE = "YES" ] ; then
 
-log_Msg 3 "Gradient Distortion Correction of fMRI"
-if [ ! $GradientDistortionCoeffs = "NONE" ] ; then
-    log_Msg 3 "PERFORMING GRADIENT DISTORTION CORRECTION"
-else
-    log_Msg 3 "NOT PERFORMING GRADIENT DISTORTION CORRECTION"
+#    export MODULEPATH=/gpfs01/software/imaging/modulefiles:$MODULEPATH
+#
+#    module load cuda/local/9.2
+#    module load ica-aroma-img/py2.7/0.3
+#    module load matlab-uon
 
-    ${RUN} ${FSLDIR}/bin/imcp ${rfMRIrawFolder}/${OrigTCSName} ${gdcFolder}/${NameOffMRI}_gdc
-    ${RUN} ${FSLDIR}/bin/fslroi ${gdcFolder}/${NameOffMRI}_gdc ${gdcFolder}/${NameOffMRI}_gdc_warp 0 3
-    ${RUN} ${FSLDIR}/bin/fslmaths ${gdcFolder}/${NameOffMRI}_gdc_warp -mul 0 ${gdcFolder}/${NameOffMRI}_gdc_warp
-    ${RUN} ${FSLDIR}/bin/imcp ${rfMRIrawFolder}/${OrigScoutName} ${gdcFolder}/${ScoutName}_gdc
-    #make fake jacobians of all 1s, for completeness
-    ${RUN} ${FSLDIR}/bin/fslmaths ${rfMRIrawFolder}/${OrigScoutName} -mul 0 -add 1 ${gdcFolder}/${ScoutName}_gdc_warp_jacobian
-    ${RUN} ${FSLDIR}/bin/fslroi ${gdcFolder}/${NameOffMRI}_gdc_warp ${gdcFolder}/${NameOffMRI}_gdc_warp_jacobian 0 1
-    ${RUN} ${FSLDIR}/bin/fslmaths ${gdcFolder}/${NameOffMRI}_gdc_warp_jacobian -mul 0 -add 1 ${gdcFolder}/${NameOffMRI}_gdc_warp_jacobian
-fi
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_fMRI_${Subject} -t 00:08:00 -m 60 -c "${BRC_FMRI_SCR}/fMRI_preproc_part_1.sh --gdc=${GradientDistortionCoeffs} --rfmrirawfolder=${rfMRIrawFolder} --origtcsname=${OrigTCSName} --gdcfolder=${gdcFolder} --nameoffmri=${NameOffMRI} --origscoutname=${OrigScoutName} --scoutname=${ScoutName} --distortioncorrection=${DistortionCorrection} --dcfolder=${DCFolder} --topupfoldername=${topupFolderName} --spinechophaseencodenegative=${SpinEchoPhaseEncodeNegative} --spinechophaseencodepositive=${SpinEchoPhaseEncodePositive} --echospacing=${EchoSpacing} --unwarpdir=${UnwarpDir} --logfile=${logFolder}/${log_Name}" &`
+    jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
+    echo "jobID_1: ${jobID1}"
 
+    jobID2=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_2_fMRI_${Subject} -t 02:20:00 -m 60 -w ${jobID1} -c "${BRC_FMRI_SCR}/fMRI_preproc_part_2.sh --motioncorrectiontype=${MotionCorrectionType} --mcfolder=${mcFolder} --nameoffmri=${NameOffMRI} --regfolder=${regFolder} --fmri2stroutputtransform=${fMRI2strOutputTransform} --gdcfolder=${gdcFolder} --scoutname=${ScoutName} --movementregressor=${MovementRegressor} --motionmatrixfolder=${MotionMatrixFolder} --motionmatrixprefix=${MotionMatrixPrefix} --eddyfolder=${EddyFolder} --eddyoutput=${EddyOutput} --dcmethod=${DistortionCorrection} --topupfodername=${topupFolderName} --dcfolder=${DCFolder} --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} --SEPhasePos=${SpinEchoPhaseEncodePositive} --unwarpdir=${UnwarpDir} --echospacing=${EchoSpacing} --echospacingfmri=${EchoSpacing_fMRI} --slice2vol=${Slice2Volume} --slicespec=${SliceSpec} --logfile=${logFolder}/${log_Name}" &`
+    jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
+    echo "jobID_2: ${jobID2}"
 
-log_Msg 3 "EPI Distortion Correction"
-if [ ! $DistortionCorrection = "NONE" ] ; then
-    log_Msg 3 "Performing EPI Distortion Correction"
+    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_fMRI_${Subject} -t 00:50:00 -m 60 -w ${jobID2} -c "${BRC_FMRI_SCR}/fMRI_preproc_part_3.sh --slicetimingcorrection=${SliceTimingCorrection} --stcfolder=${stcFolder} --stcinput=${STC_Input} --nameoffmri=${NameOffMRI} --slicetimingfile=${SliceTimingFile} --dcfolder=${DCFolder} --subjectfolder=${AnalysisFolder} --fmrifolder=${TempFolder} --topupfodername=${topupFolderName} --sebffoldername=${sebfFolderName} --gdcfolder=${gdcFolder} --scoutname=${ScoutName} --t1=${dataT1Folder}/${T1wImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --t1brainmask=${dataT1Folder}/${T1wImageBrainMask} --wmseg=${wmseg} --gmseg=${GMseg} --dof=${dof} --method=${DistortionCorrection} --biascorrection=${BiasCorrection} --usejacobian=${UseJacobian} --motioncorrectiontype=${MotionCorrectionType} --eddyoutname=${EddyOutput} --regfolder=${regFolder} --oregim=${RegOutput} --owarp=${fMRI2strOutputTransform} --oinwarp=${str2fMRIOutputTransform} --ojacobian=${JacobianOut} --osrfolder=${OsrFolder} --t12std=${data2stdT1Folder} --fmriresout=${FinalfMRIResolution} --outfmri2stdtrans=${OutputfMRI2StandardTransform} --oiwarp=${Standard2OutputfMRITransform} --nrfolder=${nrFolder} --fwhm=${smoothingfwhm} --icaaroma=${Do_ica_aroma} --motionparam=${SSNR_motionparam} --pnmfolder=${pnmFolder} --physinputtxt=${PhysInputTXT} --samplingrate=${SamplingRate} --smoothcardiac=${SmoothCardiac} --smoothresp=${SmoothResp} --colresp=${ColResp} --colcardiac=${ColCardiac} --coltrigger=${ColTrigger} --dorvt=${DO_RVT} --sliceorder=${SliceOrder} --sebffolder=${SE_BF_Folder} --regt1folder=${regT1Folder} --eddyfolder=${EddyFolder} --innrmfolder=${In_Nrm_Folder} --dointensitynorm=${Do_intensity_norm} --tempfiltercutoff=${Temp_Filter_Cutoff} --mcfolder=${mcFolder} --motionmatdir=${MotionMatrixFolder} --motionmatprefix=${MotionMatrixPrefix} --doqc=${DO_QC} --qcfolder=${qcFolder} --rfmrirawfolder=${rfMRIrawFolder} --rfmrifolder=${rfMRIFolder} --preprocfolder=${preprocFolder} --processedfolder=${processedFolder} --topupfolder=${TOPUP_Folder} --start=${Start_Time} --subject=${Subject} --SEPhasePos=${SpinEchoPhaseEncodePositive} --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} --tmpfiltfolder=${Tmp_Filt_Folder} --logfile=${logFolder}/${log_Name}" &`
+#    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_fMRI_${Subject} -t 02:50:00 -m 60 -c "${BRC_FMRI_SCR}/fMRI_preproc_part_3.sh --slicetimingcorrection=${SliceTimingCorrection} --stcfolder=${stcFolder} --stcinput=${STC_Input} --nameoffmri=${NameOffMRI} --slicetimingfile=${SliceTimingFile} --dcfolder=${DCFolder} --subjectfolder=${AnalysisFolder} --fmrifolder=${TempFolder} --topupfodername=${topupFolderName} --sebffoldername=${sebfFolderName} --gdcfolder=${gdcFolder} --scoutname=${ScoutName} --t1=${dataT1Folder}/${T1wImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --t1brainmask=${dataT1Folder}/${T1wImageBrainMask} --wmseg=${wmseg} --gmseg=${GMseg} --dof=${dof} --method=${DistortionCorrection} --biascorrection=${BiasCorrection} --usejacobian=${UseJacobian} --motioncorrectiontype=${MotionCorrectionType} --eddyoutname=${EddyOutput} --regfolder=${regFolder} --oregim=${RegOutput} --owarp=${fMRI2strOutputTransform} --oinwarp=${str2fMRIOutputTransform} --ojacobian=${JacobianOut} --osrfolder=${OsrFolder} --t12std=${data2stdT1Folder} --fmriresout=${FinalfMRIResolution} --outfmri2stdtrans=${OutputfMRI2StandardTransform} --oiwarp=${Standard2OutputfMRITransform} --nrfolder=${nrFolder} --fwhm=${smoothingfwhm} --icaaroma=${Do_ica_aroma} --motionparam=${SSNR_motionparam} --pnmfolder=${pnmFolder} --physinputtxt=${PhysInputTXT} --samplingrate=${SamplingRate} --smoothcardiac=${SmoothCardiac} --smoothresp=${SmoothResp} --colresp=${ColResp} --colcardiac=${ColCardiac} --coltrigger=${ColTrigger} --dorvt=${DO_RVT} --sliceorder=${SliceOrder} --sebffolder=${SE_BF_Folder} --regt1folder=${regT1Folder} --eddyfolder=${EddyFolder} --innrmfolder=${In_Nrm_Folder} --dointensitynorm=${Do_intensity_norm} --tempfiltercutoff=${Temp_Filter_Cutoff} --mcfolder=${mcFolder} --motionmatdir=${MotionMatrixFolder} --motionmatprefix=${MotionMatrixPrefix} --doqc=${DO_QC} --qcfolder=${qcFolder} --rfmrirawfolder=${rfMRIrawFolder} --rfmrifolder=${rfMRIFolder} --preprocfolder=${preprocFolder} --processedfolder=${processedFolder} --topupfolder=${TOPUP_Folder} --start=${Start_Time} --subject=${Subject} --SEPhasePos=${SpinEchoPhaseEncodePositive} --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} --tmpfiltfolder=${Tmp_Filt_Folder} --logfile=${logFolder}/${log_Name}" &`
+    jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
+    echo "jobID_3: ${jobID3}"
 
-    ${RUN} ${BRC_FMRI_SCR}/EPI_Distortion_Correction.sh \
-           --workingdir=${DCFolder} \
-           --topupfoldername=${topupFolderName} \
-           --scoutin=${gdcFolder}/${ScoutName}_gdc \
-           --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
-           --SEPhasePos=${SpinEchoPhaseEncodePositive} \
-           --echospacing=${EchoSpacing} \
-           --unwarpdir=${UnwarpDir} \
-           --gdcoeffs=${GradientDistortionCoeffs} \
-           --method=${DistortionCorrection} \
-           --logfile=${logFolder}/${log_Name}
-else
-    log_Msg 3 "NOT Performing EPI Distortion Correction"
-
-    ${RUN} ${FSLDIR}/bin/fslroi ${gdcFolder}/${NameOffMRI}_gdc ${DCFolder}/WarpField.nii.gz 0 3
-    ${RUN} ${FSLDIR}/bin/fslmaths ${DCFolder}/WarpField.nii.gz -mul 0 ${DCFolder}/WarpField.nii.gz
-
-    ${RUN} ${FSLDIR}/bin/fslroi ${DCFolder}/WarpField.nii.gz ${DCFolder}/Jacobian.nii.gz 0 1
-    ${RUN} ${FSLDIR}/bin/fslmaths ${DCFolder}/Jacobian.nii.gz -mul 0 -add 1 ${DCFolder}/Jacobian.nii.gz
-
-    ${FSLDIR}/bin/imcp ${gdcFolder}/${ScoutName}_gdc ${DCFolder}/SBRef_dc
-    ${RUN} ${FSLDIR}/bin/fslmaths ${DCFolder}/SBRef_dc -mul 0 -add 1 ${DCFolder}/PhaseOne_gdc_dc
-    ${RUN} ${FSLDIR}/bin/fslmaths ${DCFolder}/SBRef_dc -mul 0 -add 1 ${DCFolder}/PhaseTwo_gdc_dc
-fi
-
-
-log_Msg 3 "MOTION CORRECTION"
-case $MotionCorrectionType in
-
-    MCFLIRT6 | MCFLIRT12)
-        STC_Input=${mcFolder}/${NameOffMRI}_mc
-        SSNR_motionparam=${mcFolder}/${NameOffMRI}_mc.par
-        fMRI_2_str_Input=${regFolder}/${fMRI2strOutputTransform}
-        OSR_Scout_In=${gdcFolder}/${ScoutName}_gdc
-
-        ${RUN} ${BRC_FMRI_SCR}/MotionCorrection.sh \
-              --workingdir=${mcFolder} \
-              --inputfmri=${gdcFolder}/${NameOffMRI}_gdc \
-              --scoutin=${gdcFolder}/${ScoutName}_gdc \
-              --outputfmri=${mcFolder}/${NameOffMRI}_mc \
-              --outputmotionregressors=${mcFolder}/${MovementRegressor} \
-              --outputmotionmatrixfolder=${mcFolder}/${MotionMatrixFolder} \
-              --outputmotionmatrixnameprefix=${MotionMatrixPrefix} \
-              --motioncorrectiontype=${MotionCorrectionType} \
-              --logfile=${logFolder}/${log_Name}
-
-    ;;
-
-    EDDY)
-        STC_Input=${EddyFolder}/${EddyOutput}
-        SSNR_motionparam=${EddyFolder}/${EddyOutput}.eddy_parameters
-        fMRI_2_str_Input=${EddyFolder}/${EddyOutput}
-        OSR_Scout_In=${EddyFolder}/SBRef_dc
-
-        ${RUN} ${BRC_FMRI_SCR}/EddyPreprocessing.sh \
-              --workingdir=${EddyFolder} \
-              --inputfile=${gdcFolder}/${NameOffMRI}_gdc \
-              --inscout=${gdcFolder}/${ScoutName}_gdc \
-              --fmriname=${NameOffMRI} \
-              --dcmethod=${DistortionCorrection} \
-              --topupfodername=${topupFolderName} \
-              --dcfolder=${DCFolder} \
-              --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
-              --SEPhasePos=${SpinEchoPhaseEncodePositive} \
-              --unwarpdir=${UnwarpDir} \
-              --echospacing=${EchoSpacing} \
-              --echospacingfmri=${EchoSpacing_fMRI} \
-              --slice2vol=${Slice2Volume} \
-              --slspec=${SliceSpec} \
-              --output_eddy=${EddyOutput} \
-              --outfolder=${DCFolder} \
-              --logfile=${logFolder}/${log_Name}
-
-    ;;
-
-    *)
-        log_Msg 3 "UNKNOWN MOTION CORRECTION METHOD: ${MotionCorrectionType}"
-        exit 1
-esac
-
-
-if [ $SliceTimingCorrection -ne 0 ]; then
-
-    log_Msg 3 "Slice Timing Correction"
-    ${RUN} ${BRC_FMRI_SCR}/Slice_Timing_Correction.sh \
-          --workingdir=${stcFolder} \
-          --infmri=${STC_Input} \
-          --stc_method=${SliceTimingCorrection} \
-          --ofmri=${stcFolder}/${NameOffMRI}_stc \
-          --slicetimingfile=${SliceTimingFile} \
-          --logfile=${logFolder}/${log_Name}
 
 else
 
-    log_Msg 3 "NOT Performing Slice Timing Correction"
-    ${FSLDIR}/bin/imcp ${STC_Input} ${stcFolder}/${NameOffMRI}_stc
-fi
+    ${BRC_FMRI_SCR}/fMRI_preproc_part_1.sh \
+                    --gdc=${GradientDistortionCoeffs} \
+                    --rfmrirawfolder=${rfMRIrawFolder} \
+                    --origtcsname=${OrigTCSName} \
+                    --gdcfolder=${gdcFolder} \
+                    --nameoffmri=${NameOffMRI} \
+                    --origscoutname=${OrigScoutName} \
+                    --scoutname=${ScoutName} \
+                    --distortioncorrection=${DistortionCorrection} \
+                    --dcfolder=${DCFolder} \
+                    --topupfoldername=${topupFolderName} \
+                    --spinechophaseencodenegative=${SpinEchoPhaseEncodeNegative} \
+                    --spinechophaseencodepositive=${SpinEchoPhaseEncodePositive} \
+                    --echospacing=${EchoSpacing} \
+                    --unwarpdir=${UnwarpDir} \
+                    --logfile=${logFolder}/${log_Name}
 
 
-log_Msg 3 "EPI to T1 registration"
-${RUN} ${BRC_FMRI_SCR}/EPI_2_T1_Registration.sh \
-      --workingdir=${DCFolder} \
-      --fmriname=${NameOffMRI} \
-      --subjectfolder=${AnalysisFolder} \
-      --fmrifolder=${TempFolder} \
-      --topupfodername=${topupFolderName} \
-      --sebffoldername=${sebfFolderName} \
-      --scoutin=${gdcFolder}/${ScoutName}_gdc \
-      --scoutrefin=${OSR_Scout_In} \
-      --t1=${dataT1Folder}/${T1wImage} \
-      --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} \
-      --t1brainmask=${dataT1Folder}/${T1wImageBrainMask} \
-      --wmseg=$wmseg \
-      --gmseg=${GMseg} \
-      --dof=${dof} \
-      --method=${DistortionCorrection} \
-      --biascorrection=${BiasCorrection} \
-      --usejacobian=${UseJacobian} \
-      --motioncorrectiontype=${MotionCorrectionType} \
-      --eddyoutname=${EddyOutput} \
-      --oregim=${regFolder}/${RegOutput} \
-      --owarp=${regFolder}/${fMRI2strOutputTransform} \
-      --oinwarp=${regFolder}/${str2fMRIOutputTransform} \
-      --ojacobian=${regFolder}/${JacobianOut} \
-      --logfile=${logFolder}/${log_Name}
+    ${BRC_FMRI_SCR}/fMRI_preproc_part_2.sh \
+                    --motioncorrectiontype=${MotionCorrectionType} \
+                    --mcfolder=${mcFolder} \
+                    --nameoffmri=${NameOffMRI} \
+                    --regfolder=${regFolder} \
+                    --fmri2stroutputtransform=${fMRI2strOutputTransform} \
+                    --gdcfolder=${gdcFolder} \
+                    --scoutname=${ScoutName} \
+                    --movementregressor=${MovementRegressor} \
+                    --motionmatrixfolder=${MotionMatrixFolder} \
+                    --motionmatrixprefix=${MotionMatrixPrefix} \
+                    --eddyfolder=${EddyFolder} \
+                    --eddyoutput=${EddyOutput} \
+                    --dcmethod=${DistortionCorrection} \
+                    --topupfodername=${topupFolderName} \
+                    --dcfolder=${DCFolder} \
+                    --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
+                    --SEPhasePos=${SpinEchoPhaseEncodePositive} \
+                    --unwarpdir=${UnwarpDir} \
+                    --echospacing=${EchoSpacing} \
+                    --echospacingfmri=${EchoSpacing_fMRI} \
+                    --slice2vol=${Slice2Volume} \
+                    --slicespec=${SliceSpec} \
+                    --logfile=${logFolder}/${log_Name}
 
 
-log_Msg 3 "One Step Resampling"
-${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
-      --workingdir=${OsrFolder} \
-      --scoutgdcin=${OSR_Scout_In} \
-      --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
-      --t12std=${data2stdT1Folder}/T1_2_std_warp \
-      --t1brainmask=${dataT1Folder}/${T1wImageBrainMask} \
-      --fmriresout=${FinalfMRIResolution} \
-      --fmri2structin=${regFolder}/${fMRI2strOutputTransform} \
-      --struct2std=${regT1Folder}/T1_2_std_warp_field \
-      --oscout=${OsrFolder}/${NameOffMRI}_SBRef_nonlin \
-      --owarp=${regFolder}/${OutputfMRI2StandardTransform} \
-      --oiwarp=${regFolder}/${Standard2OutputfMRITransform} \
-      --ojacobian=${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution} \
-      --logfile=${logFolder}/${log_Name}
-
-
-log_Msg 3 "Spatial Smoothing and Artifact Noise Removal"
-${RUN} ${BRC_FMRI_SCR}/Spatial_Smoothing_Noise_Removal.sh \
-        --workingdir=${nrFolder} \
-        --infmri=${stcFolder}/${NameOffMRI}_stc \
-        --fmriname=${NameOffMRI} \
-        --fwhm=${smoothingfwhm} \
-        --icaaroma=${Do_ica_aroma} \
-        --motionparam=${SSNR_motionparam} \
-        --fmri2structin=${DCFolder}/fMRI2str.mat \
-        --struct2std=${regT1Folder}/T1_2_std_warp_field.nii.gz \
-        --motioncorrectiontype=${MotionCorrectionType} \
-        --logfile=${logFolder}/${log_Name}
-
-
-log_Msg 3 "Physiological Noise Removal"
-#${RUN} ${BRC_FMRI_SCR}/Physiological_Noise_Removal.sh \
-#        --workingdir=${pnmFolder} \
-#        --infmri=${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr \
-#        --physinputtxt=${PhysInputTXT} \
-#        --samplingrate=${SamplingRate} \
-#        --smoothcardiac=${SmoothCardiac} \
-#        --smoothresp=${SmoothResp} \
-#        --colresp=${ColResp} \
-#        --colcardiac=${ColCardiac} \
-#        --coltrigger=${ColTrigger} \
-#        --dorvt=${DO_RVT} \
-#        --sliceorder=${SliceOrder} \
-#        --slicetimingfile=${SliceTimingFile} \
-#        --logfile=${logFolder}/${log_Name}
-
-
-if [[ ${DistortionCorrection} == "TOPUP" ]]
-then
-    #create MNI space corrected fieldmap images
-#    ${FSLDIR}/bin/applywarp --rel --interp=spline --in=${DCFolder}/PhaseOne_gdc_dc_unbias -w $T1wFolder/reg/nonlin/T1_2_std_warp_field -r ${TempFolder}/${NameOffMRI}_SBRef_nonlin -o ${ResultsFolder}/${NameOffMRI}_PhaseOne_gdc_dc
-#    ${FSLDIR}/bin/applywarp --rel --interp=spline --in=${DCFolder}/PhaseTwo_gdc_dc_unbias -w $T1wFolder/reg/nonlin/T1_2_std_warp_field -r ${TempFolder}/${NameOffMRI}_SBRef_nonlin -o ${ResultsFolder}/${NameOffMRI}_PhaseTwo_gdc_dc
-
-    #create MNINonLinear final fMRI resolution bias field outputs
-    if [[ ${BiasCorrection} == "SEBASED" ]]
-    then
-        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/sebased_bias_dil -r ${OsrFolder}/${NameOffMRI}_SBRef_nonlin -w ${regT1Folder}/T1_2_std_warp_field -o ${SE_BF_Folder}/${NameOffMRI}2std_se_bias
-#        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2std_se_bias -mas ${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution}.nii.gz ${SE_BF_Folder}/${NameOffMRI}2std_se_bias
-
-        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/sebased_reference_dil -r ${OsrFolder}/${NameOffMRI}_SBRef_nonlin -w ${regT1Folder}/T1_2_std_warp_field -o ${SE_BF_Folder}/${NameOffMRI}2std_se_ref
-#        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2std_se_ref -mas ${OsrFolder}/${T1wRestoreImageBrain}_mask.${FinalfMRIResolution} ${SE_BF_Folder}/${NameOffMRI}2std_se_ref
-
-        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/${NameOffMRI}_dropouts -r ${OsrFolder}/${NameOffMRI}_SBRef_nonlin -w ${regT1Folder}/T1_2_std_warp_field -o ${SE_BF_Folder}/${NameOffMRI}2std_dropouts
-
-        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${SE_BF_Folder}/${NameOffMRI}2std_se_bias -r ${gdcFolder}/${ScoutName}_gdc -w ${regFolder}/${Standard2OutputfMRITransform} -o ${SE_BF_Folder}/${NameOffMRI}2func_se_bias
-        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -thr 0.5 -bin ${SE_BF_Folder}/mask_1
-        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -thr 0.0000001 -bin ${SE_BF_Folder}/mask_2
-        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/mask_2 -sub ${SE_BF_Folder}/mask_1 -bin ${SE_BF_Folder}/mask_3
-        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -mas ${SE_BF_Folder}/mask_1 -add ${SE_BF_Folder}/mask_3 ${SE_BF_Folder}/${NameOffMRI}2func_se_bias
-
-#        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -mas ${SE_BF_Folder}/mask ${SE_BF_Folder}/${NameOffMRI}2func_se_bias_masked
-#        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -mas ${OSR_Scout_In}_mask ${SE_BF_Folder}/${NameOffMRI}2func_se_bias
-#        ${FSLDIR}/bin/fslmaths ${SE_BF_Folder}/${NameOffMRI}2func_se_bias -mas ${nrFolder}/${NameOffMRI}_mask ${SE_BF_Folder}/${NameOffMRI}2func_se_bias
-    fi
-
-    if [[ $UseJacobian == "true" ]] ; then
-
-        ${FSLDIR}/bin/applywarp --interp=trilinear -i ${OsrFolder}/${JacobianOut}_std.${FinalfMRIResolution} -r ${gdcFolder}/${ScoutName}_gdc -w ${regFolder}/${Standard2OutputfMRITransform} -o ${OsrFolder}/${JacobianOut}_func
-    fi
-fi
-
-
-if [ $MotionCorrectionType == "MCFLIRT6" ] || [ $MotionCorrectionType == "MCFLIRT12" ] ; then
-    if [[ ${DistortionCorrection} == "TOPUP" ]] ; then
-        In_Norm_Scout_In=${DCFolder}/${topupFolderName}/SBRef_dc
-    else
-        In_Norm_Scout_In=${gdcFolder}/${ScoutName}_gdc
-    fi
-elif [[ ${MotionCorrectionType} == "EDDY" ]] ; then
-    In_Norm_Scout_In=${EddyFolder}/SBRef_dc
-fi
-
-
-log_Msg 3 "Intensity normalization and Bias removal"
-${RUN} ${BRC_FMRI_SCR}/Intensity_Normalization.sh \
-        --workingdir=${In_Nrm_Folder} \
-        --intensitynorm=${Do_intensity_norm} \
-        --infmri=${nrFolder}/ICA_AROMA/denoised_func_data_nonaggr \
-        --inscout=${In_Norm_Scout_In} \
-        --brainmask=${nrFolder}/${NameOffMRI}_mask \
-        --biascorrection=${BiasCorrection} \
-        --biasfield=${SE_BF_Folder}/${NameOffMRI}2func_se_bias \
-        --usejacobian=${UseJacobian} \
-        --jacobian=${OsrFolder}/${JacobianOut}_func \
-        --ofmri=${NameOffMRI}_intnorm \
-        --oscout=SBRef_intnorm \
-        --logfile=${logFolder}/${log_Name}
-
-
-if [ $Temp_Filter_Cutoff -ne 0 ]; then
-
-    log_Msg 3 "Temporal Filtering"
-
-    ${RUN} ${BRC_FMRI_SCR}/Temporal_Filtering.sh \
-          --workingdir=${Tmp_Filt_Folder} \
-          --infmri=${In_Nrm_Folder}/${NameOffMRI}_intnorm \
-          --tempfiltercutoff=${Temp_Filter_Cutoff} \
-          --outfmri=${NameOffMRI}_tempfilt \
-          --logfile=${logFolder}/${log_Name}
-
-else
-
-    log_Msg 3 "Not performing Temporal Filtering"
-
-    ${FSLDIR}/bin/imcp ${In_Nrm_Folder}/${NameOffMRI}_intnorm ${Tmp_Filt_Folder}/${NameOffMRI}_tempfilt
-fi
-
-
-log_Msg 3 "Apply the final registration"
-${RUN} ${BRC_FMRI_SCR}/Apply_Registration.sh \
-      --workingdir=${OsrFolder} \
-      --infmri=${Tmp_Filt_Folder}/${NameOffMRI}_tempfilt \
-      --scoutgdcin=${OSR_Scout_In} \
-      --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
-      --t12std=${data2stdT1Folder}/T1_2_std_warp \
-      --fmriresout=${FinalfMRIResolution} \
-      --owarp=${regFolder}/${OutputfMRI2StandardTransform} \
-      --motioncorrectiontype=${MotionCorrectionType} \
-      --motionmatdir=${mcFolder}/${MotionMatrixFolder} \
-      --motionmatprefix=${MotionMatrixPrefix} \
-      --ofmri=${OsrFolder}/${NameOffMRI}_nonlin \
-      --logfile=${logFolder}/${log_Name}
-
-
-if [[ ${DO_QC} == "yes" ]]; then
-
-    log_Msg 3 "Performing Quality Control and Outlier Detection"
-    ${RUN} ${BRC_FMRI_SCR}/QC_analysis.sh \
-          --workingdir=${qcFolder} \
-          --infmri=${Tmp_Filt_Folder}/${NameOffMRI}_tempfilt.nii.gz \
-          --motionparam=${SSNR_motionparam} \
-          --logfile=${logFolder}/${log_Name}
+    ${BRC_FMRI_SCR}/fMRI_preproc_part_3.sh \
+                    --slicetimingcorrection=${SliceTimingCorrection} \
+                    --stcfolder=${stcFolder} \
+                    --stcinput=${STC_Input} \
+                    --nameoffmri=${NameOffMRI} \
+                    --slicetimingfile=${SliceTimingFile} \
+                    --dcfolder=${DCFolder} \
+                    --subjectfolder=${AnalysisFolder} \
+                    --fmrifolder=${TempFolder} \
+                    --topupfodername=${topupFolderName} \
+                    --sebffoldername=${sebfFolderName} \
+                    --gdcfolder=${gdcFolder} \
+                    --scoutname=${ScoutName} \
+                    --t1=${dataT1Folder}/${T1wImage} \
+                    --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} \
+                    --t1brainmask=${dataT1Folder}/${T1wImageBrainMask} \
+                    --wmseg=${wmseg} \
+                    --gmseg=${GMseg} \
+                    --dof=${dof} \
+                    --method=${DistortionCorrection} \
+                    --biascorrection=${BiasCorrection} \
+                    --usejacobian=${UseJacobian} \
+                    --motioncorrectiontype=${MotionCorrectionType} \
+                    --eddyoutname=${EddyOutput} \
+                    --regfolder=${regFolder} \
+                    --oregim=${RegOutput} \
+                    --owarp=${fMRI2strOutputTransform} \
+                    --oinwarp=${str2fMRIOutputTransform} \
+                    --ojacobian=${JacobianOut} \
+                    --osrfolder=${OsrFolder} \
+                    --t12std=${data2stdT1Folder} \
+                    --fmriresout=${FinalfMRIResolution} \
+                    --outfmri2stdtrans=${OutputfMRI2StandardTransform} \
+                    --oiwarp=${Standard2OutputfMRITransform} \
+                    --nrfolder=${nrFolder} \
+                    --fwhm=${smoothingfwhm} \
+                    --icaaroma=${Do_ica_aroma} \
+                    --motionparam=${SSNR_motionparam} \
+                    --pnmfolder=${pnmFolder} \
+                    --physinputtxt=${PhysInputTXT} \
+                    --samplingrate=${SamplingRate} \
+                    --smoothcardiac=${SmoothCardiac} \
+                    --smoothresp=${SmoothResp} \
+                    --colresp=${ColResp} \
+                    --colcardiac=${ColCardiac} \
+                    --coltrigger=${ColTrigger} \
+                    --dorvt=${DO_RVT} \
+                    --sliceorder=${SliceOrder} \
+                    --sebffolder=${SE_BF_Folder} \
+                    --regt1folder=${regT1Folder} \
+                    --eddyfolder=${EddyFolder} \
+                    --innrmfolder=${In_Nrm_Folder} \
+                    --dointensitynorm=${Do_intensity_norm} \
+                    --tempfiltercutoff=${Temp_Filter_Cutoff} \
+                    --mcfolder=${mcFolder} \
+                    --motionmatdir=${MotionMatrixFolder} \
+                    --motionmatprefix=${MotionMatrixPrefix} \
+                    --doqc=${DO_QC} \
+                    --qcfolder=${qcFolder} \
+                    --rfmrirawfolder=${rfMRIrawFolder} \
+                    --rfmrifolder=${rfMRIFolder} \
+                    --preprocfolder=${preprocFolder} \
+                    --processedfolder=${processedFolder} \
+                    --topupfolder=${TOPUP_Folder} \
+                    --start=${Start_Time} \
+                    --subject=${Subject} \
+                    --SEPhasePos=${SpinEchoPhaseEncodePositive} \
+                    --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
+                    --tmpfiltfolder=${Tmp_Filt_Folder} \
+                    --logfile=${logFile}
 
 fi
-
-
-log_Msg 3 "Organizing the outputs"
-${RUN} ${BRC_FMRI_SCR}/Data_Organization.sh \
-      --rfmrirawfolder=${rfMRIrawFolder} \
-      --rfmrifolder=${rfMRIFolder} \
-      --preprocfolder=${preprocFolder} \
-      --processedfolder=${processedFolder} \
-      --tempfolder=${TempFolder} \
-      --eddyfolder=${EddyFolder} \
-      --dcfolder=${DCFolder} \
-      --biasfieldfolder=${SE_BF_Folder} \
-      --topupfolder=${TOPUP_Folder} \
-      --gdcfolder=${gdcFolder} \
-      --intennormfolder=${In_Nrm_Folder} \
-      --motcorrfolder=${mcFolder} \
-      --noisremfolder=${nrFolder} \
-      --onestepfolder=${OsrFolder} \
-      --regfolder=${regFolder} \
-      --slicecorrfolder=${stcFolder} \
-      --tempfiltfolder=${Tmp_Filt_Folder} \
-      --qcfolder=${qcFolder} \
-      --nameoffmri=${NameOffMRI} \
-      --rfmri2strtransf=${fMRI2strOutputTransform} \
-      --str2rfmritransf=${str2fMRIOutputTransform} \
-      --rfmri2stdtransf=${OutputfMRI2StandardTransform} \
-      --std2rfMRItransf=${Standard2OutputfMRITransform} \
-      --logfile=${logFolder}/${log_Name}
-
-
-END_Time="$(date -u +%s)"
-
-
-${RUN} ${BRCDIR}/Show_version.sh \
-      --showdiff="yes" \
-      --start=${Start_Time} \
-      --end=${END_Time} \
-      --subject=${Subject} \
-      --type=3 \
-      --logfile=${logFolder}/${log_Name}
-
-################################################################################################
-## Cleanup
-################################################################################################
-
-if [[ $DistortionCorrection == "NONE" ]] ; then
-    ${FSLDIR}/bin/imrm ${SpinEchoPhaseEncodePositive}
-    ${FSLDIR}/bin/imrm ${SpinEchoPhaseEncodeNegative}
-fi
-#: <<'COMMENT'
