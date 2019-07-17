@@ -1,13 +1,12 @@
 #!/bin/bash
-# Last update: 09/10/2018
-#Example:
-#./struc_preproc.sh --path ~/main/analysis -s Sub_002 -i ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180307_Ingenia/NIFTI/1_MPRAGE/__T1_1mm_sag_20180307162159_201.nii.gz -t2 ~/P_Share/Images/3T_Harmonisation_Stam/03286_20180307_Ingenia/NIFTI/2_3D_T2w_FLAIR/__T2_FLAIR_1mm_20180307162159_301.nii.gz --subseg
+# Last update: 19/05/2019
+
+# Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
+#
+# Copyright 2018 University of Nottingham
 
 # -e  Exit immediately if a command exits with a non-zero status.
 set -e
-
-#export ScriptsDir=$(dirname "$(readlink -f "$0")") #Absolute path where scripts are
-#source ${ScriptsDir}/init_vars.sh
 
 # --------------------------------------------------------------------------------
 #  Usage Description Function
@@ -79,7 +78,7 @@ while [ "$1" != "" ]; do
 				                        IN_Img=$1
                                 ;;
 
-        --t2 )                   shift
+        --t2 )                  shift
 				                        T2_IN_Img=$1
                 		            T2=yes
                                 ;;
@@ -267,98 +266,57 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 log_Msg 3 "OutputDir is: ${AnatMRIFolder}"
 
-$FSLDIR/bin/imcp $IN_Img ${rawT1Folder}/T1_orig.nii.gz
+$FSLDIR/bin/imcp ${IN_Img} ${rawT1Folder}/T1_orig.nii.gz
 
 if [[ $T2 == "yes" ]]; then
     $FSLDIR/bin/imcp $T2_IN_Img ${rawT2Folder}/T2_orig.nii.gz
 fi
 
-${BRC_SCTRUC_SCR}/run_T1_preprocessing.sh \
-      --workingdir=${TempT1Folder} \
-      --t1input=${rawT1Folder}/T1_orig.nii.gz \
-      --dosubseg=${do_Sub_seg} \
-      --dotissueseg=${do_tissue_seg} \
-      --docrop=${do_crop} \
-      --dodefacing=${do_defacing} \
-      --fastfolder=${FastT1Folder} \
-      --firstfolder=${FirstT1Folder} \
-      --regtempt1folder=${regTempT1Folder} \
-      --logfile=${logT1Folder}/${log_Name}
+if [ $CLUSTER_MODE = "YES" ] ; then
+
+#    export MODULEPATH=/gpfs01/software/imaging/modulefiles:$MODULEPATH
+#
+#    module load cuda/local/9.2
+#    module load fsl-img/5.0.11
+#    module load ica-aroma-img/py2.7/0.3
+#    ${JOBSUBpath}/jobsub -q cpu -p 1 -s BRCP_SMRI_${Subject} -t 00:46:00 -m 60 -c "${BRC_SCTRUC_DIR}/struc_preproc.sh --subject ${Sub_ID} --path ${Path} --input ${IN_Img} --t2 ${T2_IN_Img} ${Opt_args}" &
 
 
-if [[ $T2 == "yes" ]]; then
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_SMRI_${Subject} -t 00:50:00 -m 60 -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${FirstT1Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --logt1folder=${logT1Folder}/${log_Name}" &`
+    jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
+    echo "jobID_1: ${jobID1}"
 
-      ${BRC_SCTRUC_SCR}/run_T2_preprocessing.sh \
-            --workingdir=${TempT2Folder} \
-            --t2input=${rawT2Folder}/T2_orig.nii.gz \
-            --tempt1folder=${TempT1Folder} \
-            --fastfolder=${FastT1Folder} \
-            --regtempt1folder=${regTempT1Folder} \
-            --regtempt2folder=${regTempT2Folder} \
-            --dodefacing=${do_defacing} \
-            --logfile=${logT1Folder}/${log_Name}
+else
+
+    ${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh \
+                      --tempt1folder=${TempT1Folder} \
+                      --rawt1folder=${rawT1Folder} \
+                      --dosubseg=${do_Sub_seg} \
+                      --dotissueseg=${do_tissue_seg} \
+                      --docrop=${do_crop} \
+                      --dodefacing=${do_defacing} \
+                      --fastt1folder=${FastT1Folder} \
+                      --firstt1folder=${FirstT1Folder} \
+                      --regtempt1folder=${regTempT1Folder} \
+                      --t2=${T2} \
+                      --tempt2folder=${TempT2Folder} \
+                      --rawt2folder=${rawT2Folder} \
+                      --regtempt2folder=${regTempT2Folder} \
+                      --t1folder=${T1Folder} \
+                      --t2folder=${T2Folder} \
+                      --biast1folder=${biasT1Folder} \
+                      --datat1folder=${dataT1Folder}  \
+                      --data2stdt1folder=${data2stdT1Folder} \
+                      --segt1folder=${segT1Folder} \
+                      --regt1folder=${regT1Folder} \
+                      --datat2folder=${dataT2Folder} \
+                      --data2stdt2folder=${data2stdT2Folder} \
+                      --regt2folder=${regT2Folder} \
+                      --dofreesurfer=${do_freesurfer} \
+                      --processedt1folder=${processedT1Folder} \
+                      --fsfoldername=${FSFolderName} \
+                      --starttime=${Start_Time} \
+                      --subid=${Sub_ID} \
+                      --logt1folder=${logT1Folder}/${log_Name}
 
 fi
-
-
-${BRC_SCTRUC_SCR}/output_organization.sh \
-      --t1folder=${T1Folder} \
-      --t2folder=${T2Folder} \
-      --rawt1folder=${rawT1Folder} \
-      --fastfolder=${FastT1Folder} \
-      --firstfolder=${FirstT1Folder} \
-      --regtempt1folder=${regTempT1Folder} \
-      --biast1folder=${biasT1Folder} \
-      --dosubseg=${do_Sub_seg} \
-      --datat1folder=${dataT1Folder} \
-      --data2stdt1folder=${data2stdT1Folder} \
-      --segt1folder=${segT1Folder} \
-      --regt1folder=${regT1Folder} \
-      --tempt1folder=${TempT1Folder} \
-      --t2exist=${T2} \
-      --tempt2folder=${TempT2Folder} \
-      --rawt2folder=${rawT2Folder} \
-      --dotissueseg=${do_tissue_seg} \
-      --datat2folder=${dataT2Folder} \
-      --data2stdt2folder=${data2stdT2Folder} \
-      --regt2folder=${regT2Folder} \
-      --regtempt2folder=${regTempT2Folder} \
-      --dodefacing=${do_defacing} \
-      --logfile=${logT1Folder}/${log_Name}
-
-
-if [[ $do_freesurfer == "yes" ]]; then
-    SUBJECTS_DIR=${processedT1Folder}
-
-    log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    log_Msg 3 "+                                                                        +"
-    log_Msg 3 "+                       START: FreeSurfer Analysis                       +"
-    log_Msg 3 "+                                                                        +"
-    log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-
-    if [ -e "${processedT1Folder}/${FSFolderName}" ] ; then
-        rm -r ${processedT1Folder}/${FSFolderName}
-    fi
-
-    if [[ $T2 == yes ]]; then
-        recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s FS -FLAIR ${rawT2Folder}/T2_orig.nii.gz -all
-    else
-        recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s FS -all
-    fi
-
-    rm -r ${processedT1Folder}/fsaverage
-fi
-
-
-END_Time="$(date -u +%s)"
-
-
-${RUN} ${BRCDIR}/Show_version.sh \
-      --showdiff="yes" \
-      --start=${Start_Time} \
-      --end=${END_Time} \
-      --subject=${Sub_ID} \
-      --type=1 \
-      --logfile=${logT1Folder}/${log_Name}
-
-#: <<'COMMENT'
