@@ -48,13 +48,27 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 mkdir -p $WD
 ########################################## DO WORK ##########################################
 
-${MATLABpath}/matlab -nodesktop -r "addpath('${BRC_FMRI_SCR}'); \
-                                    run_QC_analysis('${DVARSpath}' , \
-                                    '${WD}' , \
-                                    '${InfMRI}' , \
-                                    '${MotionParam}'); \
-                                    exit"
+if [ $CLUSTER_MODE = "YES" ] ; then
 
+    matlab -nodesktop -r "addpath('${BRC_FMRI_SCR}'); \
+                                        run_QC_analysis('${DVARSpath}' , \
+                                        '${BRC_GLOBAL_DIR}' , \
+                                        '${WD}' , \
+                                        '${InfMRI}' , \
+                                        '${MotionParam}'); \
+                                        exit"
+
+else
+
+    ${MATLABpath}/matlab -nodesktop -r "addpath('${BRC_FMRI_SCR}'); \
+                                        run_QC_analysis('${DVARSpath}' , \
+                                        '${BRC_GLOBAL_DIR}' , \
+                                        '${WD}' , \
+                                        '${InfMRI}' , \
+                                        '${MotionParam}'); \
+                                        exit"
+
+fi
 
 echo 'DVARS.mat:      a vector of size 1xT-1 of classic DVARS measure' > ${WD}/readme.txt
 echo 'DVARS_Stat.mat: a structure contains all the details of the statistical inference' >> ${WD}/readme.txt
