@@ -42,7 +42,7 @@ system(sprintf('randomise -i %s -o %s -d %s -t %s -x --uncorrp -n %d',fname,fnam
 ncon=str2num(ncon);
 
 if view==1
-  figure('visible', 'off' , 'position',[100 100 600*ncon 500]); 
+  figure('visible', 'off' , 'position',[100 100 600*ncon 500]);
 end
 
 gap=0.05; cw=0.1;  xw=(1-gap*(ncon+2))/(ncon+0.1);
@@ -66,7 +66,10 @@ for i=1:ncon
       sprintf('optimal corrected p=%.5f at edge between nodes %d and %d\n',1-max(grot(:)),groti(1),grotj(1))
       imagesc(grot.*(triu(grot,1)>0.95) + tril(grot));  % delete non-significant entries above the diag
       colormap('jet');
-      if (i==ncon),  colorbar;  end;
+
+      %if (i==ncon)
+        colorbar
+      %end
     else
       subplot('Position',[ (i-1)*xw+i*gap gap xw 1-2*gap ]);
       plot(p_corrected(i,:));
