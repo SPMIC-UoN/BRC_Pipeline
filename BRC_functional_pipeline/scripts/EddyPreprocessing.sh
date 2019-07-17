@@ -184,7 +184,12 @@ EDDY_arg="${EDDY_arg} --data_is_shelled --very_verbose --b0_only --dont_mask_out
 EDDY_arg="${EDDY_arg} --niter=5 --fwhm=10,10,5,5,0 --mporder=${MPOrder} --s2v_niter=10 --s2v_fwhm=0 --s2v_interp=trilinear --s2v_lambda=1"
 
 if [ ! $SliceSpec = "NONE" ] ; then
-    ${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_SCR}'); extract_slice_specifications('${SliceSpec}' , '${EddyFolder}/slspec.txt'); exit"
+
+    if [ $CLUSTER_MODE = "YES" ] ; then
+        matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_SCR}'); extract_slice_specifications('${SliceSpec}' , '${EddyFolder}/slspec.txt'); exit"
+    else
+        ${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_SCR}'); extract_slice_specifications('${SliceSpec}' , '${EddyFolder}/slspec.txt'); exit"
+    fi
 
     if [ -e ${EddyFolder}/slspec.txt ] ; then
         EDDY_arg="${EDDY_arg} --slspec=${EddyFolder}/slspec.txt"
