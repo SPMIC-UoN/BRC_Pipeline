@@ -766,6 +766,6 @@ else
                     --SEPhasePos=${SpinEchoPhaseEncodePositive} \
                     --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
                     --tmpfiltfolder=${Tmp_Filt_Folder} \
-                    --logfile=${logFile}
+                    --logfile=${logFolder}/${log_Name}
 
 fi
