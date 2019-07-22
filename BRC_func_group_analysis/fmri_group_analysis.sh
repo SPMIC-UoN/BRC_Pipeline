@@ -66,7 +66,7 @@ Usage()
   echo "                                       concat:	temporally-concatenated group-ICA using MIGP (default)"
   echo "                                       tica:  	tensor-ICA"
   echo " --dim <value>                   Dimensionality reduction into #num dimensions (default: automatic estimation)"
-  echo " --inatlas <path>                User defined atlas whoch can be used for parcellation"
+  echo " --inatlas <path>                User defined atlas which can be used for parcellation"
   echo " --help                          help"
   echo " "
   echo " "
