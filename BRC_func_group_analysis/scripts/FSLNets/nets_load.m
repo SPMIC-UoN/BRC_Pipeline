@@ -53,8 +53,10 @@ Nsubjects=size(d,1);
 TS=[];
 index = 1;
 for i=1:Nsubjects
-  grotALL=load(d(i).name);  gn=size(grotALL,1); GN=gn;
-  grotALL=load(d(i).name);  gn=size(grotALL,1); GN=gn; gd=size(grotALL, 2);
+  grotALL=load(d(i).name);
+  gn=size(grotALL,1);
+  GN=gn;
+  gd=size(grotALL, 2);
 
   if i==1
     if ts.NtimepointsPerSubject==0
@@ -86,7 +88,7 @@ Labels=find(any(TS,1));
 Zero_Labels=find(~any(TS,1));
 
 if nargin>3
-    
+
     fprintf('The excluded labels are: %d\n' , find(~any(TS,1)));
 
 

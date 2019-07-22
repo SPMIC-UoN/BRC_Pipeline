@@ -38,6 +38,8 @@ Usage()
   echo "                                           This atlas is in the standard MNI152 space and contains 268 ROIs."
   echo "                                       MELODIC: Multivariate Exploratory Linear Optimised Decomposition into Independent Components"
   echo "                                           By choosing this option you have to specify --approach, --dim options."
+  echo "                                       NONE: a user defined atlas which can be used as an input using --inatlas option."
+  echo "                                           Also, the label maps should be specified using --labels option."
   echo " --fmrires <value>               Data resolution of fMRI data and ATLAS in mm"
   echo " --tr <value>                    Repetition time in sec"
   echo " "
@@ -64,6 +66,7 @@ Usage()
   echo "                                       concat:	temporally-concatenated group-ICA using MIGP (default)"
   echo "                                       tica:  	tensor-ICA"
   echo " --dim <value>                   Dimensionality reduction into #num dimensions (default: automatic estimation)"
+  echo " --inatlas <path>                User defined atlas whoch can be used for parcellation"
   echo " --help                          help"
   echo " "
   echo " "
@@ -89,6 +92,7 @@ NO_BET="NO"
 BG_Image=""
 Thresh_Mask=""
 Dimensionality=""
+InAtlas=""
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -143,6 +147,10 @@ while [ "$1" != "" ]; do
                               Dimensionality=$1
                               ;;
 
+      --inatlas )             shift
+                              InAtlas=$1
+                              ;;
+
       * )                     Usage
                               exit 1
 
@@ -164,6 +172,15 @@ fi
 if [ $RegVal -eq 0 ]; then
     if [ $CorrType = "RPCORR" ] ; then
         RegVal=0.1
+    fi
+fi
+
+if [ ${ParcelAtlas} == "NONE" ]; then
+    if [ X$InAtlas = X ] || [ X$LabelList = X ] ; then
+        echo ""
+        echo "When the --parcellation option is NONE, user MUST define an input atlas and its labels using --inatlas and --labels options"
+        echo ""
+        exit 1;
     fi
 fi
 
@@ -236,6 +253,11 @@ dualregFolder=${GroupFCFolder}/${dualregFolderName}
         ;;
 
         MELODIC)
+        ;;
+
+        NONE)
+            AtlasFile=${InAtlas}
+            LabelList=${LabelList}
         ;;
 
         *)
@@ -324,10 +346,10 @@ else
     ${FSLDIR}/bin/applywarp --rel --interp=nn -i $FSLDIR/data/standard/MNI152_T1_1mm_brain_mask -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${GroupFCFolder}/MNI152_T1_${DataResolution}mm_brain_mask
     ResampRefIm_mask=${ResampRefIm}_brain_mask
 
-    if [ ${ParcelAtlas} = "AAL" ] ; then
+    if [ ${ParcelAtlas} == "AAL" ] || [ ${ParcelAtlas} == "NONE" ] ; then
 
-        ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${AtlasFile} -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${GroupFCFolder}/AAL_${DataResolution}mm
-        AtlasFile=${GroupFCFolder}/AAL_${DataResolution}mm.nii.gz
+        ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${AtlasFile} -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${GroupFCFolder}/ATLAS_${DataResolution}mm
+        AtlasFile=${GroupFCFolder}/ATLAS_${DataResolution}mm.nii.gz
 
     fi
 fi

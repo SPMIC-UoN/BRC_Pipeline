@@ -101,10 +101,18 @@ if (strcmp(DO_GLM , 'yes'))
     [p_uncorrected , p_corrected] = nets_glm(netmats , DesignMatrix , ContrastMatrix ,1);
     print(strcat(work_dir , '/Group_diff_8.png') , '-dpng' , '-r300');
 
+    %%% view 6 most significant edges from this GLM
+    for i = 1 : size(p_corrected , 1)
 
-    %%% view 1 most significant edges from this GLM
-    nets_edgepics(ts , group_maps , Znet , reshape(p_corrected(1,:) , ts.Nnodes , ts.Nnodes) , 1);
-    print(strcat(work_dir , '/most_significant_edges.png') , '-dpng' , '-r300');
+        net = reshape(p_corrected(i , :) , ts.Nnodes , ts.Nnodes);
+        net = abs(net);
+        net(tril(ones(size(net , 1))) == 1) = 0;   % get info on upper tri only
+        [~ , ii] = sort(net(:) , 'descend');   % find strongest showN edges
+        Sig_Num = max(length(find(net(:) >= 0.95)) , 1);
+
+        nets_edgepics(ts , group_maps , Znet , reshape(p_corrected(i , :) , ts.Nnodes , ts.Nnodes) , Sig_Num);
+        print(strcat(work_dir , '/most_significant_edges_contrast_' , num2str(i) , '.png') , '-dpng' , '-r300');
+    end
 end
 
 fileID = fopen(strcat(work_dir , '/result.txt') , 'w');
