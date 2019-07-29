@@ -542,7 +542,8 @@ ${RUN} ${BRCDIR}/Show_version.sh \
 ## Cleanup
 ################################################################################################
 
-${FSLDIR}/bin/imrm ${ResampRefIm}*
-
+if [ ! -e ${GroupFCFolder}/MNI152_T1_${DataResolution}mm.nii.gz ] ; then
+    ${FSLDIR}/bin/imrm ${GroupFCFolder}/MNI152_T1_${DataResolution}mm*
+fi
 
 #: <<'COMMENT'
