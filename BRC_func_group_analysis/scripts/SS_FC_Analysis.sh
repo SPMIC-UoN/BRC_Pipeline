@@ -57,6 +57,38 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ########################################## DO WORK ##########################################
 
+
+case $CorrType in
+    "COV")
+        method='cov'
+    ;;
+
+    "AMP")
+        method='amp'
+    ;;
+
+    "CORR")
+        method='corr'
+    ;;
+
+    "RCORR")
+        method='rcorr'
+    ;;
+
+    "PCORR")
+        method='icov'
+    ;;
+
+    "RPCORR")
+          method='ridgep'
+    ;;
+
+    *)
+        echo "UNKNOWN NETWORK ASSOSIATION METHOD: ${CorrType}"
+        exit 1
+esac
+
+
 test=`${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSLNets'); \
                                     addpath('${LIBSVMpath}'); \
                                     run_SS_FSL_Nets('${BRC_FMRI_GP_SCR}/FSLNets' , \
@@ -66,7 +98,7 @@ test=`${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSL
                                     '${WD}' , \
                                     ${TR} , \
                                     ${VarNorm} , \
-                                    '${CorrType}' , \
+                                    '${method}' , \
                                     ${RegVal} , \
                                     '${LabelList}'); \
                                     exit"`
