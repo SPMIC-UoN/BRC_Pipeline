@@ -40,14 +40,14 @@ log_Msg 3 "+                  START: Slice Timing Corection                     
 log_Msg 3 "+                                                                        +"
 log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-log_Msg 3 "WD:$WD"
-log_Msg 3 "InputfMRI:$InputfMRI"
-log_Msg 3 "OutputfMRI:$OutputfMRI"
-log_Msg 3 "STCMethod:$STCMethod"
-log_Msg 3 "SliceTimingFile:$SliceTimingFile"
-log_Msg 3 "LogFile:$LogFile"
-log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log_Msg 2 "WD:$WD"
+log_Msg 2 "InputfMRI:$InputfMRI"
+log_Msg 2 "OutputfMRI:$OutputfMRI"
+log_Msg 2 "STCMethod:$STCMethod"
+log_Msg 2 "SliceTimingFile:$SliceTimingFile"
+log_Msg 2 "LogFile:$LogFile"
+log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 ########################################## DO WORK ##########################################
 
@@ -99,7 +99,7 @@ esac
 if [ "$STCMethod" -le 3 ]; then
     ${FSLDIR}/bin/fslsplit ${InputfMRI} ${WD}/prevols/vol -t
 
-    gunzip ${WD}/prevols/vol*.nii.gz
+    gunzip -f ${WD}/prevols/vol*.nii.gz
 
     if [ $CLUSTER_MODE = "YES" ] ; then
         matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_SCR}'); run_spm_slice_time_correction('${SPMpath}' , '${WD}/prevols/vol' , 'stc_' , '${method}' , ${RepetitionTime}); exit"
