@@ -119,7 +119,7 @@ log_Msg 2 "16: ${DesignMatrix}.con"
 
 
 ${MATLABpath}/matlab -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSLNets'); \
-                                    addpath('${LIBSVMpath}'); \
+                                    addpath('${BRC_GLOBAL_DIR}/libs/libsvm'); \
                                     run_FSL_Nets('${BRC_FMRI_GP_SCR}/FSLNets' , \
                                     '${BRC_FMRI_GP_SCR}/L1precision' , \
                                     '${BRC_FMRI_GP_SCR}/FSLNets' , \
