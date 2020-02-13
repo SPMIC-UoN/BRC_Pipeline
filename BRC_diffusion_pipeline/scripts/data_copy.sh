@@ -77,7 +77,7 @@ Pos_count=1
 for Image in ${InputImages} ; do
     if [[ ${Image} =~ ^.*EMPTY$  ]]  ;
     then
-		    Image=�EMPTY�
+		    Image="EMPTY"
     fi
 
     if [ ${Image} = ${MissingFileFlag} ];
@@ -102,7 +102,7 @@ if [ $Apply_Topup = yes ] ; then
     for Image in ${InputImages} ; do
         if [[ ${Image} =~ ^.*EMPTY$  ]]  ;
         then
-            Image=�EMPTY�
+            Image="EMPTY"
             echo "Image: $Image"
       	fi
 
