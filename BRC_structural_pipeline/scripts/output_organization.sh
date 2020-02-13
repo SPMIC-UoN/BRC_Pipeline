@@ -152,41 +152,47 @@ if [ $do_Sub_seg = yes ] ; then
 
 #  mv ${TempT1Folder}/T1_vols.txt  ${SubFolder}/T1_vols.txt
 
-  if [ -e ${FirstT1Folder}/T1_first-BrStem_first.bvars ] ; then
-      mv ${FirstT1Folder}/T1_first-BrStem_first.bvars  ${ShapeFolder}/T1_BrStem.bvars
-      mv ${FirstT1Folder}/T1_first-BrStem_first.vtk  ${ShapeFolder}/T1_BrStem.vtk
-  fi
-  mv ${FirstT1Folder}/T1_first-L_Accu_first.bvars  ${ShapeFolder}/T1_L_Accu.bvars
-  mv ${FirstT1Folder}/T1_first-R_Accu_first.bvars  ${ShapeFolder}/T1_R_Accu.bvars
-  mv ${FirstT1Folder}/T1_first-L_Accu_first.vtk  ${ShapeFolder}/T1_L_Accu.vtk
-  mv ${FirstT1Folder}/T1_first-R_Accu_first.vtk  ${ShapeFolder}/T1_R_Accu.vtk
-  mv ${FirstT1Folder}/T1_first-L_Amyg_first.bvars  ${ShapeFolder}/T1_L_Amyg.bvars
-  mv ${FirstT1Folder}/T1_first-R_Amyg_first.bvars  ${ShapeFolder}/T1_R_Amyg.bvars
-  mv ${FirstT1Folder}/T1_first-L_Amyg_first.vtk  ${ShapeFolder}/T1_L_Amyg.vtk
-  mv ${FirstT1Folder}/T1_first-R_Amyg_first.vtk  ${ShapeFolder}/T1_R_Amyg.vtk
-  mv ${FirstT1Folder}/T1_first-L_Caud_first.bvars  ${ShapeFolder}/T1_L_Caud.bvars
-  mv ${FirstT1Folder}/T1_first-R_Caud_first.bvars  ${ShapeFolder}/T1_R_Caud.bvars
-  mv ${FirstT1Folder}/T1_first-L_Caud_first.vtk  ${ShapeFolder}/T1_L_Caud.vtk
-  mv ${FirstT1Folder}/T1_first-R_Caud_first.vtk  ${ShapeFolder}/T1_R_Caud.vtk
-  mv ${FirstT1Folder}/T1_first-L_Hipp_first.bvars  ${ShapeFolder}/T1_L_Hipp.bvars
-  mv ${FirstT1Folder}/T1_first-R_Hipp_first.bvars  ${ShapeFolder}/T1_R_Hipp.bvars
-  mv ${FirstT1Folder}/T1_first-L_Hipp_first.vtk  ${ShapeFolder}/T1_L_Hipp.vtk
-  mv ${FirstT1Folder}/T1_first-R_Hipp_first.vtk  ${ShapeFolder}/T1_R_Hipp.vtk
-  mv ${FirstT1Folder}/T1_first-L_Pall_first.bvars  ${ShapeFolder}/T1_L_Pall.bvars
-  mv ${FirstT1Folder}/T1_first-R_Pall_first.bvars  ${ShapeFolder}/T1_R_Pall.bvars
-  mv ${FirstT1Folder}/T1_first-L_Pall_first.vtk  ${ShapeFolder}/T1_L_Pall.vtk
-  mv ${FirstT1Folder}/T1_first-R_Pall_first.vtk  ${ShapeFolder}/T1_R_Pall.vtk
-  mv ${FirstT1Folder}/T1_first-R_Puta_first.bvars  ${ShapeFolder}/T1_R_Puta.bvars
-  mv ${FirstT1Folder}/T1_first-L_Puta_first.bvars  ${ShapeFolder}/T1_L_Puta.bvars
-  mv ${FirstT1Folder}/T1_first-R_Puta_first.vtk  ${ShapeFolder}/T1_R_Puta.vtk
-  mv ${FirstT1Folder}/T1_first-L_Puta_first.vtk  ${ShapeFolder}/T1_L_Puta.vtk
-  mv ${FirstT1Folder}/T1_first-R_Thal_first.bvars  ${ShapeFolder}/T1_R_Thal.bvars
-  mv ${FirstT1Folder}/T1_first-L_Thal_first.bvars  ${ShapeFolder}/T1_L_Thal.bvars
-  mv ${FirstT1Folder}/T1_first-R_Thal_first.vtk  ${ShapeFolder}/T1_R_Thal.vtk
-  mv ${FirstT1Folder}/T1_first-L_Thal_first.vtk  ${ShapeFolder}/T1_L_Thal.vtk
+  mv ${FirstT1Folder}/T1_first*  ${ShapeFolder}
+#  if [ -e ${FirstT1Folder}/T1_first-BrStem_first.bvars ] ; then
+#      mv ${FirstT1Folder}/T1_first-BrStem_first.bvars  ${ShapeFolder}/T1_BrStem.bvars
+#      mv ${FirstT1Folder}/T1_first-BrStem_first.vtk  ${ShapeFolder}/T1_BrStem.vtk
+#  fi
+#  mv ${FirstT1Folder}/T1_first-L_Accu_first.bvars  ${ShapeFolder}/T1_L_Accu.bvars
+#  mv ${FirstT1Folder}/T1_first-R_Accu_first.bvars  ${ShapeFolder}/T1_R_Accu.bvars
+#  mv ${FirstT1Folder}/T1_first-L_Accu_first.vtk  ${ShapeFolder}/T1_L_Accu.vtk
+#  mv ${FirstT1Folder}/T1_first-R_Accu_first.vtk  ${ShapeFolder}/T1_R_Accu.vtk
+#  mv ${FirstT1Folder}/T1_first-L_Amyg_first.bvars  ${ShapeFolder}/T1_L_Amyg.bvars
+#  mv ${FirstT1Folder}/T1_first-R_Amyg_first.bvars  ${ShapeFolder}/T1_R_Amyg.bvars
+#  mv ${FirstT1Folder}/T1_first-L_Amyg_first.vtk  ${ShapeFolder}/T1_L_Amyg.vtk
+#  mv ${FirstT1Folder}/T1_first-R_Amyg_first.vtk  ${ShapeFolder}/T1_R_Amyg.vtk
+#  mv ${FirstT1Folder}/T1_first-L_Caud_first.bvars  ${ShapeFolder}/T1_L_Caud.bvars
+#  mv ${FirstT1Folder}/T1_first-R_Caud_first.bvars  ${ShapeFolder}/T1_R_Caud.bvars
+#  mv ${FirstT1Folder}/T1_first-L_Caud_first.vtk  ${ShapeFolder}/T1_L_Caud.vtk
+#  mv ${FirstT1Folder}/T1_first-R_Caud_first.vtk  ${ShapeFolder}/T1_R_Caud.vtk
+#  mv ${FirstT1Folder}/T1_first-L_Hipp_first.bvars  ${ShapeFolder}/T1_L_Hipp.bvars
+#  mv ${FirstT1Folder}/T1_first-R_Hipp_first.bvars  ${ShapeFolder}/T1_R_Hipp.bvars
+#  mv ${FirstT1Folder}/T1_first-L_Hipp_first.vtk  ${ShapeFolder}/T1_L_Hipp.vtk
+#  mv ${FirstT1Folder}/T1_first-R_Hipp_first.vtk  ${ShapeFolder}/T1_R_Hipp.vtk
+#  mv ${FirstT1Folder}/T1_first-L_Pall_first.bvars  ${ShapeFolder}/T1_L_Pall.bvars
+#  mv ${FirstT1Folder}/T1_first-R_Pall_first.bvars  ${ShapeFolder}/T1_R_Pall.bvars
+#  mv ${FirstT1Folder}/T1_first-L_Pall_first.vtk  ${ShapeFolder}/T1_L_Pall.vtk
+#  mv ${FirstT1Folder}/T1_first-R_Pall_first.vtk  ${ShapeFolder}/T1_R_Pall.vtk
+#  mv ${FirstT1Folder}/T1_first-R_Puta_first.bvars  ${ShapeFolder}/T1_R_Puta.bvars
+#  mv ${FirstT1Folder}/T1_first-L_Puta_first.bvars  ${ShapeFolder}/T1_L_Puta.bvars
+#  mv ${FirstT1Folder}/T1_first-R_Puta_first.vtk  ${ShapeFolder}/T1_R_Puta.vtk
+#  mv ${FirstT1Folder}/T1_first-L_Puta_first.vtk  ${ShapeFolder}/T1_L_Puta.vtk
+#  mv ${FirstT1Folder}/T1_first-R_Thal_first.bvars  ${ShapeFolder}/T1_R_Thal.bvars
+#  mv ${FirstT1Folder}/T1_first-L_Thal_first.bvars  ${ShapeFolder}/T1_L_Thal.bvars
+#  mv ${FirstT1Folder}/T1_first-R_Thal_first.vtk  ${ShapeFolder}/T1_R_Thal.vtk
+#  mv ${FirstT1Folder}/T1_first-L_Thal_first.vtk  ${ShapeFolder}/T1_L_Thal.vtk
 
-  mv ${FirstT1Folder}/T1_unbiased_brain_to_std_sub.mat  ${regT1Folder}/T1_2_std_sub.mat
-  $FSLDIR/bin/immv ${FirstT1Folder}/T1_unbiased_brain_to_std_sub  ${data2stdT1Folder}/T1_2_std_sub
+  if [ -e ${FirstT1Folder}/T1_unbiased_brain_to_std_sub.mat ] ; then
+      mv ${FirstT1Folder}/T1_unbiased_brain_to_std_sub.mat  ${regT1Folder}/T1_2_std_sub.mat
+  fi
+
+  if [ -e ${FirstT1Folder}/T1_unbiased_brain_to_std_sub ] ; then
+      $FSLDIR/bin/immv ${FirstT1Folder}/T1_unbiased_brain_to_std_sub  ${data2stdT1Folder}/T1_2_std_sub
+  fi
 fi
 
 log_Msg 3 "Organizing T1 linear registration folder"
