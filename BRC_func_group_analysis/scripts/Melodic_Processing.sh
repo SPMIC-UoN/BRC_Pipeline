@@ -106,9 +106,8 @@ ${BRC_FMRI_GP_SCR}/Generate_ref_Networks.sh \
         --refbrainimg=${Melodic_output}/${Brain_Img_base}_brain
 
 
-$FSLDIR/bin/fslcc --noabs -p 3 -t .204 ${Melodic_output}/refNets/yeo2011_7_liberal_combined_${DataResolution}mm.nii.gz ${Melodic_output}/melodic_IC.nii.gz | tr -s ' ' | cut -d ' ' -f 3 | sort -u | awk '{ printf "%02d\n", $1 - 1 }'
-#$FSLDIR/bin/fslcc --noabs -p 3 -t .204 ${Melodic_output}/refNets/yeo2011_7_liberal_combined_${DataResolution}mm.nii.gz ${Melodic_output}/melodic_IC.nii.gz | tr -s ' ' | cut -d ' ' -f 3 | sort -u | awk '{ printf "%02d\n", $1 - 1 }' >> nets_of_interest.txt
-: <<'COMMENT'
+#$FSLDIR/bin/fslcc --noabs -p 3 -t .204 ${Melodic_output}/refNets/yeo2011_7_liberal_combined_${DataResolution}mm.nii.gz ${Melodic_output}/melodic_IC.nii.gz | tr -s ' ' | cut -d ' ' -f 3 | sort -u | awk '{ printf "%02d\n", $1 - 1 }'
+$FSLDIR/bin/fslcc --noabs -p 3 -t .204 ${Melodic_output}/refNets/yeo2011_7_liberal_combined_${DataResolution}mm.nii.gz ${Melodic_output}/melodic_IC.nii.gz | tr -s ' ' | cut -d ' ' -f 3 | sort -u | awk '{ printf "%02d\n", $1 - 1 }' >> ${Melodic_output}/nets_of_interest.txt
 
 log_Msg 3 ""
 log_Msg 3 "        END: MELODIC to decopose multiple 4D datasets based on ICA"
