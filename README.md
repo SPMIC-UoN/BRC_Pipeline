@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/138846216.svg)](https://zenodo.org/badge/latestdoi/138846216)
 # BRC Pipeline
 
 The BRC Pipeline scripts are being released for processing magnetic resonance imaging (MRI) data. This procesisng pipeline could be applied to diiferent modalities such as T1w/T2w MRI, diffusion MRI, and functional MRI datasets. Also, it can be used for the functional connectivity and network analysis.
