@@ -250,7 +250,7 @@ SinChanT1Folder=${TissueT1Folder}/${SingChanFolderName}
 MultChanT1Folder=${TissueT1Folder}/${MultChanFolderName}
 regT1Folder=${preprocT1Folder}/${regFolderName}
 
-if [ ! -d ${dMRIrawFolder} ]; then mkdir ${dMRIrawFolder}; fi
+if [ -d ${dMRIrawFolder} ]; then rm -rf ${dMRIrawFolder}; fi; mkdir -p ${dMRIrawFolder}
 if [ -d ${dMRIFolder} ]; then rm -rf ${dMRIFolder}; fi; mkdir -p ${dMRIFolder}
 #if [ ! -d ${dMRIFolder} ]; then mkdir ${dMRIFolder}; fi
 if [ -e ${logFolder} ] ; then rm -r ${logFolder}; fi; mkdir ${logFolder}
