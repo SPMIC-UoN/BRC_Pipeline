@@ -4,18 +4,14 @@
 <div align="center">
 
   [![Status](https://img.shields.io/badge/status-active-success.svg)]() 
+  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3786243.svg)](https://doi.org/10.5281/zenodo.3786243)
   [![Release](https://img.shields.io/github/release/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/releases/latest)
   [![Stars](https://img.shields.io/github/stars/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/stargazers)
   [![Forks](https://img.shields.io/github/forks/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/network/members)
-  [![Downloads](https://img.shields.io/github/downloads/SPMIC-UoN/BRC_Pipeline/total)](https://github.com/SPMIC-UoN/BRC_Pipeline/releases/download/v1.2.6.zip)
-  [![Size](https://img.shields.io/github/size/SPMIC-UoN/BRC_Pipeline/v1.3.9.zip)]()
-  [![License](https://img.shields.io/github/license/SPMIC-UoN/BRC_Pipeline)](/LICENSE)
-
 
 </div>
 
 ---
-  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3786243.svg)](https://doi.org/10.5281/zenodo.3786243)
 # BRC Pipeline
 
 The BRC Pipeline scripts are being released for processing magnetic resonance imaging (MRI) data. This procesisng pipeline could be applied to diiferent modalities such as T1w/T2w MRI, diffusion MRI, and functional MRI datasets. Also, it can be used for the functional connectivity and network analysis.
