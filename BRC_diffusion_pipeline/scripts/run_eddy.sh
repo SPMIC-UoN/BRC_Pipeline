@@ -31,6 +31,7 @@ qcdir=`getopt1 "--qcdir" $@`
 Slice2Volume=`getopt1 "--slice2vol" $@`
 topupFolder=`getopt1 "--topupdir" $@`
 SliceSpec=`getopt1 "--slspec" $@`
+MoveBySusceptibility=`getopt1 "--movebysuscept" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -49,6 +50,7 @@ log_Msg 2 "qcdir:$qcdir"
 log_Msg 2 "Slice2Volume:$Slice2Volume"
 log_Msg 2 "topupFolder:$topupFolder"
 log_Msg 2 "SliceSpec:$SliceSpec"
+log_Msg 2 "MoveBySusceptibility:$MoveBySusceptibility"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -108,6 +110,14 @@ fi
 if [ $Apply_Topup = yes ] ; then
     EDDY_arg="${EDDY_arg} --topup=${topupFolder}/topup_Pos_Neg_b0"
 fi
+
+if [ $MoveBySusceptibility = yes ] ; then
+    EDDY_arg="${EDDY_arg} --estimate_move_by_susceptibility"
+fi
+
+log_Msg 3 ""
+log_Msg 3 "$EDDY_arg"
+log_Msg 3 ""
 
 $FSLDIR/bin/eddy_cuda  ""$EDDY_arg""
 

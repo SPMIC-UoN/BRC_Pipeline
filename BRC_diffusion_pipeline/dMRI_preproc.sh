@@ -58,6 +58,9 @@ Usage()
   echo "                                      0 for including (uncombined) single volumes as well (default)"
   echo " --p_im <value>                  ParallelImaging_Factor, In-plane parallel imaging factor"
   echo "                                      1 for No_Parallel_Imaging"
+  echo " --movebysusceptibility          By setting this option, eddy attempts to estimate how the susceptibility-induced field changes when the subject moves in the scanner"
+  echo "                                      This option activates '--estimate_move_by_susceptibility' in EDDY"
+  echo "                                      This option is available for FSL 6 onwards"
   echo " --help                          help"
   echo " "
   echo " "
@@ -73,6 +76,7 @@ log=`echo "$@"`
 # default values
 InputImages2="NONE"
 Slice2Volume="no"
+MoveBySusceptibility="no"
 SliceSpec="NONE"
 echospacing=""
 PEdir=""
@@ -131,6 +135,9 @@ while [ "$1" != "" ]; do
 
         --p_im )                shift
                                 PIFactor=$1
+                                ;;
+
+        --movebysusceptibility ) MoveBySusceptibility="yes"
                                 ;;
 
         --help )                Usage
@@ -299,6 +306,7 @@ log_Msg 2 "echospacing: $echospacing"
 log_Msg 2 "PEdir: $PEdir"
 log_Msg 2 "CombineMatched: $CombineMatched"
 log_Msg 2 "PIFactor: $PIFactor"
+log_Msg 2 "MoveBySusceptibility: $MoveBySusceptibility"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 #=====================================================================================
@@ -319,7 +327,7 @@ if [ $CLUSTER_MODE = "YES" ] ; then
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
-    jobID2=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_2_dMRI_${Subject} -t 06:00:00 -m 60 -w ${jobID1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_2.sh --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --applytopup=${Apply_Topup} --doqc=${do_QC} --qcdir=${qcFolder} --slice2vol=${Slice2Volume} --slspec=${SliceSpec} --logfile=${logFolder}/${log_Name}" &`
+    jobID2=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_2_dMRI_${Subject} -t 06:00:00 -m 60 -w ${jobID1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_2.sh --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --applytopup=${Apply_Topup} --doqc=${do_QC} --qcdir=${qcFolder} --slice2vol=${Slice2Volume} --slspec=${SliceSpec} --movebysuscept=${MoveBySusceptibility} --logfile=${logFolder}/${log_Name}" &`
     jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
     echo "jobID_2: ${jobID2}"
 
@@ -353,6 +361,7 @@ else
                     --qcdir=${qcFolder} \
                     --slice2vol=${Slice2Volume} \
                     --slspec=${SliceSpec} \
+                    --movebysuscept=${MoveBySusceptibility} \
                     --logfile=${logFolder}/${log_Name}
 
 

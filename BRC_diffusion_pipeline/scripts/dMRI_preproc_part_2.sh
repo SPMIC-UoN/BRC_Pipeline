@@ -31,6 +31,7 @@ do_QC=`getopt1 "--doqc" $@`
 qcFolder=`getopt1 "--qcdir" $@`
 Slice2Volume=`getopt1 "--slice2vol" $@`
 SliceSpec=`getopt1 "--slspec" $@`
+MoveBySusceptibility=`getopt1 "--movebysuscept" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 #=====================================================================================
@@ -45,4 +46,5 @@ ${BRC_DMRI_SCR}/run_eddy.sh \
       --topupdir=${topupFolder} \
       --slice2vol=${Slice2Volume} \
       --slspec=${SliceSpec} \
+      --movebysuscept=${MoveBySusceptibility} \
       --logfile=${LogFile}

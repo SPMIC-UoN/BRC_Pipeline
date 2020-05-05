@@ -122,9 +122,9 @@ do
     ${FSLDIR}/bin/imrm ${basename}_b0_????
 
     if [ ${entry_cnt} -eq 0 ]; then      #Do not rescale the first series
-        rescale=`fslmeants -i ${basename}_mean`
+        rescale=`${FSLDIR}/bin/fslmeants -i ${basename}_mean`
     else
-        scaleS=`fslmeants -i ${basename}_mean`
+        scaleS=`${FSLDIR}/bin/fslmeants -i ${basename}_mean`
         ${FSLDIR}/bin/fslmaths ${basename} -mul ${rescale} -div ${scaleS} ${basename}_new
         ${FSLDIR}/bin/imrm ${basename}   #For the rest, replace the original dataseries with the rescaled one
         ${FSLDIR}/bin/immv ${basename}_new ${basename}
