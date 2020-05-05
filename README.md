@@ -8,6 +8,7 @@
   [![Release](https://img.shields.io/github/release/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/releases/latest)
   [![Stars](https://img.shields.io/github/stars/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/stargazers)
   [![Forks](https://img.shields.io/github/forks/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/network/members)
+  [![Size](https://img.shields.io/github/languages/code-size/SPMIC-UoN/BRC_Pipeline)]()
 
 </div>
 
