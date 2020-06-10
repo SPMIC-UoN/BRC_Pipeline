@@ -157,12 +157,12 @@ $FSLDIR/bin/eddy_cuda  ""$EDDY_arg""
 
 if [ $do_QC = yes ] ; then
 
-    eddy_quad ${WD}/eddy_unwarped_images \
-              -idx ${WD}/index.txt \
-              -par ${WD}/acqparams.txt \
-              -m ${WD}/nodif_brain_mask \
-              -b ${b_arg} \
-              -g ${g_arg}
+    $FSLDIR/bin/eddy_quad ${WD}/eddy_unwarped_images \
+                          -idx ${WD}/index.txt \
+                          -par ${WD}/acqparams.txt \
+                          -m ${WD}/nodif_brain_mask \
+                          -b ${b_arg} \
+                          -g ${g_arg}
 
 
     mv ${WD}/eddy_unwarped_images.qc/* $qcdir/
