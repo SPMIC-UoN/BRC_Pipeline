@@ -91,8 +91,10 @@ $FSLDIR/bin/imcp ${regFolder}/${Standard2aslMRITransform} ${regPreFolder}/std2${
 log_Msg 3 "Organizing data folder"
 processed_aslMRI_file_gm=${PVCFolder}/${NameOfaslMRI}_pvc_gm
 processed_aslMRI_file_wm=${PVCFolder}/${NameOfaslMRI}_pvc_wm
+processed_aslMRI_file_wm_plus_gm=${PVCFolder}/${NameOfaslMRI}_pvc_wm_plus_gm
 processed_aslMRI2std_file_gm=${PVCFolder}/${NameOfaslMRI}2std_pvc_gm
 processed_aslMRI2std_file_wm=${PVCFolder}/${NameOfaslMRI}2std_pvc_wm
+processed_aslMRI2std_file_wm_plus_gm=${PVCFolder}/${NameOfaslMRI}2std_pvc_wm_plus_gm
 processed_aslMRI2std_file=${PVCFolder}/${NameOfaslMRI}2std
 
 $FSLDIR/bin/imcp ${processed_aslMRI2std_file} ${data2stdProFolder}/${NameOfaslMRI}2std
@@ -100,8 +102,10 @@ $FSLDIR/bin/imcp ${processed_aslMRI2std_file} ${data2stdProFolder}/${NameOfaslMR
 if [ ! $PartialVolumeCorrection = "NONE" ] ; then
     $FSLDIR/bin/imcp ${processed_aslMRI_file_gm} ${dataProFolder}/${NameOfaslMRI}_pvc_gm
     $FSLDIR/bin/imcp ${processed_aslMRI_file_wm} ${dataProFolder}/${NameOfaslMRI}_pvc_wm
+    $FSLDIR/bin/imcp ${processed_aslMRI_file_wm_plus_gm} ${dataProFolder}/${NameOfaslMRI}_pvc_wm_plus_gm
     $FSLDIR/bin/imcp ${processed_aslMRI2std_file_gm} ${data2stdProFolder}/${NameOfaslMRI}2std_pvc_gm
     $FSLDIR/bin/imcp ${processed_aslMRI2std_file_wm} ${data2stdProFolder}/${NameOfaslMRI}2std_pvc_wm
+    $FSLDIR/bin/imcp ${processed_aslMRI2std_file_wm_plus_gm} ${data2stdProFolder}/${NameOfaslMRI}2std_pvc_wm_plus_gm
 fi
 
 log_Msg 3 ""

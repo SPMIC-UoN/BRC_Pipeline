@@ -88,6 +88,12 @@ $FSLDIR/bin/applywarp -i ${PVCFolder}/${NameOfaslMRI}_pvc_wm \
                       -w ${WD}/${aslMRI2StandardOutputTransform} \
                       -o ${PVCFolder}/${NameOfaslMRI}2std_pvc_wm
 
+log_Msg 3 "Transforming partial volume corrected white matter + grey matter ASL data into template space"
+$FSLDIR/bin/applywarp -i ${PVCFolder}/${NameOfaslMRI}_pvc_wm_plus_gm \
+                      -r ${STD_template} \
+                      -w ${WD}/${aslMRI2StandardOutputTransform} \
+                      -o ${PVCFolder}/${NameOfaslMRI}2std_pvc_wm_plus_gm
+
 log_Msg 3 ""
 log_Msg 3 "                       END: Final Transformation"
 log_Msg 3 "                    END: `date`"
