@@ -57,7 +57,6 @@ if __name__ == '__main__':
     parser.add_argument('--nifti-pve-wm', dest='nifti_pve_wm_file', required=True, help='Path to Nifti input file of the white matter partial volume estimations.')
     parser.add_argument('--nifti-output-gm', dest='nifti_output_gm_file', required=False, default=None, help='Path to Nifti output file of corrected grey matter perfusion.')
     parser.add_argument('--nifti-output-wm', dest='nifti_output_wm_file', required=False, default=None, help='Path to Nifti output file of corrected white matter perfusion.')
-    parser.add_argument('--nifti-output-sum', dest='nifti_output_sum_file', required=False, default=None, help='Path to Nifti output file of sum of corrected white matter and grey matter perfusion.')
     parser.add_argument('--kernel-size', dest='kernel_size', required=False, default=5, type=int, help='Size of the kernel window for regression estimation. Accepted sizes are 3, 5, 7, and 9. Default is 5.')
     parser.add_argument('--gamma', dest='gamma', required=False, default=0.4, type=float, help='Trimming proportion for Least Trimmed Squares algorithm. Must be a number greater than 0 and less than 1. Default is 0.4.')
     args = parser.parse_args()
@@ -67,7 +66,6 @@ if __name__ == '__main__':
     nifti_pve_wm_file = args.nifti_pve_wm_file
     nifti_output_gm_file = args.nifti_output_gm_file
     nifti_output_wm_file = args.nifti_output_wm_file
-    nifti_output_sum_file = args.nifti_output_sum_file
     kernel_size = args.kernel_size
     gamma = args.gamma
 
@@ -83,20 +81,12 @@ if __name__ == '__main__':
         sys.stderr.write('\nError: File "{}". does not exist!\n\n'.format(nifti_pve_wm_file))
         sys.exit()
 
-    if (nifti_output_gm_file is None) and (nifti_output_wm_file is None) and (nifti_output_sum_file is None):
-        sys.stderr.write('\nError: At least one of --nifti-output-gm, --nifti-output-wm or --nifti-output-sum must be provided.\n\n')
+    if (nifti_output_gm_file is None) and (nifti_output_wm_file is None):
+        sys.stderr.write('\nError: At least one of --nifti-output-gm or --nifti-output-wm must be provided.\n\n')
         sys.exit()
 
     if (nifti_output_gm_file is not None) and (nifti_output_gm_file == nifti_output_wm_file):
         sys.stderr.write('\nError: Output grey matter and white matter files cannot be the same.\n\n')
-        sys.exit()
-
-    if (nifti_output_gm_file is not None) and (nifti_output_gm_file == nifti_output_sum_file):
-        sys.stderr.write('\nError: Output grey matter and sum files cannot be the same.\n\n')
-        sys.exit()
-
-    if (nifti_output_wm_file is not None) and (nifti_output_wm_file == nifti_output_sum_file):
-        sys.stderr.write('\nError: Output white matter and sum files cannot be the same.\n\n')
         sys.exit()
 
     if (not np.isscalar(kernel_size)) or (not kernel_size in [3, 5, 7, 9]):
@@ -172,21 +162,30 @@ if __name__ == '__main__':
                         m_estim_ls = least_squares(P[:k,:], M[:k])
 
                         if is_gm_voxel[x, y, z]:
-                            if (m_estim_mlts[0] > 0) and (m_estim_mlts[0] <= max_allowed_value):
-                                corrected_img_gm[x, y, z] = np.round(m_estim_mlts[0]).astype(int)
-                            elif (m_estim_ls[0] > 0) and (m_estim_ls[0] <= max_allowed_value):
-                                corrected_img_gm[x, y, z] = np.round(m_estim_ls[0]).astype(int)
-                            elif (m_estim_mlts[0] > max_allowed_value) or (m_estim_ls[0] > max_allowed_value):
+                            gm_voxel_value_mlts = np.round(m_estim_mlts[0]).astype(int)
+                            gm_voxel_value_ls = np.round(m_estim_ls[0]).astype(int)
+
+                            if (gm_voxel_value_mlts > 0) and (gm_voxel_value_mlts <= max_allowed_value):
+                                corrected_img_gm[x, y, z] = gm_voxel_value_mlts
+                            elif (gm_voxel_value_ls > 0) and (gm_voxel_value_ls <= max_allowed_value):
+                                corrected_img_gm[x, y, z] = gm_voxel_value_ls
+                            elif np.maximum(gm_voxel_value_mlts, gm_voxel_value_ls) < 0:
+                                corrected_img_gm[x, y, z] = 0
+                            elif np.minimum(gm_voxel_value_mlts, gm_voxel_value_ls) > max_allowed_value:
                                 corrected_img_gm[x, y, z] = max_allowed_value
 
                         if is_wm_voxel[x, y, z]:
-                            if (m_estim_mlts[1] > 0) and (m_estim_mlts[1] <= max_allowed_value):
-                                corrected_img_wm[x, y, z] = np.round(m_estim_mlts[1]).astype(int)
-                            elif (m_estim_ls[1] > 0) and (m_estim_ls[1] <= max_allowed_value):
-                                corrected_img_wm[x, y, z] = np.round(m_estim_ls[1]).astype(int)
-                            elif (m_estim_mlts[1] > max_allowed_value) or (m_estim_ls[1] > max_allowed_value):
-                                corrected_img_gm[x, y, z] = max_allowed_value
+                            wm_voxel_value_mlts = np.round(m_estim_mlts[1]).astype(int)
+                            wm_voxel_value_ls = np.round(m_estim_ls[1]).astype(int)
 
+                            if (wm_voxel_value_mlts > 0) and (wm_voxel_value_mlts <= max_allowed_value):
+                                corrected_img_wm[x, y, z] = wm_voxel_value_mlts
+                            elif (wm_voxel_value_ls > 0) and (wm_voxel_value_ls <= max_allowed_value):
+                                corrected_img_wm[x, y, z] = wm_voxel_value_ls
+                            elif np.maximum(wm_voxel_value_mlts, wm_voxel_value_ls) < 0:
+                                corrected_img_wm[x, y, z] = 0
+                            elif np.minimum(wm_voxel_value_mlts, wm_voxel_value_ls) > max_allowed_value:
+                                corrected_img_wm[x, y, z] = max_allowed_value
 
     if nifti_output_gm_file is not None:
         nii_out = nib.nifti1.Nifti1Image(corrected_img_gm, None, header=nii_img.header)
@@ -195,8 +194,3 @@ if __name__ == '__main__':
     if nifti_output_wm_file is not None:
         nii_out = nib.nifti1.Nifti1Image(corrected_img_wm, None, header=nii_img.header)
         nib.save(nii_out, nifti_output_wm_file)
-
-    if nifti_output_sum_file is not None:
-        corrected_img_sum = np.round(pve_gm_data * corrected_img_gm + pve_wm_data * corrected_img_wm).astype(int)
-        nii_out = nib.nifti1.Nifti1Image(corrected_img_sum, None, header=nii_img.header)
-        nib.save(nii_out, nifti_output_sum_file)

@@ -63,8 +63,7 @@ case $PartialVolumeCorrection in
                                                                  --nifti-pve-gm ${regFolder}/T1_pve_GM_${NameOfaslMRI}.nii.gz \
                                                                  --nifti-pve-wm ${regFolder}/T1_pve_WM_${NameOfaslMRI}.nii.gz \
                                                                  --nifti-output-gm ${WD}/${NameOfaslMRI}_pvc_gm.nii.gz \
-                                                                 --nifti-output-wm ${WD}/${NameOfaslMRI}_pvc_wm.nii.gz \
-                                                                 --nifti-output-sum ${WD}/${NameOfaslMRI}_pvc_wm_plus_gm.nii.gz
+                                                                 --nifti-output-wm ${WD}/${NameOfaslMRI}_pvc_wm.nii.gz
          ;;
 
     *)
