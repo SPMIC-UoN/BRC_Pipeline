@@ -31,7 +31,11 @@ WD=`getopt1 "--workingdir" $@`
 AtlasFile=`getopt1 "--atlas" $@`
 ResampRefIm=`getopt1 "--resamprefim" $@`
 ResampRefIm_mask=`getopt1 "--resamprefimmask" $@`
+UseGMMask=`getopt1 "--usegmmask" $@`
+GMRefIM_mask=`getopt1 "--gmrefimmask" $@`
 LabelList=`getopt1 "--labellist" $@`
+ListFolder=`getopt1 "--listfolder" $@`
+LabelList_name=`getopt1 "--labellistname" $@`
 fMRIFile=`getopt1 "--infmri" $@`
 DataResolution=`getopt1 "--dataresolution" $@`
 GroupMapsFolder=`getopt1 "--groupmaps" $@`
@@ -50,7 +54,11 @@ log_Msg 2 "WD:$WD"
 log_Msg 2 "AtlasFile:$AtlasFile"
 log_Msg 2 "ResampRefIm:$ResampRefIm"
 log_Msg 2 "ResampRefIm_mask:$ResampRefIm_mask"
+log_Msg 2 "UseGMMask:$UseGMMask"
+log_Msg 2 "GMRefIM_mask:$GMRefIM_mask"
 log_Msg 2 "LabelList:$LabelList"
+log_Msg 2 "ListFolder:$ListFolder"
+log_Msg 2 "LabelList_name:$LabelList_name"
 log_Msg 2 "fMRIFile:$fMRIFile"
 log_Msg 2 "DataResolution:$DataResolution"
 log_Msg 2 "GroupMapsFolder:$GroupMapsFolder"
@@ -71,6 +79,16 @@ for Label in $(cat $LabelList) ; do
     ${FREESURFER_HOME}/bin/mri_binarize --i $AtlasFile --o ${WD}/vols/label_`${FSLDIR}/bin/zeropad $Label 4`.nii.gz --match $Label
     ${FSLDIR}/bin/fslmaths ${WD}/vols/label_`${FSLDIR}/bin/zeropad $Label 4`.nii.gz -mul 10 -add ${ResampRefIm_mask} ${WD}/vols/label_`${FSLDIR}/bin/zeropad $Label 4`.nii.gz
 done
+
+if [ ${UseGMMask} == "yes" ]; then
+    top_label=`sort -k1 -n ${LabelList} | tail -1 | awk '{print $1}'`
+    Label=$(( ${top_label} + 1 ))
+
+    LABELS="$LABELS $Label"
+    ${FSLDIR}/bin/fslmaths ${GMRefIM_mask} -mul 10 -add ${ResampRefIm_mask} ${WD}/vols/label_`${FSLDIR}/bin/zeropad $Label 4`.nii.gz
+fi
+
+echo ${LABELS} > ${ListFolder}/${LabelList_name}
 
 ${FSLDIR}/bin/fslmerge -tr ${WD}/Image_4D ${WD}/vols/label_* 1
 

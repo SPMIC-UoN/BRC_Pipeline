@@ -67,6 +67,7 @@ Usage()
   echo "                                       tica:  	tensor-ICA"
   echo " --dim <value>                   Dimensionality reduction into #num dimensions (default: automatic estimation)"
   echo " --inatlas <path>                User defined atlas which can be used for parcellation"
+  echo " --gmroi                         Adding the MNI152 GM mask to the ist of ROI for calculating the functional connections"
   echo " --help                          help"
   echo " "
   echo " "
@@ -93,6 +94,7 @@ BG_Image=""
 Thresh_Mask=""
 Dimensionality=""
 InAtlas=""
+UseGMMask="no"
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -149,6 +151,9 @@ while [ "$1" != "" ]; do
 
       --inatlas )             shift
                               InAtlas=$1
+                              ;;
+
+      --gmroi )               UseGMMask="yes"
                               ;;
 
       * )                     Usage
@@ -212,6 +217,7 @@ fMRI2std_name="${NameOffMRI}2std"
 TimeSeries_name="TimeSeries"
 SubjectList_name="Subject_list.txt"
 GroupList_name="Group_list.txt"
+LabelList_name="Label_list.txt"
 design_name="design"
 contrast_name="contrast"
 log_Name="log.txt"
@@ -326,6 +332,8 @@ log_Msg 2 "RepetitionTime: $RepetitionTime"
 log_Msg 2 "DO_GLM: $DO_GLM"
 log_Msg 2 "ICA_approach: $ICA_approach"
 log_Msg 2 "Dimensionality: $Dimensionality"
+log_Msg 2 "InAtlas: $InAtlas"
+log_Msg 2 "UseGMMask: $UseGMMask"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 #=====================================================================================
@@ -337,14 +345,26 @@ log_Msg 3 "Generate reference image mask"
 if [ ${DataResolution} = "2" ] ; then
     ResampRefIm=$FSLDIR/data/standard/MNI152_T1_2mm
     ResampRefIm_mask=${ResampRefIm}_brain_mask
+
+    if [ ${UseGMMask} == "yes" ]; then
+        ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${AtlasFolder}/MNI152_T1_1mm_GM_mask -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${GroupFCFolder}/MNI152_T1_${DataResolution}mm_GM_mask
+        GMRefIM_mask=${GroupFCFolder}/MNI152_T1_${DataResolution}mm_GM_mask
+    fi
+
 elif [ ${DataResolution} = "1" ] ; then
     ResampRefIm=$FSLDIR/data/standard/MNI152_T1_1mm
     ResampRefIm_mask=${ResampRefIm}_brain_mask
+    GMRefIM_mask=${AtlasFolder}/MNI152_T1_1mm_GM_mask
 else
     ${FSLDIR}/bin/flirt -interp spline -in $FSLDIR/data/standard/MNI152_T1_1mm -ref $FSLDIR/data/standard/MNI152_T1_1mm -applyisoxfm $DataResolution -out ${GroupFCFolder}/MNI152_T1_${DataResolution}mm
     ResampRefIm=${GroupFCFolder}/MNI152_T1_${DataResolution}mm
     ${FSLDIR}/bin/applywarp --rel --interp=nn -i $FSLDIR/data/standard/MNI152_T1_1mm_brain_mask -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${GroupFCFolder}/MNI152_T1_${DataResolution}mm_brain_mask
     ResampRefIm_mask=${ResampRefIm}_brain_mask
+
+    if [ ${UseGMMask} == "yes" ]; then
+        ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${AtlasFolder}/MNI152_T1_1mm_GM_mask -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${GroupFCFolder}/MNI152_T1_${DataResolution}mm_GM_mask
+        GMRefIM_mask=${GroupFCFolder}/MNI152_T1_${DataResolution}mm_GM_mask
+    fi
 
     if [ ${ParcelAtlas} == "AAL" ] || [ ${ParcelAtlas} == "NONE" ] ; then
 
@@ -363,13 +383,16 @@ if [ ! ${ParcelAtlas} == "MELODIC" ]; then
           --atlas=${AtlasFile} \
           --resamprefim=${ResampRefIm} \
           --resamprefimmask=${ResampRefIm_mask} \
+          --usegmmask=${UseGMMask} \
+          --gmrefimmask=${GMRefIM_mask} \
           --labellist=${LabelList} \
+          --listfolder=${ListFolder} \
+          --labellistname=${LabelList_name} \
           --dataresolution=${DataResolution} \
           --groupmaps=${GroupMapsFolder} \
           --logfile=${logFolder}/${log_Name}
 
 fi
-
 
 log_Msg 3 "Generate design matrix and contrast"
 ${RUN} ${BRC_FMRI_GP_SCR}/Generate_design.sh \
@@ -459,8 +482,16 @@ for Subject in $(cat ${ListFolder}/${SubjectList_name}) ; do
     else
 
         ${FSLDIR}/bin/fslmeants -i ${fMRIFile} --label=${GroupFCFolder}/temp_atlas -o ${FCFolder}/${TimeSeries_name}.txt
-        cp ${FCFolder}/${TimeSeries_name}.txt ${TimeSeriesFolder}/meants`${FSLDIR}/bin/zeropad $jj 4`.txt
 
+        if [ ${UseGMMask} == "yes" ]; then
+            ${FSLDIR}/bin/fslmeants -i ${fMRIFile} --label=${GMRefIM_mask} -o ${FCFolder}/${TimeSeries_name}_gm.txt
+
+            paste ${FCFolder}/${TimeSeries_name}.txt ${FCFolder}/${TimeSeries_name}_gm.txt -d " " > ${FCFolder}/${TimeSeries_name}_1.txt
+            mv ${FCFolder}/${TimeSeries_name}_1.txt ${FCFolder}/${TimeSeries_name}.txt
+            rm ${FCFolder}/${TimeSeries_name}_gm.txt
+        fi
+
+        cp ${FCFolder}/${TimeSeries_name}.txt ${TimeSeriesFolder}/meants`${FSLDIR}/bin/zeropad $jj 4`.txt
 
         ${RUN} ${BRC_FMRI_GP_SCR}/SS_FC_Analysis.sh \
               --workingdir=${FCFolder} \
@@ -469,7 +500,7 @@ for Subject in $(cat ${ListFolder}/${SubjectList_name}) ; do
               --varnorm=${VarNorm} \
               --corrtype=${CorrType} \
               --regval=${RegVal} \
-              --labellist=${LabelList} \
+              --labellist=${ListFolder}/${LabelList_name} \
               --logfile=${logFolder}/${log_Name}
     fi
 
@@ -545,5 +576,8 @@ ${RUN} ${BRCDIR}/Show_version.sh \
 if [ ! -e ${GroupFCFolder}/MNI152_T1_${DataResolution}mm.nii.gz ] ; then
     ${FSLDIR}/bin/imrm ${GroupFCFolder}/MNI152_T1_${DataResolution}mm*
 fi
+#${GroupFCFolder}/MNI152_T1_${DataResolution}mm_GM_mask
+#${GroupFCFolder}/MNI152_T1_${DataResolution}mm
+#${GroupFCFolder}/MNI152_T1_${DataResolution}mm_brain_mask
 
 #: <<'COMMENT'
