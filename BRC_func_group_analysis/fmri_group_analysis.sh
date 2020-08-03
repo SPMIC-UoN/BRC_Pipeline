@@ -67,7 +67,7 @@ Usage()
   echo "                                       tica:  	tensor-ICA"
   echo " --dim <value>                   Dimensionality reduction into #num dimensions (default: automatic estimation)"
   echo " --inatlas <path>                User defined atlas which can be used for parcellation"
-  echo " --gmroi                         Adding the MNI152 GM mask to the ist of ROI for calculating the functional connections"
+  echo " --gmroi                         Add the MNI152 GM mask to the list of ROI for calculating the functional connections"
   echo " --help                          help"
   echo " "
   echo " "
