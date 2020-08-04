@@ -67,7 +67,7 @@ Usage()
   echo "                                       tica:  	tensor-ICA"
   echo " --dim <value>                   Dimensionality reduction into #num dimensions (default: automatic estimation)"
   echo " --inatlas <path>                User defined atlas which can be used for parcellation"
-  echo " --gmroi                         Adding the MNI152 GM mask to the ist of ROI for calculating the functional connections"
+  echo " --gmroi                         Add the MNI152 GM mask to the list of ROIs for calculating the functional connections"
   echo " --nofr2z                        Do not apply Fisher's r-to-Z transformation for the calculation of FC. Default: convert from r to z"
   echo " --help                          help"
   echo " "
