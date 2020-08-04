@@ -1,5 +1,5 @@
 
-function [Subject] = run_FSL_Nets(FSLNets_Path , L1precision_Path , PWling_Path , work_dir , group_maps , ts_dir , TR , varnorm , method , RegVal , NetWebFolder , DO_GLM , DesignMatrix , ContrastMatrix)
+function [Subject] = run_FSL_Nets(FSLNets_Path , L1precision_Path , PWling_Path , work_dir , group_maps , ts_dir , TR , varnorm , method , RegVal , Fr2z , NetWebFolder , DO_GLM , DesignMatrix , ContrastMatrix)
 
 %%% add
 % the following paths according to input setup paths
@@ -53,7 +53,11 @@ print(strcat(work_dir , '/nodes.png') , '-dpng' , '-r300');
 
 
 %%% create network matrix and optionally convert correlations to z-stats.
-out_netmats = nets_netmats(ts , 1 , method , RegVal);
+if (RegVal == 0)
+    out_netmats = nets_netmats(ts , Fr2z , method);
+else
+    out_netmats = nets_netmats(ts , Fr2z , method , RegVal);
+end
 dlmwrite(strcat(work_dir , '/' , 'netmats_' , method , '.txt') , out_netmats , 'delimiter' , ' ' , 'precision' , '%4d');
 
 

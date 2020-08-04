@@ -34,6 +34,7 @@ VarNorm=`getopt1 "--varnorm" $@`
 CorrType=`getopt1 "--corrtype" $@`
 RegVal=`getopt1 "--regval" $@`
 LabelList=`getopt1 "--labellist" $@`
+FISHER_R2Z=`getopt1 "--fisherr2z" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -52,6 +53,7 @@ log_Msg 2 "VarNorm:$VarNorm"
 log_Msg 2 "CorrType:$CorrType"
 log_Msg 2 "RegVal:$RegVal"
 log_Msg 2 "LabelList:$LabelList"
+log_Msg 2 "FISHER_R2Z:$FISHER_R2Z"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -89,6 +91,20 @@ case $CorrType in
 esac
 
 
+log_Msg 2 "1: ${BRC_FMRI_GP_SCR}/FSLNets"
+log_Msg 2 "2: ${LIBSVMpath}"
+log_Msg 2 "3: ${BRC_FMRI_GP_SCR}/FSLNets"
+log_Msg 2 "4: ${BRC_FMRI_GP_SCR}/L1precision"
+log_Msg 2 "5: ${BRC_FMRI_GP_SCR}/FSLNets"
+log_Msg 2 "6: ${WD}"
+log_Msg 2 "7: ${WD}"
+log_Msg 2 "8: ${TR}"
+log_Msg 2 "9: ${VarNorm}"
+log_Msg 2 "10: ${method}"
+log_Msg 2 "11: ${RegVal}"
+log_Msg 2 "12: ${FISHER_R2Z}"
+log_Msg 2 "13: ${LabelList}"
+
 test=`${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSLNets'); \
                                     addpath('${LIBSVMpath}'); \
                                     run_SS_FSL_Nets('${BRC_FMRI_GP_SCR}/FSLNets' , \
@@ -100,6 +116,7 @@ test=`${MATLABpath}/matlab -nojvm -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSL
                                     ${VarNorm} , \
                                     '${method}' , \
                                     ${RegVal} , \
+                                    ${FISHER_R2Z} , \
                                     '${LabelList}'); \
                                     exit"`
 

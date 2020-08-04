@@ -34,6 +34,7 @@ TR=`getopt1 "--repetitiontime" $@`
 VarNorm=`getopt1 "--varnorm" $@`
 CorrType=`getopt1 "--corrtype" $@`
 RegVal=`getopt1 "--regval" $@`
+FISHER_R2Z=`getopt1 "--fisherr2z" $@`
 NetWebFolder=`getopt1 "--netwebfolder" $@`
 DO_GLM=`getopt1 "--doglm" $@`
 DesignMatrix=`getopt1 "--designmatrix" $@`
@@ -57,6 +58,7 @@ log_Msg 2 "TR:$TR"
 log_Msg 2 "VarNorm:$VarNorm"
 log_Msg 2 "CorrType:$CorrType"
 log_Msg 2 "RegVal:$RegVal"
+log_Msg 2 "FISHER_R2Z:$FISHER_R2Z"
 log_Msg 2 "NetWebFolder:$NetWebFolder"
 log_Msg 2 "DO_GLM:$DO_GLM"
 log_Msg 2 "DesignMatrix:$DesignMatrix"
@@ -110,10 +112,11 @@ log_Msg 2 "9: ${TR}"
 log_Msg 2 "10: ${VarNorm}"
 log_Msg 2 "11: ${method}"
 log_Msg 2 "12: ${RegVal}"
-log_Msg 2 "13: ${NetWebFolder}"
-log_Msg 2 "14: ${DO_GLM}"
-log_Msg 2 "15: ${DesignMatrix}.mat"
-log_Msg 2 "16: ${DesignMatrix}.con"
+log_Msg 2 "13: ${FISHER_R2Z}"
+log_Msg 2 "14: ${NetWebFolder}"
+log_Msg 2 "15: ${DO_GLM}"
+log_Msg 2 "16: ${DesignMatrix}.mat"
+log_Msg 2 "17: ${DesignMatrix}.con"
 
 #${MATLABpath}/matlab -nodesktop -nosplash -nojvm -r > ${WD}/test.txt "addpath('${BRC_FMRI_GP_SCR}/FSLNets'); Answer=test(1,2); quit"
 
@@ -130,6 +133,7 @@ ${MATLABpath}/matlab -nodesktop -r "addpath('${BRC_FMRI_GP_SCR}/FSLNets'); \
                                     ${VarNorm} , \
                                     '${method}' , \
                                     ${RegVal} , \
+                                    ${FISHER_R2Z} , \
                                     '${NetWebFolder}' , \
                                     '${DO_GLM}' , \
                                     '${DesignMatrix}.mat' , \

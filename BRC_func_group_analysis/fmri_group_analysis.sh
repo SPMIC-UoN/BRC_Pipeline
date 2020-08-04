@@ -68,6 +68,7 @@ Usage()
   echo " --dim <value>                   Dimensionality reduction into #num dimensions (default: automatic estimation)"
   echo " --inatlas <path>                User defined atlas which can be used for parcellation"
   echo " --gmroi                         Adding the MNI152 GM mask to the ist of ROI for calculating the functional connections"
+  echo " --nofr2z                        Do not apply Fisher's r-to-Z transformation for the calculation of FC. Default: convert from r to z"
   echo " --help                          help"
   echo " "
   echo " "
@@ -95,6 +96,7 @@ Thresh_Mask=""
 Dimensionality=""
 InAtlas=""
 UseGMMask="no"
+FISHER_R2Z=1
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -154,6 +156,9 @@ while [ "$1" != "" ]; do
                               ;;
 
       --gmroi )               UseGMMask="yes"
+                              ;;
+
+      --nofr2z )              FISHER_R2Z=0
                               ;;
 
       * )                     Usage
@@ -334,6 +339,7 @@ log_Msg 2 "ICA_approach: $ICA_approach"
 log_Msg 2 "Dimensionality: $Dimensionality"
 log_Msg 2 "InAtlas: $InAtlas"
 log_Msg 2 "UseGMMask: $UseGMMask"
+log_Msg 2 "FISHER_R2Z: $FISHER_R2Z"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 #=====================================================================================
@@ -501,6 +507,7 @@ for Subject in $(cat ${ListFolder}/${SubjectList_name}) ; do
               --corrtype=${CorrType} \
               --regval=${RegVal} \
               --labellist=${ListFolder}/${LabelList_name} \
+              --fisherr2z=${FISHER_R2Z} \
               --logfile=${logFolder}/${log_Name}
     fi
 
@@ -548,6 +555,7 @@ else
           --varnorm=${VarNorm} \
           --corrtype=${CorrType} \
           --regval=${RegVal} \
+          --fisherr2z=${FISHER_R2Z} \
           --netwebfolder=${NetWebFolder} \
           --doglm=${DO_GLM} \
           --designmatrix=${DesignFolder}/${design_name} \
