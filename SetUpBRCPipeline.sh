@@ -40,7 +40,7 @@ else
 fi
 
 #ENV VARIABLES FOR THE BRC_PIPELINE
-export BRCDIR="/home/mszspp/drives/r/BRC-Imaging/Stefan-Code/bash/BRC_Pipeline"                          #TO BE MODIFIED BY USER
+export BRCDIR="/home/mszam12/main/BRC_Pipeline"                          #TO BE MODIFIED BY USER
 export BRC_SCTRUC_DIR=${BRCDIR}/BRC_structural_pipeline
 export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
 export BRC_FMRI_DIR=${BRCDIR}/BRC_functional_pipeline

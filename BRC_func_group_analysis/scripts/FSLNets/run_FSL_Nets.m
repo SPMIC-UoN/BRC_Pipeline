@@ -34,7 +34,7 @@ if (counter ~= 0)
 end
 
 ts_spectra=nets_spectra(ts);   % have a look at mean timeseries spectra
-print(strcat(work_dir , '/spectra.png') , '-dpng' , '-r150');
+print(strcat(work_dir , '/spectra.png') , '-dpng' , '-r300');
 
 
 %%% cleanup and remove bad nodes' timeseries (whichever is not listed in ts.DD is *BAD*).
@@ -49,7 +49,7 @@ ts=nets_tsclean(ts , 1);                 % regress the bad nodes out of the good
 
 %%% quick views of the good and bad components
 nets_nodepics(ts,group_maps);
-print(strcat(work_dir , '/nodes.png') , '-dpng' , '-r150');
+print(strcat(work_dir , '/nodes.png') , '-dpng' , '-r300');
 
 
 %%% create network matrix and optionally convert correlations to z-stats.
@@ -74,7 +74,7 @@ dlmwrite(strcat(work_dir , '/' , 'Mnet_' , method , '.txt') , Mnet , 'delimiter'
 % how similar the results from each subject are to the group (i.e. the more this looks like a diagonal line, the more consistent
 % the relevant netmat is across subjects).
 
-print(strcat(work_dir , '/one-group-t-test-group-level_' , method , '.png') , '-dpng' , '-r150');
+print(strcat(work_dir , '/one-group-t-test-group-level_' , method , '.png') , '-dpng' , '-r300');
 
 
 %%% view hierarchical clustering of nodes. Clustering tree groups similar nodes.
@@ -82,18 +82,18 @@ print(strcat(work_dir , '/one-group-t-test-group-level_' , method , '.png') , '-
 %%% netmatH=reshape(Znet(6,:,:) , size(Znet(6,:,:) ,2) , size(Znet(6,:,:) ,3));
 
 nets_hierarchy(Znet , Znet , ts.DD , group_maps);
-print(strcat(work_dir , '/hierarchy.png') , '-dpng' , '-r150');
+print(strcat(work_dir , '/hierarchy.png') , '-dpng' , '-r300');
 
 
 %%% view interactive netmat web-based display
-%nets_netweb(Znet , Znet , ts.DD , group_maps , NetWebFolder);
+nets_netweb(Znet , Znet , ts.DD , group_maps , NetWebFolder);
 
 %%% cross-subject GLM, with inference in randomise (assuming you already have the GLM design.mat and design.con files).
 %%% arg4 determines whether to view the corrected-p-values, with non-significant entries removed above the diagonal.
 
 if (strcmp(DO_GLM , 'yes'))
     [p_uncorrected , p_corrected] = nets_glm(out_netmats , DesignMatrix , ContrastMatrix , 1);  % returns matrices of 1-p
-    print(strcat(work_dir , '/Group_diff.png') , '-dpng' , '-r150');
+    print(strcat(work_dir , '/Group_diff.png') , '-dpng' , '-r300');
 
 
     %%% OR - GLM, but with pre-masking that tests only the connections that are strong on average across all subjects.
@@ -103,7 +103,7 @@ if (strcmp(DO_GLM , 'yes'))
     [grotH , grotP , grotCI , grotSTATS] = ttest(netmats);
     netmats(: , abs(grotSTATS.tstat) < 8) = 0;
     [p_uncorrected , p_corrected] = nets_glm(netmats , DesignMatrix , ContrastMatrix ,1);
-    print(strcat(work_dir , '/Group_diff_8.png') , '-dpng' , '-r150');
+    print(strcat(work_dir , '/Group_diff_8.png') , '-dpng' , '-r300');
 
     %%% view 6 most significant edges from this GLM
     for i = 1 : size(p_corrected , 1)
@@ -115,7 +115,7 @@ if (strcmp(DO_GLM , 'yes'))
         Sig_Num = max(length(find(net(:) >= 0.95)) , 1);
 
         nets_edgepics(ts , group_maps , Znet , reshape(p_corrected(i , :) , ts.Nnodes , ts.Nnodes) , Sig_Num);
-        print(strcat(work_dir , '/most_significant_edges_contrast_' , num2str(i) , '.png') , '-dpng' , '-r150');
+        print(strcat(work_dir , '/most_significant_edges_contrast_' , num2str(i) , '.png') , '-dpng' , '-r300');
     end
 end
 
