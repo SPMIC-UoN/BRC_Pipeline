@@ -16,31 +16,32 @@
 #                                         #
 ###########################################
 
-export CLUSTER_MODE="NO"                                                        #TO BE MODIFIED BY USER, "YES"/"NO"
+export CLUSTER_MODE="NO"                                                            #TO BE MODIFIED BY USER, "YES"/"NO"
 
 if [ $CLUSTER_MODE = "YES" ] ; then
-    export JOBSUBpath="/gpfs01/software/imaging/jobsub"                          #TO BE MODIFIED BY USER
+    export JOBSUBpath="/gpfs01/software/imaging/jobsub"                             #TO BE MODIFIED BY USER
 else
     # Setup FSL (if not already done so in the running environment)
     # Uncomment the following 2 lines (remove the leading #) and correct the FSLDIR setting for your setup
-    export FSLDIR="/usr/local/fsl-6.0.3"                                             #TO BE MODIFIED BY USER
+    export FSLDIR="/usr/local/fsl-6.0.3"                                            #TO BE MODIFIED BY USER
     . $FSLDIR/etc/fslconf/fsl.sh
     export FSLCONFDIR=${FSLDIR}/config
     export FSLOUTPUTTYPE="NIFTI_GZ"
 
     # Setup FreeSurfer (if not already done so in the running environment)
     # Uncomment the following 2 lines (remove the leading #) and correct the FREESURFER_HOME setting for your setup
-    export FREESURFER_HOME="/usr/local/freesurfer"                             #TO BE MODIFIED BY USER
+    export FREESURFER_HOME="/usr/local/freesurfer"                                  #TO BE MODIFIED BY USER
     source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
-    export MATLABpath="/usr/local/matlab/R2018a/bin"                          #TO BE MODIFIED BY USER
+    export MATLABpath="/usr/local/matlab/R2018a/bin"                                #TO BE MODIFIED BY USER
+    export FSLDIR_5_0_11="/usr/local/fsl-5.0.11"                                    #TO BE MODIFIED BY USER
 
     #SET DYNAMIC LIBRARIES FOR Eddy
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64                   #TO BE MODIFIED BY USER
 fi
 
 #ENV VARIABLES FOR THE BRC_PIPELINE
-export BRCDIR="/home/mszam12/main/BRC_Pipeline"                          #TO BE MODIFIED BY USER
+export BRCDIR="/home/mszam12/main/BRC_Pipeline"                                     #TO BE MODIFIED BY USER
 export BRC_SCTRUC_DIR=${BRCDIR}/BRC_structural_pipeline
 export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
 export BRC_FMRI_DIR=${BRCDIR}/BRC_functional_pipeline
@@ -55,5 +56,5 @@ export BRC_FMRI_GP_SCR=${BRC_FMRI_GP_DIR}/scripts
 export BRC_GLOBAL_SCR=${BRC_GLOBAL_DIR}/scripts
 
 #SETUP MATLAB and LIBRARIES
-export SPMpath="/usr/local/SPM/spm12"                                         #TO BE MODIFIED BY USER
-export DVARSpath="/home/mszam12/main/matlab/MATLAB_Codes/DVARS"                 #TO BE MODIFIED BY USER
+export SPMpath="/usr/local/SPM/spm12"                                               #TO BE MODIFIED BY USER
+export DVARSpath="/home/mszam12/main/matlab/MATLAB_Codes/DVARS"                     #TO BE MODIFIED BY USER

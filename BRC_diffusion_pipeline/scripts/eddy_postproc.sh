@@ -68,7 +68,7 @@ else
         ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Neg ${PosVols} ${NegVols}
     else
         NegVols=$PosVols
-        ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Neg $((${PosVols} - 1)) ${PosVols}
+        ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Neg $((${PosVols} - 1)) 1
 
         touch ${eddydir}/Neg.bval
         touch ${eddydir}/Neg.bvec
