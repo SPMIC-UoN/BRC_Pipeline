@@ -27,6 +27,7 @@ getopt1()
 # parse arguments
 WD=`getopt1 "--workingdir" $@`
 PVCFolder=`getopt1 "--pvcfolder" $@`
+PartialVolumeCorrection=`getopt1 "--pvcmethod" $@`
 Inputasl=`getopt1 "--inputasl" $@`
 NameOfaslMRI=`getopt1 "--aslname" $@`
 T1w2StdImage=`getopt1 "--t12std" $@`
@@ -46,6 +47,7 @@ log_Msg 3 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 2 "WD:$WD"
 log_Msg 2 "PVCFolder:$PVCFolder"
+log_Msg 2 "PartialVolumeCorrection:$PartialVolumeCorrection"
 log_Msg 2 "Inputasl:$Inputasl"
 log_Msg 2 "NameOfaslMRI:$NameOfaslMRI"
 log_Msg 2 "T1w2StdImage:$T1w2StdImage"
@@ -76,17 +78,19 @@ $FSLDIR/bin/applywarp -i ${Inputasl} \
                       -w ${WD}/${aslMRI2StandardOutputTransform} \
                       -o ${PVCFolder}/${NameOfaslMRI}2std
 
-log_Msg 3 "Transforming partial volume corrected grey matter ASL data into template space"
-$FSLDIR/bin/applywarp -i ${PVCFolder}/${NameOfaslMRI}_pvc_gm \
-                      -r ${STD_template} \
-                      -w ${WD}/${aslMRI2StandardOutputTransform} \
-                      -o ${PVCFolder}/${NameOfaslMRI}2std_pvc_gm
+if [ $PartialVolumeCorrection = "MLTS" ] ; then
+    log_Msg 3 "Transforming partial volume corrected grey matter ASL data into template space"
+    $FSLDIR/bin/applywarp -i ${PVCFolder}/${NameOfaslMRI}_pvc_gm \
+                          -r ${STD_template} \
+                          -w ${WD}/${aslMRI2StandardOutputTransform} \
+                          -o ${PVCFolder}/${NameOfaslMRI}2std_pvc_gm
 
-log_Msg 3 "Transforming partial volume corrected white matter ASL data into template space"
-$FSLDIR/bin/applywarp -i ${PVCFolder}/${NameOfaslMRI}_pvc_wm \
-                      -r ${STD_template} \
-                      -w ${WD}/${aslMRI2StandardOutputTransform} \
-                      -o ${PVCFolder}/${NameOfaslMRI}2std_pvc_wm
+    log_Msg 3 "Transforming partial volume corrected white matter ASL data into template space"
+    $FSLDIR/bin/applywarp -i ${PVCFolder}/${NameOfaslMRI}_pvc_wm \
+                          -r ${STD_template} \
+                          -w ${WD}/${aslMRI2StandardOutputTransform} \
+                          -o ${PVCFolder}/${NameOfaslMRI}2std_pvc_wm
+fi
 
 log_Msg 3 ""
 log_Msg 3 "                       END: Final Transformation"

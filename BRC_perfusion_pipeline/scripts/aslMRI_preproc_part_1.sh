@@ -81,6 +81,7 @@ log_Msg 3 "Apply the final registration"
 ${BRC_PMRI_SCR}/Apply_Registration.sh \
               --workingdir=${regFolder} \
               --pvcfolder=${PVCFolder} \
+              --pvcmethod=${PartialVolumeCorrection} \
               --inputasl=${aslMRIrawFolder}/${OrigASLName} \
               --aslname=${NameOfaslMRI} \
               --t12std=${regT1Folder}/T1_2_std_warp_field \

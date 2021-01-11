@@ -97,7 +97,7 @@ processed_aslMRI2std_file=${PVCFolder}/${NameOfaslMRI}2std
 
 $FSLDIR/bin/imcp ${processed_aslMRI2std_file} ${data2stdProFolder}/${NameOfaslMRI}2std
 
-if [ ! $PartialVolumeCorrection = "NONE" ] ; then
+if [ $PartialVolumeCorrection = "MLTS" ] ; then
     $FSLDIR/bin/imcp ${processed_aslMRI_file_gm} ${dataProFolder}/${NameOfaslMRI}_pvc_gm
     $FSLDIR/bin/imcp ${processed_aslMRI_file_wm} ${dataProFolder}/${NameOfaslMRI}_pvc_wm
     $FSLDIR/bin/imcp ${processed_aslMRI2std_file_gm} ${data2stdProFolder}/${NameOfaslMRI}2std_pvc_gm
