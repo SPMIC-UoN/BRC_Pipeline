@@ -34,7 +34,7 @@ Usage()
   echo " --noseg                          Turn off the step that does tissue-type segmentation (FAST)"
   echo " --nocrop                         Turn off the step that does automated cropping"
   echo " --nodefacing                     Turn off the step that does automated brain defacing"
-  echo " --regtype <method>               The registration method for the registeration of structural data to the standard space"
+  echo " --regtype <method>               The registration method for the registration of structural data to the standard space"
   echo "                                      1: Linear,"
   echo "                                      2: Linear + Non-linear (default value). Here, the linear transformation is used as an initialization step for the Non-linear registration"
   echo " --help                           help"
