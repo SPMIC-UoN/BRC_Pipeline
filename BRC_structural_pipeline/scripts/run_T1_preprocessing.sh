@@ -33,6 +33,7 @@ do_defacing=`getopt1 "--dodefacing" $@`
 FastT1Folder=`getopt1 "--fastfolder" $@`
 FirstT1Folder=`getopt1 "--firstfolder" $@`
 regTempT1Folder=`getopt1 "--regtempt1folder" $@`
+RegType=`getopt1 "--regtype" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -53,6 +54,7 @@ log_Msg 2 "do_defacing:$do_defacing"
 log_Msg 2 "FastT1Folder:$FastT1Folder"
 log_Msg 2 "FirstT1Folder:$FirstT1Folder"
 log_Msg 2 "regTempT1Folder:$regTempT1Folder"
+log_Msg 2 "RegType:$RegType"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -69,18 +71,15 @@ else
     $FSLDIR/bin/imcp ${WD}/T1_orig_ud ${WD}/T1_tmp
 fi
 
-
 log_Msg 3 `date`
 log_Msg 3 "Run a (Recursive) brain extraction"
-${FSLDIR}/bin/bet ${WD}/T1_tmp ${WD}/T1_tmp_brain -R
-
+${FSLDIR}/bin/bet ${WD}/T1_tmp ${WD}/T1_tmp_brain -R -m
 
 log_Msg 3 `date`
 echo "Reduces the FOV"
 ${FSLDIR}/bin/standard_space_roi ${WD}/T1_tmp_brain ${WD}/T1_tmp2 -maskNONE -ssref $FSLDIR/data/standard/MNI152_T1_1mm_brain -altinput ${WD}/T1_orig_ud -d
 
 ${FSLDIR}/bin/immv ${WD}/T1_tmp2 ${WD}/T1
-
 
 log_Msg 3 `date`
 log_Msg 3 "Registering to standard space (linear)"
@@ -89,36 +88,55 @@ ${FSLDIR}/bin/flirt  -in ${WD}/T1 -ref ${WD}/T1_orig_ud -omat ${WD}/T1_to_T1_ori
 ${FSLDIR}/bin/convert_xfm -omat ${WD}/T1_orig_ud_to_T1.mat -inverse ${WD}/T1_to_T1_orig_ud.mat
 ${FSLDIR}/bin/convert_xfm -omat ${WD}/T1_to_MNI_linear.mat -concat ${WD}/T1_tmp2_tmp_to_std.mat ${WD}/T1_to_T1_orig_ud.mat
 
+if [ $RegType == 2 ]; then
 
-log_Msg 3 `date`
-log_Msg 3 "Registering to standard space (non-linear)"
-#Non-linear registration to MNI using the previously calculated alignment
-${FSLDIR}/bin/fnirt --in=${WD}/T1 \
-                    --ref=$FSLDIR/data/standard/MNI152_T1_1mm \
-                    --aff=${WD}/T1_to_MNI_linear.mat \
-                    --config=${BRC_GLOBAL_DIR}/config/bb_fnirt.cnf \
-                    --refmask=${BRC_GLOBAL_DIR}/templates/MNI152_T1_1mm_brain_mask_dil_GD7 \
-                    --logout=../logs/bb_T1_to_MNI_fnirt.log \
-                    --cout=${WD}/T1_to_MNI_nonlin_coeff \
-                    --fout=${WD}/T1_to_MNI_nonlin_field \
-                    --jout=${WD}/T1_to_MNI_nonlin_jac \
-                    --iout=${WD}/T1_tmp4.nii.gz \
-                    --interp=spline
+    log_Msg 3 `date`
+    log_Msg 3 "Registering to standard space (non-linear)"
+    #Non-linear registration to MNI using the previously calculated alignment
+    ${FSLDIR}/bin/fnirt --in=${WD}/T1 \
+                        --ref=$FSLDIR/data/standard/MNI152_T1_1mm \
+                        --aff=${WD}/T1_to_MNI_linear.mat \
+                        --config=${BRC_GLOBAL_DIR}/config/bb_fnirt.cnf \
+                        --refmask=${BRC_GLOBAL_DIR}/templates/MNI152_T1_1mm_brain_mask_dil_GD7 \
+                        --logout=../logs/bb_T1_to_MNI_fnirt.log \
+                        --cout=${WD}/T1_to_MNI_nonlin_coeff \
+                        --fout=${WD}/T1_to_MNI_nonlin_field \
+                        --jout=${WD}/T1_to_MNI_nonlin_jac \
+                        --iout=${WD}/T1_tmp4.nii.gz \
+                        --interp=spline
 
 
-log_Msg 3 `date`
-log_Msg 3 "Combine the transformations into one and then apply it."
-${FSLDIR}/bin/convertwarp --ref=$FSLDIR/data/standard/MNI152_T1_1mm --premat=${WD}/T1_orig_ud_to_T1.mat --warp1=${WD}/T1_to_MNI_nonlin_field --out=${WD}/T1_orig_to_MNI_warp
-${FSLDIR}/bin/applywarp --rel -i ${T1input} -r $FSLDIR/data/standard/MNI152_T1_1mm -w ${WD}/T1_orig_to_MNI_warp -o ${WD}/T1_brain_to_MNI --interp=spline
+                        log_Msg 3 `date`
+                        log_Msg 3 "Combine the transformations into one and then apply it."
+                        ${FSLDIR}/bin/convertwarp --ref=$FSLDIR/data/standard/MNI152_T1_1mm --premat=${WD}/T1_orig_ud_to_T1.mat --warp1=${WD}/T1_to_MNI_nonlin_field --out=${WD}/T1_orig_to_MNI_warp
+                        ${FSLDIR}/bin/applywarp --rel -i ${T1input} -r $FSLDIR/data/standard/MNI152_T1_1mm -w ${WD}/T1_orig_to_MNI_warp -o ${WD}/T1_brain_to_MNI --interp=spline
+fi
 
+#if [ $RegType == 1 ]; then
+#
+#    log_Msg 3 `date`
+#    log_Msg 3 "Registering to standard space (linear)"
+#    ${FSLDIR}/bin/flirt -interp spline -dof 12 -in ${WD}/T1 -ref $FSLDIR/data/standard/MNI152_T1_1mm -omat ${WD}/T1_to_MNI_lin.mat -out ${WD}/T1_to_MNI_lin
+#
+#fi
 
 log_Msg 3 `date`
 log_Msg 3 "Performing brain extraction"
-${FSLDIR}/bin/invwarp --ref=${WD}/T1 -w ${WD}/T1_to_MNI_nonlin_coeff -o ${WD}/T1_to_MNI_nonlin_coeff_inv
-${FSLDIR}/bin/applywarp --rel --interp=trilinear --in=${BRC_GLOBAL_DIR}/templates/MNI152_T1_1mm_brain_mask --ref=${WD}/T1 -w ${WD}/T1_to_MNI_nonlin_coeff_inv -o ${WD}/T1_brain_mask
-${FSLDIR}/bin/fslmaths ${WD}/T1 -mul ${WD}/T1_brain_mask ${WD}/T1_brain
-${FSLDIR}/bin/fslmaths ${WD}/T1_brain_to_MNI -mul ${BRC_GLOBAL_DIR}/templates/MNI152_T1_1mm_brain_mask ${WD}/T1_brain_to_MNI
+if [ $RegType == 2 ]; then
 
+    ${FSLDIR}/bin/invwarp --ref=${WD}/T1 -w ${WD}/T1_to_MNI_nonlin_coeff -o ${WD}/T1_to_MNI_nonlin_coeff_inv
+    ${FSLDIR}/bin/applywarp --rel --interp=trilinear --in=${BRC_GLOBAL_DIR}/templates/MNI152_T1_1mm_brain_mask --ref=${WD}/T1 -w ${WD}/T1_to_MNI_nonlin_coeff_inv -o ${WD}/T1_brain_mask
+    ${FSLDIR}/bin/fslmaths ${WD}/T1 -mul ${WD}/T1_brain_mask ${WD}/T1_brain
+    ${FSLDIR}/bin/fslmaths ${WD}/T1_brain_to_MNI -mul ${BRC_GLOBAL_DIR}/templates/MNI152_T1_1mm_brain_mask ${WD}/T1_brain_to_MNI
+
+elif [ $RegType == 1 ]; then
+
+    ${FSLDIR}/bin/imcp ${WD}/T1_tmp_brain_mask ${WD}/T1_brain_mask
+    ${FSLDIR}/bin/flirt -interp spline -in ${WD}/T1_tmp -ref ${WD}/T1 -omat ${WD}/T1_tmp_to_T1.mat -out ${WD}/T1_tmp_to_T1
+    ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${WD}/T1_brain_mask -r ${WD}/T1 --premat=${WD}/T1_tmp_to_T1.mat -o ${WD}/T1_brain_mask
+    ${FSLDIR}/bin/fslmaths ${WD}/T1 -mul ${WD}/T1_brain_mask ${WD}/T1_brain
+
+fi
 
 if [ $do_defacing = "yes" ] ; then
 
@@ -146,7 +164,6 @@ if [ $do_defacing = "yes" ] ; then
     rm ${WD}/grot*
 fi
 
-
 #Clean and reorganize
 #rm ${WD}/*tmp*
 if [ -e ${regTempT1Folder} ] ; then rm -r ${regTempT1Folder}; fi; mkdir ${regTempT1Folder}
@@ -162,7 +179,6 @@ if [ -e ${FastT1Folder} ] ; then rm -r ${FastT1Folder}; fi; mkdir ${FastT1Folder
 
 ${FSLDIR}/bin/fast -b -o ${FastT1Folder}/T1_brain ${WD}/T1_brain
 
-
 if [ $dotissueseg = "yes" ] ; then
 
     log_Msg 3 `date`
@@ -174,7 +190,6 @@ if [ $dotissueseg = "yes" ] ; then
     fi
 fi
 
-
 log_Msg 3  `date`
 log_Msg 3 "Removing Bias field"
 if [ -f ${FastT1Folder}/T1_brain_bias.nii.gz ] ; then
@@ -184,14 +199,18 @@ else
     echo "WARNING: There was no bias field estimation. Bias field correction cannot be applied to T1."
 fi
 
-
 #${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${regTempT1Folder}/T1_to_MNI_linear --premat=${regTempT1Folder}/T1_to_MNI_linear.mat --interp=spline
 #log_Msg 3 "test"
 ${FSLDIR}/bin/flirt -interp spline -dof 12 -in ${WD}/T1_unbiased -ref $FSLDIR/data/standard/MNI152_T1_1mm -omat ${regTempT1Folder}/T1_to_MNI_linear_temp.mat -out ${regTempT1Folder}/T1_to_MNI_linear
+# Remove negative intensity values (from eddy) from final data
+${FSLDIR}/bin/fslmaths ${regTempT1Folder}/T1_to_MNI_linear -thr 0 ${regTempT1Folder}/T1_to_MNI_linear
 
-${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${regTempT1Folder}/T1_to_MNI_nonlin -w ${regTempT1Folder}/T1_to_MNI_nonlin_field --interp=spline
-${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased_brain -r $FSLDIR/data/standard/MNI152_T1_1mm_brain -o ${regTempT1Folder}/T1_brain_to_MNI_nonlin -w ${regTempT1Folder}/T1_to_MNI_nonlin_field --interp=spline
+if [ $RegType == 2 ]; then
 
+    ${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${regTempT1Folder}/T1_to_MNI_nonlin -w ${regTempT1Folder}/T1_to_MNI_nonlin_field --interp=spline
+    ${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased_brain -r $FSLDIR/data/standard/MNI152_T1_1mm_brain -o ${regTempT1Folder}/T1_brain_to_MNI_nonlin -w ${regTempT1Folder}/T1_to_MNI_nonlin_field --interp=spline
+
+fi
 
 if [ $dosubseg = "yes" ] ; then
 
@@ -215,3 +234,4 @@ log_Msg 3 "                             ===============                         
 ################################################################################################
 ## Cleanup
 ################################################################################################
+#: <<'COMMENT'

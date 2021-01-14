@@ -31,6 +31,7 @@ FastT1Folder=`getopt1 "--fastfolder" $@`
 regTempT1Folder=`getopt1 "--regtempt1folder" $@`
 regTempT2Folder=`getopt1 "--regtempt2folder" $@`
 do_defacing=`getopt1 "--dodefacing" $@`
+RegType=`getopt1 "--regtype" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -49,6 +50,7 @@ log_Msg 2 "FastT1Folder:$FastT1Folder"
 log_Msg 2 "regTempT1Folder:$regTempT1Folder"
 log_Msg 2 "regTempT2Folder:$regTempT2Folder"
 log_Msg 2 "do_defacing:$do_defacing"
+log_Msg 2 "RegType:$RegType"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -66,23 +68,33 @@ ${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r ${TempT1Folder}/T1_brain -o ${WD
 cp ${TempT1Folder}/T1_brain_mask.nii.gz ${WD}/T2_brain_mask.nii.gz
 ${FSLDIR}/bin/fslmaths ${WD}/T2 -mul ${WD}/T2_brain_mask ${WD}/T2_brain
 
-
 log_Msg 3 `date`
 log_Msg 3 "Generate the linear matrix from T2 to MNI"
 #Generate the linear matrix from T2 to MNI (Needed for defacing)
 ${FSLDIR}/bin/convert_xfm -omat ${WD}/T2_orig_ud_to_MNI_linear.mat -concat ${regTempT1Folder}/T1_to_MNI_linear.mat ${WD}/T2_orig_ud_to_T2.mat
 cp ${regTempT1Folder}/T1_to_MNI_linear.mat ${WD}/T2_to_MNI_linear.mat
 
-${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${WD}/T2_to_MNI_linear --premat=${WD}/T2_to_MNI_linear.mat --interp=spline
 
+if [ $RegType == 2 ]; then
+    ${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${WD}/T2_to_MNI_linear --premat=${WD}/T2_to_MNI_linear.mat --interp=spline
+elif [ $RegType == 1 ]; then
+    ${FSLDIR}/bin/flirt -interp spline -dof 12 -in ${WD}/T2 -ref $FSLDIR/data/standard/MNI152_T1_1mm -omat ${WD}/T2_to_MNI_linear.mat -out ${WD}/T2_to_MNI_linear
 
-log_Msg 3 `date`
-log_Msg 3 "Generate the non-linearly warped T2 in MNI"
-#Generate the non-linearly warped T2 in MNI (Needed for post-freesurfer processing)
-${FSLDIR}/bin/convertwarp --ref=$FSLDIR/data/standard/MNI152_T1_1mm --premat=${WD}/T2_orig_ud_to_T2.mat --warp1=${regTempT1Folder}/T1_to_MNI_nonlin_field --out=${WD}/T2_orig_to_MNI_warp
-${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r $FSLDIR/data/standard/MNI152_T1_1mm -w ${WD}/T2_orig_to_MNI_warp -o ${WD}/T2_brain_to_MNI --interp=spline
-${FSLDIR}/bin/fslmaths ${WD}/T2_brain_to_MNI -mul ${BRC_GLOBAL_DIR}/templates/MNI152_T1_1mm_brain_mask ${WD}/T2_brain_to_MNI
+    # Remove negative intensity values (from eddy) from final data
+    ${FSLDIR}/bin/fslmaths ${WD}/T2_to_MNI_linear -thr 0 ${WD}/T2_to_MNI_linear
+    #    ${FSLDIR}/bin/applywarp --rel  -i ${WD}/T2 -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${WD}/T2_to_MNI_linear --premat=${WD}/T2_to_MNI_linear.mat --interp=spline
+fi
 
+if [ $RegType == 2 ]; then
+
+    log_Msg 3 `date`
+    log_Msg 3 "Generate the non-linearly warped T2 in MNI"
+    #Generate the non-linearly warped T2 in MNI (Needed for post-freesurfer processing)
+    ${FSLDIR}/bin/convertwarp --ref=$FSLDIR/data/standard/MNI152_T1_1mm --premat=${WD}/T2_orig_ud_to_T2.mat --warp1=${regTempT1Folder}/T1_to_MNI_nonlin_field --out=${WD}/T2_orig_to_MNI_warp
+    ${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r $FSLDIR/data/standard/MNI152_T1_1mm -w ${WD}/T2_orig_to_MNI_warp -o ${WD}/T2_brain_to_MNI --interp=spline
+    ${FSLDIR}/bin/fslmaths ${WD}/T2_brain_to_MNI -mul ${BRC_GLOBAL_DIR}/templates/MNI152_T1_1mm_brain_mask ${WD}/T2_brain_to_MNI
+
+fi
 
 if [ $do_defacing = "yes" ] ; then
 
@@ -109,7 +121,9 @@ fi
 rm ${WD}/*_tmp*
 if [ -e ${regTempT2Folder} ] ; then rm -r ${regTempT2Folder}; fi; mkdir ${regTempT2Folder}
 mv ${WD}/*.mat ${regTempT2Folder}
-mv ${WD}/*warp*.* ${regTempT2Folder}
+if [ $RegType == 2 ]; then
+    mv ${WD}/*warp*.* ${regTempT2Folder}
+fi
 mv ${WD}/*MNI*.* ${regTempT2Folder}
 
 

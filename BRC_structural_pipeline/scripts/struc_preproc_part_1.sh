@@ -52,6 +52,7 @@ processedT1Folder=`getopt1 "--processedt1folder" $@`
 FSFolderName=`getopt1 "--fsfoldername" $@`
 Start_Time=`getopt1 "--starttime" $@`
 Sub_ID=`getopt1 "--subid" $@`
+RegType=`getopt1 "--regtype" $@`
 logT1Folder=`getopt1 "--logt1folder" $@`
 
 log_SetPath "${logT1Folder}"
@@ -70,8 +71,8 @@ ${BRC_SCTRUC_SCR}/run_T1_preprocessing.sh \
       --fastfolder=${FastT1Folder} \
       --firstfolder=${FirstT1Folder} \
       --regtempt1folder=${regTempT1Folder} \
+      --regtype=${RegType} \
       --logfile=${logT1Folder}
-
 
 if [[ $T2 == "yes" ]]; then
 
@@ -83,10 +84,10 @@ if [[ $T2 == "yes" ]]; then
             --regtempt1folder=${regTempT1Folder} \
             --regtempt2folder=${regTempT2Folder} \
             --dodefacing=${do_defacing} \
+            --regtype=${RegType} \
             --logfile=${logT1Folder}
 
 fi
-
 
 ${BRC_SCTRUC_SCR}/output_organization.sh \
       --t1folder=${T1Folder} \
@@ -111,8 +112,8 @@ ${BRC_SCTRUC_SCR}/output_organization.sh \
       --regt2folder=${regT2Folder} \
       --regtempt2folder=${regTempT2Folder} \
       --dodefacing=${do_defacing} \
+      --regtype=${RegType} \
       --logfile=${logT1Folder}
-
 
 if [[ $do_freesurfer == "yes" ]]; then
     SUBJECTS_DIR=${processedT1Folder}

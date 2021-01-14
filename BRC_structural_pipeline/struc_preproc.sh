@@ -34,6 +34,9 @@ Usage()
   echo " --noseg                          Turn off the step that does tissue-type segmentation (FAST)"
   echo " --nocrop                         Turn off the step that does automated cropping"
   echo " --nodefacing                     Turn off the step that does automated brain defacing"
+  echo " --regtype <method>               The registration method for the registeration of structural data to the standard space"
+  echo "                                      1: Linear,"
+  echo "                                      2: Linear + Non-linear (default value). Here, the linear transformation is used as an initialization step for the Non-linear registration"
   echo " --help                           help"
   echo " "
   echo " "
@@ -60,6 +63,7 @@ do_tissue_seg="yes"
 do_anat_based_on_FS="yes"
 do_crop="yes"
 do_defacing="yes"
+RegType="2"
 
 Opt_args="--clobber"
 
@@ -106,6 +110,10 @@ while [ "$1" != "" ]; do
                                 ;;
 
         --nodefacing)           do_defacing="no";
+                                ;;
+
+        --regtype )             shift
+                                RegType=$1
                                 ;;
 
         --help )                Usage
@@ -258,6 +266,7 @@ log_Msg 2 "do_Sub_seg: $do_Sub_seg"
 log_Msg 2 "do_QC: $do_QC"
 log_Msg 2 "do_tissue_seg: $do_tissue_seg"
 log_Msg 2 "do_freesurfer: $do_freesurfer"
+log_Msg 2 "RegType: $RegType"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 #=====================================================================================
@@ -282,7 +291,7 @@ if [ $CLUSTER_MODE = "YES" ] ; then
 #    ${JOBSUBpath}/jobsub -q cpu -p 1 -s BRCP_SMRI_${Subject} -t 00:46:00 -m 60 -c "${BRC_SCTRUC_DIR}/struc_preproc.sh --subject ${Sub_ID} --path ${Path} --input ${IN_Img} --t2 ${T2_IN_Img} ${Opt_args}" &
 
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_SMRI_${Subject} -t 03:00:00 -m 60 -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${FirstT1Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --logt1folder=${logT1Folder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_SMRI_${Subject} -t 03:00:00 -m 60 -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${FirstT1Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --regtype=${RegType} --logt1folder=${logT1Folder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
@@ -317,6 +326,7 @@ else
                       --fsfoldername=${FSFolderName} \
                       --starttime=${Start_Time} \
                       --subid=${Sub_ID} \
+                      --regtype=${RegType} \
                       --logt1folder=${logT1Folder}/${log_Name}
 
 fi

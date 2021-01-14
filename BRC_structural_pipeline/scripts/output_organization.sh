@@ -46,6 +46,7 @@ data2stdT2Folder=`getopt1 "--data2stdt2folder" $@`
 regT2Folder=`getopt1 "--regt2folder" $@`
 regTempT2Folder=`getopt1 "--regtempt2folder" $@`
 do_defacing=`getopt1 "--dodefacing" $@`
+RegType=`getopt1 "--regtype" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -77,6 +78,7 @@ log_Msg 2 "data2stdT2Folder=$data2stdT2Folder"
 log_Msg 2 "regT2Folder=$regT2Folder"
 log_Msg 2 "regTempT2Folder=$regTempT2Folder"
 log_Msg 2 "do_defacing=$do_defacing"
+log_Msg 2 "RegType:$RegType"
 log_Msg 2 "LogFile=$LogFile"
 
 #=====================================================================================
@@ -201,14 +203,17 @@ $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_linear  ${data2stdT1Folder}/T1_2_s
 mv ${regTempT1Folder}/T1_to_MNI_linear.mat  ${regT1Folder}/T1_2_std.mat
 $FSLDIR/bin/convert_xfm -inverse ${regT1Folder}/T1_2_std.mat -omat ${regT1Folder}/std_2_T1.mat
 
-log_Msg 3 "Organizing T1 non-linear registration folder"
+if [ $RegType == 2 ]; then
 
-$FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin  ${data2stdT1Folder}/T1_2_std_warp
-$FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_coeff  ${regT1Folder}/T1_2_std_warp_coeff
-$FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_field  ${regT1Folder}/T1_2_std_warp_field
-$FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_jac  ${regT1Folder}/T1_2_std_warp_jac
-$FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_coeff_inv  ${regT1Folder}/std_2_T1_warp_field
+    log_Msg 3 "Organizing T1 non-linear registration folder"
 
+    $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin  ${data2stdT1Folder}/T1_2_std_warp
+    $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_coeff  ${regT1Folder}/T1_2_std_warp_coeff
+    $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_field  ${regT1Folder}/T1_2_std_warp_field
+    $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_jac  ${regT1Folder}/T1_2_std_warp_jac
+    $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_coeff_inv  ${regT1Folder}/std_2_T1_warp_field
+
+fi
 
 if [[ $T2_exist == yes ]]; then
 
@@ -220,7 +225,9 @@ if [[ $T2_exist == yes ]]; then
     $FSLDIR/bin/immv ${TempT2Folder}/T2_unbiased  ${dataT2Folder}/T2_unbiased
     $FSLDIR/bin/immv ${TempT2Folder}/T2_unbiased_brain  ${dataT2Folder}/T2_unbiased_brain
 
-    $FSLDIR/bin/immv ${TempT2Folder}/T2_orig_defaced  ${rawT2Folder}/T2_orig_defaced
+    if [ $do_defacing = "yes" ] ; then
+        $FSLDIR/bin/immv ${TempT2Folder}/T2_orig_defaced  ${rawT2Folder}/T2_orig_defaced
+    fi
 
     log_Msg 3  `date`
     log_Msg 3 "Organizing T2 linear registration folder"
@@ -229,10 +236,14 @@ if [[ $T2_exist == yes ]]; then
     mv ${regTempT2Folder}/T2_to_MNI_linear.mat  ${regT2Folder}/T2_2_std.mat
     $FSLDIR/bin/convert_xfm -inverse ${regT2Folder}/T2_2_std.mat -omat ${regT2Folder}/std_2_T2.mat
 
-    log_Msg 3  `date`
-    log_Msg 3 "Organizing T2 non-linear registration folder"
+    if [ $RegType == 2 ]; then
 
-    $FSLDIR/bin/immv ${regTempT2Folder}/T2_brain_to_MNI  ${data2stdT2Folder}/T2_2_std_warp
+        log_Msg 3  `date`
+        log_Msg 3 "Organizing T2 non-linear registration folder"
+
+        $FSLDIR/bin/immv ${regTempT2Folder}/T2_brain_to_MNI  ${data2stdT2Folder}/T2_2_std_warp
+
+    fi
 
     if [ $do_tissue_seg = "yes" ] ; then
         log_Msg 3  `date`
