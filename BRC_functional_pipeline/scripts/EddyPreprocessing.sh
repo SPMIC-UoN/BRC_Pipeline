@@ -208,20 +208,25 @@ log_Msg 2 "EDDY_arg: $EDDY_arg"
 
 #FSLDIR_5_0_11="/usr/local/fsl-5.0.11"                                             #TO BE MODIFIED BY USER
 if [ $CLUSTER_MODE = "YES" ] ; then
+
     module load fsl-img/5.0.11
+
+    $FSLDIR/bin/eddy_cuda  ""$EDDY_arg""
+
+    module load fsl-img/6.0.3
+
 else
+
     . ${FSLDIR_5_0_11}/etc/fslconf/fsl.sh
+
+    $FSLDIR_5_0_11/bin/eddy_cuda  ""$EDDY_arg""
+
+    . $FSLDIR/etc/fslconf/fsl.sh
+
 fi
 
-$FSLDIR_5_0_11/bin/eddy_cuda  ""$EDDY_arg""
 #${BRC_FMRI_SCR}/eddy_cuda  ""$EDDY_arg""
 
-#export FSLDIR="/usr/local/fsl-6.0.3"                                             #TO BE MODIFIED BY USER
-if [ $CLUSTER_MODE = "YES" ] ; then
-    module load fsl-img/6.0.3
-else
-    . $FSLDIR/etc/fslconf/fsl.sh
-fi
 
 #        --imain=${Eddy_Input} \
 #        --mask=${BrainMask} \
