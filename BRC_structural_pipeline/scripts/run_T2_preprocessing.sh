@@ -56,14 +56,27 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 $FSLDIR/bin/imcp ${T2input} ${WD}/T2_orig_ud
 
+if [ $RegType == 1 ]; then
 
-log_Msg 3 `date`
-log_Msg 3 "Take T2 to T1 and also the brain mask"
-#Take T2 to T1 and also the brain mask
-${FSLDIR}/bin/flirt -in ${WD}/T2_orig_ud -ref ${TempT1Folder}/T1_orig_ud -out ${WD}/T2_tmp -omat ${WD}/T2_tmp.mat -dof 6
-${FSLDIR}/bin/convert_xfm -omat ${WD}/T2_tmp2.mat -concat ${regTempT1Folder}/T1_orig_ud_to_T1.mat  ${WD}/T2_tmp.mat
-${FSLDIR}/bin/flirt -in ${WD}/T2_orig_ud -ref ${TempT1Folder}/T1_brain -refweight ${TempT1Folder}/T1_brain_mask -nosearch -init ${WD}/T2_tmp2.mat -omat ${WD}/T2_orig_ud_to_T2.mat -dof 6
-${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r ${TempT1Folder}/T1_brain -o ${WD}/T2 --premat=${WD}/T2_orig_ud_to_T2.mat --interp=spline
+    log_Msg 3 `date`
+    log_Msg 3 "Run a (Recursive) brain extraction"
+    ${FSLDIR}/bin/bet ${WD}/T2_orig_ud ${WD}/T2_tmp_brain -R -m
+
+    log_Msg 3 "Take T2 to T1 and also the brain mask"
+    ${FSLDIR}/bin/flirt -in ${WD}/T2_tmp_brain -ref ${TempT1Folder}/T1_brain -dof 6 -cost corratio -omat ${WD}/T2toT1_cr.mat -out ${WD}/T2toT1_cr.nii.gz
+    ${FSLDIR}/bin/flirt -in ${WD}/T2_orig_ud -ref ${TempT1Folder}/T1_brain -dof 6 -cost bbr -wmseg ${TempT1Folder}/FAST/T1_brain_WM_mask -schedule $FSLDIR/etc/flirtsch/bbr.sch -init ${WD}/T2toT1_cr.mat -omat ${WD}/T2_orig_ud_to_T2.mat -out ${WD}/T2
+
+elif [ $RegType == 1 ]; then
+
+    log_Msg 3 `date`
+    log_Msg 3 "Take T2 to T1 and also the brain mask"
+    #Take T2 to T1 and also the brain mask
+    ${FSLDIR}/bin/flirt -in ${WD}/T2_orig_ud -ref ${TempT1Folder}/T1_orig_ud -out ${WD}/T2_tmp -omat ${WD}/T2_tmp.mat -dof 6
+    ${FSLDIR}/bin/convert_xfm -omat ${WD}/T2_tmp2.mat -concat ${regTempT1Folder}/T1_orig_ud_to_T1.mat  ${WD}/T2_tmp.mat
+    ${FSLDIR}/bin/flirt -in ${WD}/T2_orig_ud -ref ${TempT1Folder}/T1_brain -refweight ${TempT1Folder}/T1_brain_mask -nosearch -init ${WD}/T2_tmp2.mat -omat ${WD}/T2_orig_ud_to_T2.mat -dof 6
+    ${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r ${TempT1Folder}/T1_brain -o ${WD}/T2 --premat=${WD}/T2_orig_ud_to_T2.mat --interp=spline
+
+fi
 
 cp ${TempT1Folder}/T1_brain_mask.nii.gz ${WD}/T2_brain_mask.nii.gz
 ${FSLDIR}/bin/fslmaths ${WD}/T2 -mul ${WD}/T2_brain_mask ${WD}/T2_brain

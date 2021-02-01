@@ -47,8 +47,8 @@ Usage()
   echo "Optional arguments (You may optionally specify one or more of):"
   echo " --input_2 <path>                dataRL(PA)1@dataRL(PA)2@...dataRL(PA)N, filenames of input images (reverse phase encoding direction),"
   echo "                                 Set to NONE if not available (default)"
-  echo " --qc                            turn on steps that do quality control of dMRI data"
-  echo " --reg                           turn on steps that do registration to standard (FLIRT and FNIRT)"
+  echo " --qc                            Turn on steps that do quality control of dMRI data"
+  echo " --reg                           Turn on steps that do registration to standard (FLIRT and FNIRT)"
   echo " --slice2vol                     If one wants to do slice-to-volome motion correction"
   echo " --slspec <path>                 Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
   echo "                                 slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction"
@@ -61,6 +61,7 @@ Usage()
   echo " --movebysusceptibility          By setting this option, eddy attempts to estimate how the susceptibility-induced field changes when the subject moves in the scanner"
   echo "                                      This option activates '--estimate_move_by_susceptibility' in EDDY"
   echo "                                      This option is available for FSL 6 onwards"
+  echo " --hires                         This option will increase the time limits and the required memory for processing the pipeline"
   echo " --help                          help"
   echo " "
   echo " "
@@ -88,6 +89,7 @@ do_REG="no"
 Apply_Topup="yes"
 dof=6
 Opt_args=""
+HIRES="no"
 
 # parse arguments
 while [ "$1" != "" ]; do
@@ -138,6 +140,9 @@ while [ "$1" != "" ]; do
                                 ;;
 
         --movebysusceptibility ) MoveBySusceptibility="yes"
+                                ;;
+
+        --hires )               HIRES="yes"
                                 ;;
 
         --help )                Usage
@@ -307,6 +312,7 @@ log_Msg 2 "PEdir: $PEdir"
 log_Msg 2 "CombineMatched: $CombineMatched"
 log_Msg 2 "PIFactor: $PIFactor"
 log_Msg 2 "MoveBySusceptibility: $MoveBySusceptibility"
+log_Msg 2 "HIRES: $HIRES"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 #=====================================================================================
@@ -317,21 +323,31 @@ log_Msg 3 "OutputDir is: ${dMRIFolder}"
 
 if [ $CLUSTER_MODE = "YES" ] ; then
 
-#    export MODULEPATH=/gpfs01/software/imaging/modulefiles:$MODULEPATH
-#
-#    module load cuda/local/9.2
-#    module load fsl-img/5.0.11
-#    module load matlab-uon
+    if [ $HIRES = "yes" ] ; then
+        TIME_LIMIT_1=03:20:00
+        TIME_LIMIT_2=12:00:00
+        TIME_LIMIT_3=04:00:00
+        MEM_1=20
+        MEM_2=90
+        MEM_3=20
+    else
+      TIME_LIMIT_1=01:40:00
+      TIME_LIMIT_2=06:00:00
+      TIME_LIMIT_3=02:00:00
+      MEM_1=20
+      MEM_2=60
+      MEM_3=20
+    fi
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_dMRI_${Subject} -t 01:40:00 -m 60 -c "${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh --dmrirawfolder=${dMRIrawFolder} --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --inputimage=${InputImages} --inputimage2=${InputImages2} --pedirection=${PEdir} --applytopup=${Apply_Topup} --echospacing=${echospacing} --b0dist=${b0dist} --b0maxbval=${b0maxbval} --pifactor=${PIFactor} --logfile=${logFolder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_dMRI_${Subject} -t ${TIME_LIMIT_1} -m ${MEM_1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh --dmrirawfolder=${dMRIrawFolder} --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --inputimage=${InputImages} --inputimage2=${InputImages2} --pedirection=${PEdir} --applytopup=${Apply_Topup} --echospacing=${echospacing} --b0dist=${b0dist} --b0maxbval=${b0maxbval} --pifactor=${PIFactor} --logfile=${logFolder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
-    jobID2=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_2_dMRI_${Subject} -t 06:00:00 -m 60 -w ${jobID1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_2.sh --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --applytopup=${Apply_Topup} --doqc=${do_QC} --qcdir=${qcFolder} --slice2vol=${Slice2Volume} --slspec=${SliceSpec} --movebysuscept=${MoveBySusceptibility} --logfile=${logFolder}/${log_Name}" &`
+    jobID2=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_2_dMRI_${Subject} -t ${TIME_LIMIT_2} -m ${MEM_2} -w ${jobID1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_2.sh --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --applytopup=${Apply_Topup} --doqc=${do_QC} --qcdir=${qcFolder} --slice2vol=${Slice2Volume} --slspec=${SliceSpec} --movebysuscept=${MoveBySusceptibility} --logfile=${logFolder}/${log_Name}" &`
     jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
     echo "jobID_2: ${jobID2}"
 
-    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t 02:00:00 -m 60 -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --logfile=${logFolder}/${log_Name}" &`
+    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --logfile=${logFolder}/${log_Name}" &`
     jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
     echo "jobID_3: ${jobID3}"
 
