@@ -53,9 +53,9 @@ Usage()
   echo " --slspec <path>                 Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
   echo "                                 slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction"
   echo " --cm_flag <value>               CombineMatchedFlag"
-  echo "                                      2 for including in the output all volumes uncombined,"
+  echo "                                      2 for including in the output all volumes uncombined (default),"
   echo "                                      1 for including in the output and combine only volumes where both LR/RL (or AP/PA) pairs have been acquired,"
-  echo "                                      0 for including (uncombined) single volumes as well (default)"
+  echo "                                      0 for including (uncombined) single volumes as well"
   echo " --p_im <value>                  ParallelImaging_Factor, In-plane parallel imaging factor"
   echo "                                      1 for No_Parallel_Imaging"
   echo " --movebysusceptibility          By setting this option, eddy attempts to estimate how the susceptibility-induced field changes when the subject moves in the scanner"
@@ -81,7 +81,7 @@ MoveBySusceptibility="no"
 SliceSpec="NONE"
 echospacing=""
 PEdir=""
-CombineMatched=0
+CombineMatched=2
 PIFactor=1
 
 do_QC="no"
