@@ -35,6 +35,7 @@ echospacing=`getopt1 "--echospacing" $@`
 b0dist=`getopt1 "--b0dist" $@`
 b0maxbval=`getopt1 "--b0maxbval" $@`
 PIFactor=`getopt1 "--pifactor" $@`
+HIRES=`getopt1 "--hires" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 #=====================================================================================
@@ -50,7 +51,6 @@ ${BRC_DMRI_SCR}/data_copy.sh \
               --applytopup=${Apply_Topup} \
               --logfile=${LogFile}
 
-
 ${BRC_DMRI_SCR}/basic_preproc.sh \
               --dmrirawfolder=${dMRIrawFolder} \
               --topupfolder=${topupFolder} \
@@ -63,9 +63,9 @@ ${BRC_DMRI_SCR}/basic_preproc.sh \
               --applytopup=${Apply_Topup} \
               --logfile=${LogFile}
 
-
 if [ ${Apply_Topup} = yes ] ; then
     ${BRC_DMRI_SCR}/run_topup.sh \
               --workingdir=${topupFolder} \
+              --hires=${HIRES} \
               --logfile=${LogFile}
 fi

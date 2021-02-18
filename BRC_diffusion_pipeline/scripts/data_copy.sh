@@ -60,6 +60,8 @@ log_Msg 2 "Apply_Topup:$Apply_Topup"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
+log_Msg 3 `date`
+
 if [ ${PEdir} -eq 1 ]; then    #RL/LR phase encoding
     basePos="RL"
     baseNeg="LR"

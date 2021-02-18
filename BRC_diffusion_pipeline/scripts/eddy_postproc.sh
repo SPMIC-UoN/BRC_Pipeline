@@ -28,6 +28,7 @@ eddydir=`getopt1 "--eddyfolder" $@`
 datadir=`getopt1 "--datafolder" $@`
 CombineMatchedFlag=`getopt1 "--combinematched" $@`
 Apply_Topup=`getopt1 "--Apply_Topup" $@`
+HIRES=`getopt1 "--hires" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -44,9 +45,11 @@ log_Msg 2 "eddydir:$eddydir"
 log_Msg 2 "datadir:$datadir"
 log_Msg 2 "CombineMatchedFlag:$CombineMatchedFlag"
 log_Msg 2 "Apply_Topup:$Apply_Topup"
+log_Msg 2 "HIRES:$HIRES"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
+log_Msg 3 `date`
 
 if [ ${CombineMatchedFlag} -eq 2 ]; then
     ${FSLDIR}/bin/imcp  ${eddydir}/eddy_unwarped_images ${datadir}/data
@@ -83,7 +86,11 @@ fi
 
 #Remove negative intensity values (caused by spline interpolation) from final data
 ${FSLDIR}/bin/fslmaths ${datadir}/data -thr 0 ${datadir}/data
-${FSLDIR}/bin/bet ${datadir}/data ${datadir}/nodif_brain -m -f 0.20
+if [ $HIRES = "yes" ] ; then
+    ${FSLDIR}/bin/bet ${datadir}/data ${datadir}/nodif_brain -m -f 0.15
+else
+    ${FSLDIR}/bin/bet ${datadir}/data ${datadir}/nodif_brain -m -f 0.20
+fi
 ${FSLDIR}/bin/fslroi ${datadir}/data ${datadir}/nodif 0 1
 
 ${FSLDIR}/bin/dtifit -k ${datadir}/data -m ${datadir}/nodif_brain -r ${datadir}/bvecs -b ${datadir}/bvals -o ${datadir}/dti

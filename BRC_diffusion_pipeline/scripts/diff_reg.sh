@@ -59,6 +59,7 @@ log_Msg 2 "data2stdFolder:$data2stdFolder"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
+log_Msg 3 `date`
 Standard=$FSLDIR/data/standard/MNI152_T1_2mm
 
 ${FSLDIR}/bin/fslroi ${datadir}/data ${datadir}/nodif 0 1

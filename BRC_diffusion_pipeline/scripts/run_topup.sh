@@ -24,6 +24,7 @@ getopt1()
 
 # parse arguments
 WD=`getopt1 "--workingdir" $@`
+HIRES=`getopt1 "--hires" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -36,9 +37,11 @@ log_Msg 3 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 2 "WD:$WD"
+log_Msg 2 "HIRES:$HIRES"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
+log_Msg 3 `date`
 
 #topup_config_file=${FSLDIR}/etc/flirtsch/b02b0.cnf
 topup_config_file=${BRC_GLOBAL_DIR}/config/b02b0.cnf.txt
@@ -67,7 +70,11 @@ ${FSLDIR}/bin/imrm ${WD}/Pos_b0*
 ${FSLDIR}/bin/imrm ${WD}/Neg_b0*
 
 log_Msg 3 "Running BET on the hifi b0"
-${FSLDIR}/bin/bet ${WD}/hifib0 ${WD}/nodif_brain -m -f 0.2
+if [ $HIRES = "yes" ] ; then
+    ${FSLDIR}/bin/bet ${WD}/hifib0 ${WD}/nodif_brain -m -f 0.15
+else
+    ${FSLDIR}/bin/bet ${WD}/hifib0 ${WD}/nodif_brain -m -f 0.20
+fi
 
 log_Msg 3 ""
 log_Msg 3 "          END: Topup Field Map Generation and Gradient Unwarping"

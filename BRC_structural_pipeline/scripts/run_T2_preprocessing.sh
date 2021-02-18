@@ -66,7 +66,7 @@ if [ $RegType == 1 ]; then
     ${FSLDIR}/bin/flirt -in ${WD}/T2_tmp_brain -ref ${TempT1Folder}/T1_brain -dof 6 -cost corratio -omat ${WD}/T2toT1_cr.mat -out ${WD}/T2toT1_cr.nii.gz
     ${FSLDIR}/bin/flirt -in ${WD}/T2_orig_ud -ref ${TempT1Folder}/T1_brain -dof 6 -cost bbr -wmseg ${TempT1Folder}/FAST/T1_brain_WM_mask -schedule $FSLDIR/etc/flirtsch/bbr.sch -init ${WD}/T2toT1_cr.mat -omat ${WD}/T2_orig_ud_to_T2.mat -out ${WD}/T2
 
-elif [ $RegType == 1 ]; then
+elif [ $RegType == 2 ]; then
 
     log_Msg 3 `date`
     log_Msg 3 "Take T2 to T1 and also the brain mask"

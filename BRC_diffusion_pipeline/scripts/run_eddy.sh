@@ -54,6 +54,8 @@ log_Msg 2 "MoveBySusceptibility:$MoveBySusceptibility"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
+log_Msg 3 `date`
+
 if [[ $Slice2Volume == yes ]]; then
     MPOrder=4
 else
