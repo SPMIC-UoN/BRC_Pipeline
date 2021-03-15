@@ -73,7 +73,7 @@ fi
 
 log_Msg 3 `date`
 log_Msg 3 "Run a (Recursive) brain extraction"
-${FSLDIR}/bin/bet ${WD}/T1_tmp ${WD}/T1_tmp_brain -R -m
+${FSLDIR}/bin/bet ${WD}/T1_tmp ${WD}/T1_tmp_brain -R -m -f 0.56
 
 log_Msg 3 `date`
 echo "Reduces the FOV"
