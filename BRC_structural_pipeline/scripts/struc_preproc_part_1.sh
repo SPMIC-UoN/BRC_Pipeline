@@ -85,10 +85,12 @@ if [[ $T2 == "yes" ]]; then
             --regtempt2folder=${regTempT2Folder} \
             --dodefacing=${do_defacing} \
             --regtype=${RegType} \
+            --docrop=${do_crop} \
             --logfile=${logT1Folder}
 
 fi
 
+#: <<'COMMENT'
 ${BRC_SCTRUC_SCR}/output_organization.sh \
       --t1folder=${T1Folder} \
       --t2folder=${T2Folder} \
