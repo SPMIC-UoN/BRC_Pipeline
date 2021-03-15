@@ -43,6 +43,7 @@ data2strFolder=`getopt1 "--outstr" $@`
 data2stdFolder=`getopt1 "--outstd" $@`
 Start_Time=`getopt1 "--start" $@`
 Subject=`getopt1 "--subject" $@`
+HIRES=`getopt1 "--hires" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 #=====================================================================================
@@ -55,6 +56,7 @@ ${BRC_DMRI_SCR}/eddy_postproc.sh \
       --datafolder=${dataFolder} \
       --combinematched=${CombineMatched} \
       --Apply_Topup=${Apply_Topup} \
+      --hires=${HIRES} \
       --logfile=${LogFile}
 
 

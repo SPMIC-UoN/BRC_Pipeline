@@ -102,6 +102,8 @@ for entry in ${Files}  #For each series, get the mean b0 and rescale to match th
 do
     basename=`imglob ${entry}`
 
+    ${FSLDIR}/bin/fslmaths ${basename} -mul 1 ${basename} -odt float   # conversion of all input files to the same datatype to ensure consistency
+
     log_Msg 3 "Processing $basename"
     ${FSLDIR}/bin/fslmaths ${entry} -Xmean -Ymean -Zmean ${basename}_mean
 
@@ -122,7 +124,6 @@ do
     ${FSLDIR}/bin/imrm ${basename}_b0_????
 
     if [ ${entry_cnt} -eq 0 ]; then      #Do not rescale the first series
-#        ${FSLDIR}/bin/fslmaths ${basename}_mean -mul 1 ${basename}_mean -odt float
         rescale=`${FSLDIR}/bin/fslmeants -i ${basename}_mean`
     else
         scaleS=`${FSLDIR}/bin/fslmeants -i ${basename}_mean`
@@ -133,8 +134,6 @@ do
 
     entry_cnt=$((${entry_cnt} + 1))
     ${FSLDIR}/bin/imrm ${basename}_mean
-
-    ${FSLDIR}/bin/fslmaths ${basename} -mul 1 ${basename} -odt float
 done
 
 ################################################################################################
@@ -300,7 +299,6 @@ fi
 
 ${FSLDIR}/bin/fslmerge -t ${rawdir}/Pos_b0 `${FSLDIR}/bin/imglob ${rawdir}/Pos_b0_????.*`
 ${FSLDIR}/bin/imrm ${rawdir}/Pos_b0_????
-#${FSLDIR}/bin/fslmaths ${rawdir}/Pos_b0 -mul 1 ${rawdir}/Pos_b0 -odt float
 
 if [ $Apply_Topup = yes ] ; then
     log_Msg 3 "Merging Pos and Neg images"
