@@ -32,6 +32,7 @@ regTempT1Folder=`getopt1 "--regtempt1folder" $@`
 regTempT2Folder=`getopt1 "--regtempt2folder" $@`
 do_defacing=`getopt1 "--dodefacing" $@`
 RegType=`getopt1 "--regtype" $@`
+do_crop=`getopt1 "--docrop" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -51,6 +52,7 @@ log_Msg 2 "regTempT1Folder:$regTempT1Folder"
 log_Msg 2 "regTempT2Folder:$regTempT2Folder"
 log_Msg 2 "do_defacing:$do_defacing"
 log_Msg 2 "RegType:$RegType"
+log_Msg 2 "do_crop:$do_crop"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -58,13 +60,26 @@ $FSLDIR/bin/imcp ${T2input} ${WD}/T2_orig_ud
 
 if [ $RegType == 1 ]; then
 
+    if [ $do_crop = "yes" ] ; then
+        log_Msg 3 `date`
+        log_Msg 3 "Automatically cropping the image"
+        head_top=`${FSLDIR}/bin/robustfov -i ${WD}/T2_orig_ud | grep -v Final | head -n 1 | awk '{print $5}'`
+        ${FSLDIR}/bin/fslmaths ${WD}/T2_orig_ud -roi 0 -1 0 -1 $head_top 170 0 1 ${WD}/T2_tmp
+    else
+        $FSLDIR/bin/imcp ${WD}/T2_orig_ud ${WD}/T2_tmp
+    fi
+
     log_Msg 3 `date`
     log_Msg 3 "Run a (Recursive) brain extraction"
-    ${FSLDIR}/bin/bet ${WD}/T2_orig_ud ${WD}/T2_tmp_brain -R -m
+    ${FSLDIR}/bin/bet ${WD}/T2_tmp ${WD}/T2_tmp_brain -R -m -f 0.50
 
     log_Msg 3 "Take T2 to T1 and also the brain mask"
     ${FSLDIR}/bin/flirt -in ${WD}/T2_tmp_brain -ref ${TempT1Folder}/T1_brain -dof 6 -cost corratio -omat ${WD}/T2toT1_cr.mat -out ${WD}/T2toT1_cr.nii.gz
-    ${FSLDIR}/bin/flirt -in ${WD}/T2_orig_ud -ref ${TempT1Folder}/T1_brain -dof 6 -cost bbr -wmseg ${TempT1Folder}/FAST/T1_brain_WM_mask -schedule $FSLDIR/etc/flirtsch/bbr.sch -init ${WD}/T2toT1_cr.mat -omat ${WD}/T2_orig_ud_to_T2.mat -out ${WD}/T2
+#    ${FSLDIR}/bin/flirt -in ${WD}/T2_orig_ud -ref ${TempT1Folder}/T1 -dof 6 -init ${WD}/T2toT1_cr.mat -omat ${WD}/T2_orig_ud_to_T2.mat -out ${WD}/T2
+    ${FSLDIR}/bin/flirt -in ${WD}/T2_tmp_brain -ref ${TempT1Folder}/T1_brain -dof 6 -init ${WD}/T2toT1_cr.mat -omat ${WD}/T2_orig_ud_to_T2.mat -out ${WD}/T2_brain
+#    ${FSLDIR}/bin/flirt -in ${WD}/T2_tmp_brain -ref ${TempT1Folder}/T1_brain -dof 6 -cost bbr -wmseg ${TempT1Folder}/FAST/T1_brain_WM_mask -schedule $FSLDIR/etc/flirtsch/bbr.sch -init ${WD}/T2toT1_cr.mat -omat ${WD}/T2_orig_ud_to_T2.mat -out ${WD}/T2_brain
+    ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/T2_tmp -r ${TempT1Folder}/T1_brain --premat=${WD}/T2_orig_ud_to_T2.mat -o ${WD}/T2
+    ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${WD}/T2_tmp_brain_mask -r ${TempT1Folder}/T1_brain --premat=${WD}/T2_orig_ud_to_T2.mat -o ${WD}/T2_brain_mask
 
 elif [ $RegType == 2 ]; then
 
@@ -76,10 +91,11 @@ elif [ $RegType == 2 ]; then
     ${FSLDIR}/bin/flirt -in ${WD}/T2_orig_ud -ref ${TempT1Folder}/T1_brain -refweight ${TempT1Folder}/T1_brain_mask -nosearch -init ${WD}/T2_tmp2.mat -omat ${WD}/T2_orig_ud_to_T2.mat -dof 6
     ${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r ${TempT1Folder}/T1_brain -o ${WD}/T2 --premat=${WD}/T2_orig_ud_to_T2.mat --interp=spline
 
+    #cp ${TempT1Folder}/T1_brain_mask.nii.gz ${WD}/T2_brain_mask.nii.gz
+    ${FSLDIR}/bin/fslmaths ${WD}/T2 -mul ${WD}/T2_brain_mask ${WD}/T2_brain
 fi
 
-cp ${TempT1Folder}/T1_brain_mask.nii.gz ${WD}/T2_brain_mask.nii.gz
-${FSLDIR}/bin/fslmaths ${WD}/T2 -mul ${WD}/T2_brain_mask ${WD}/T2_brain
+#: <<'COMMENT'
 
 log_Msg 3 `date`
 log_Msg 3 "Generate the linear matrix from T2 to MNI"
