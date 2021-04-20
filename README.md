@@ -17,10 +17,9 @@
 
 The BRC Pipeline scripts are being released for processing magnetic resonance imaging (MRI) data. This processing pipeline could be applied to different modalities such as T1w/T2w MRI, diffusion MRI, and functional MRI datasets. Also, it can be used for the functional connectivity and network analysis.
 
-For further information, please see:
-
-* The [Release Notes, Installation, and Usage][release-install-use] document
-  for the current release
+# Installation
+The instruction of step by step installation is available at the [Release Notes, Installation, and Usage][release-install-use] document
+  for the current release.
 
 ## How do I cite the pipeline?
 Each version of the pipeline has its own DOI. The above shiny badge shows the DOI of the last version. However, by clicking on this badge, you can find different DOIs of different versions. You can cite all versions by using the DOI 10.5281/zenodo.3624973. This DOI represents all versions, and will always resolve to the latest one.
