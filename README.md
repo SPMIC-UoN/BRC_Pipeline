@@ -49,5 +49,5 @@ Each version of the pipeline has its own DOI. The above shiny badge shows the DO
 
 [release-install-use]: https://github.com/SPMIC-UoN/BRC_Pipeline/wiki
 [Versions_md]: https://github.com/SPMIC-UoN/BRC_Pipeline/releases
-[wiki_md]: https://github.com/SPMIC-UoN/BRC_Pipeline/wiki
+[wiki_md]: https://github.com/SPMIC-UoN/BRC_Pipeline/wiki/Installation-and-Usage-Instructions
 [faq_md]: https://github.com/SPMIC-UoN/BRC_Pipeline/wiki/FAQ
