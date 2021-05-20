@@ -166,6 +166,8 @@ segFolderName="seg"
 FSFolderName="FS"
 FastFolderName="FAST"
 FirstFolderName="FIRST"
+SienaxFolderName="SIENAX"
+BiancaFolderName="lesions"
 
 log_Name="log.txt"
 
@@ -193,6 +195,7 @@ logT1Folder=${T1Folder}/${logFolderName}
 TempT1Folder=${T1Folder}/${tempFolderName}
 FastT1Folder=${TempT1Folder}/${FastFolderName}
 FirstT1Folder=${TempT1Folder}/${FirstFolderName}
+SienaxT1Folder=${TempT1Folder}/${SienaxFolderName}
 regTempT1Folder=${TempT1Folder}/${regFolderName}
 regT1Folder=${preprocT1Folder}/${regFolderName}
 qcT1Folder=${preprocT1Folder}/${qcFolderName}
@@ -210,6 +213,7 @@ data2stdT2Folder=${processedT2Folder}/${data2stdFolderName}
 regT2Folder=${preprocT2Folder}/${regFolderName}
 TempT2Folder=${T2Folder}/${tempFolderName}
 regTempT2Folder=${TempT2Folder}/${regFolderName}
+BiancaT2Folder=${TempT2Folder}/${BiancaFolderName}
 
 #Check existance of foldersa= and then create them
 if [ ! -d ${AnalysisFolder} ]; then mkdir ${AnalysisFolder}; fi
@@ -291,7 +295,7 @@ if [ $CLUSTER_MODE = "YES" ] ; then
 #    ${JOBSUBpath}/jobsub -q cpu -p 1 -s BRCP_SMRI_${Subject} -t 00:46:00 -m 60 -c "${BRC_SCTRUC_DIR}/struc_preproc.sh --subject ${Sub_ID} --path ${Path} --input ${IN_Img} --t2 ${T2_IN_Img} ${Opt_args}" &
 
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_SMRI_${Subject} -t 03:00:00 -m 60 -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${FirstT1Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --regtype=${RegType} --logt1folder=${logT1Folder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_SMRI_${Subject} -t 03:00:00 -m 60 -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${FirstT1Folder} --sienaxt1folder=${SienaxT1Folder} --biancat2folder=${BiancaT2Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --regtype=${RegType} --logt1folder=${logT1Folder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
@@ -306,6 +310,8 @@ else
                       --dodefacing=${do_defacing} \
                       --fastt1folder=${FastT1Folder} \
                       --firstt1folder=${FirstT1Folder} \
+                      --sienaxt1folder=${SienaxT1Folder} \
+                      --biancat2folder=${BiancaT2Folder} \
                       --regtempt1folder=${regTempT1Folder} \
                       --t2=${T2} \
                       --tempt2folder=${TempT2Folder} \

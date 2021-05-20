@@ -65,7 +65,9 @@ fi
 #fi
 
 if [[ ${ShowDiff} == "yes" ]]; then
-    log_Msg 3 "                           Subject: $Sub_ID"
+    if [ ${Type} = "1" ] || [ ${Type} = "2" ] || [ ${Type} = "3" ] ; then
+        log_Msg 3 "                           Subject: $Sub_ID"
+    fi
 
     case $Type in
 
@@ -82,7 +84,11 @@ if [[ ${ShowDiff} == "yes" ]]; then
         ;;
 
         4)
-            log_Msg 3 "                 Type of Analysis: Group Functional"
+            log_Msg 3 "                  Type of Analysis: Group Functional"
+        ;;
+
+        5)
+            log_Msg 3 "                   Type of Analysis: IDP extractor"
         ;;
     esac
 

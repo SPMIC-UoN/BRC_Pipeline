@@ -31,6 +31,8 @@ do_crop=`getopt1 "--docrop" $@`
 do_defacing=`getopt1 "--dodefacing" $@`
 FastT1Folder=`getopt1 "--fastt1folder" $@`
 FirstT1Folder=`getopt1 "--firstt1folder" $@`
+SienaxT1Folder=`getopt1 "--sienaxt1folder" $@`
+BiancaT2Folder=`getopt1 "--biancat2folder" $@`
 regTempT1Folder=`getopt1 "--regtempt1folder" $@`
 T2=`getopt1 "--t2" $@`
 TempT2Folder=`getopt1 "--tempt2folder" $@`
@@ -70,10 +72,12 @@ ${BRC_SCTRUC_SCR}/run_T1_preprocessing.sh \
       --dodefacing=${do_defacing} \
       --fastfolder=${FastT1Folder} \
       --firstfolder=${FirstT1Folder} \
+      --sienaxt1folder=${SienaxT1Folder} \
       --regtempt1folder=${regTempT1Folder} \
       --regtype=${RegType} \
       --logfile=${logT1Folder}
 
+#: <<'COMMENT'
 if [[ $T2 == "yes" ]]; then
 
       ${BRC_SCTRUC_SCR}/run_T2_preprocessing.sh \
@@ -86,6 +90,7 @@ if [[ $T2 == "yes" ]]; then
             --dodefacing=${do_defacing} \
             --regtype=${RegType} \
             --docrop=${do_crop} \
+            --biancat2folder=${BiancaT2Folder} \
             --logfile=${logT1Folder}
 
 fi

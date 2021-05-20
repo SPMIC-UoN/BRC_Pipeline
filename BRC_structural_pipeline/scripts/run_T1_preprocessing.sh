@@ -7,7 +7,7 @@
 #
 set -e
 
-source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
+source ${BRC_GLOBAL_SCR}/log.shlib  # Logging related functions
 
 # function for parsing options
 getopt1()
@@ -32,6 +32,7 @@ do_crop=`getopt1 "--docrop" $@`
 do_defacing=`getopt1 "--dodefacing" $@`
 FastT1Folder=`getopt1 "--fastfolder" $@`
 FirstT1Folder=`getopt1 "--firstfolder" $@`
+SienaxT1Folder=`getopt1 "--sienaxt1folder" $@`
 regTempT1Folder=`getopt1 "--regtempt1folder" $@`
 RegType=`getopt1 "--regtype" $@`
 LogFile=`getopt1 "--logfile" $@`
@@ -53,14 +54,13 @@ log_Msg 2 "do_crop:$do_crop"
 log_Msg 2 "do_defacing:$do_defacing"
 log_Msg 2 "FastT1Folder:$FastT1Folder"
 log_Msg 2 "FirstT1Folder:$FirstT1Folder"
+log_Msg 2 "SienaxT1Folder:$SienaxT1Folder"
 log_Msg 2 "regTempT1Folder:$regTempT1Folder"
 log_Msg 2 "RegType:$RegType"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-#$FSLDIR/bin/fslmaths ${T1input} ${WD}/T1
 $FSLDIR/bin/imcp ${T1input} ${WD}/T1_orig_ud
-
 
 if [ $do_crop = "yes" ] ; then
     log_Msg 3 `date`
@@ -106,19 +106,11 @@ if [ $RegType == 2 ]; then
                         --interp=spline
 
 
-                        log_Msg 3 `date`
-                        log_Msg 3 "Combine the transformations into one and then apply it."
-                        ${FSLDIR}/bin/convertwarp --ref=$FSLDIR/data/standard/MNI152_T1_1mm --premat=${WD}/T1_orig_ud_to_T1.mat --warp1=${WD}/T1_to_MNI_nonlin_field --out=${WD}/T1_orig_to_MNI_warp
-                        ${FSLDIR}/bin/applywarp --rel -i ${T1input} -r $FSLDIR/data/standard/MNI152_T1_1mm -w ${WD}/T1_orig_to_MNI_warp -o ${WD}/T1_brain_to_MNI --interp=spline
+    log_Msg 3 `date`
+    log_Msg 3 "Combine the transformations into one and then apply it."
+    ${FSLDIR}/bin/convertwarp --ref=$FSLDIR/data/standard/MNI152_T1_1mm --premat=${WD}/T1_orig_ud_to_T1.mat --warp1=${WD}/T1_to_MNI_nonlin_field --out=${WD}/T1_orig_to_MNI_warp
+    ${FSLDIR}/bin/applywarp --rel -i ${T1input} -r $FSLDIR/data/standard/MNI152_T1_1mm -w ${WD}/T1_orig_to_MNI_warp -o ${WD}/T1_brain_to_MNI --interp=spline
 fi
-
-#if [ $RegType == 1 ]; then
-#
-#    log_Msg 3 `date`
-#    log_Msg 3 "Registering to standard space (linear)"
-#    ${FSLDIR}/bin/flirt -interp spline -dof 12 -in ${WD}/T1 -ref $FSLDIR/data/standard/MNI152_T1_1mm -omat ${WD}/T1_to_MNI_lin.mat -out ${WD}/T1_to_MNI_lin
-#
-#fi
 
 log_Msg 3 `date`
 log_Msg 3 "Performing brain extraction"
@@ -172,7 +164,6 @@ mv ${WD}/*MNI* ${regTempT1Folder}
 mv ${WD}/*_to_* ${regTempT1Folder}
 #mv ${regTempT1Folder}/T1_brain_to_MNI.nii.gz .
 
-
 log_Msg 3  `date`
 log_Msg 3 "Estimating Bias field"
 if [ -e ${FastT1Folder} ] ; then rm -r ${FastT1Folder}; fi; mkdir ${FastT1Folder}
@@ -200,7 +191,6 @@ else
 fi
 
 #${FSLDIR}/bin/applywarp --rel -i ${WD}/T1_unbiased -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${regTempT1Folder}/T1_to_MNI_linear --premat=${regTempT1Folder}/T1_to_MNI_linear.mat --interp=spline
-#log_Msg 3 "test"
 ${FSLDIR}/bin/flirt -interp spline -dof 12 -in ${WD}/T1_unbiased -ref $FSLDIR/data/standard/MNI152_T1_1mm -omat ${regTempT1Folder}/T1_to_MNI_linear_temp.mat -out ${regTempT1Folder}/T1_to_MNI_linear
 # Remove negative intensity values (from eddy) from final data
 ${FSLDIR}/bin/fslmaths ${regTempT1Folder}/T1_to_MNI_linear -thr 0 ${regTempT1Folder}/T1_to_MNI_linear
@@ -224,12 +214,23 @@ if [ $dosubseg = "yes" ] ; then
     ${FSLDIR}/bin/run_first_all -i ${FirstT1Folder}/T1_unbiased_brain -b -o ${FirstT1Folder}/T1_first
 fi
 
+if [ $RegType == 2 ]; then
+
+    log_Msg 3  `date`
+    log_Msg 3 "Run Sienax"
+    ${BRC_SCTRUC_SCR}/run_T1_sienax.sh \
+                      --workingdir=${WD} \
+                      --sienaxt1folder=${SienaxT1Folder} \
+                      --fastfolder=${FastT1Folder} \
+                      --logfile=${LogFile}
+
+fi
+
 log_Msg 3 ""
 log_Msg 3 "                       END: T1w Image preprocessing"
 log_Msg 3 "                    END: `date`"
 log_Msg 3 "=========================================================================="
 log_Msg 3 "                             ===============                              "
-
 
 ################################################################################################
 ## Cleanup

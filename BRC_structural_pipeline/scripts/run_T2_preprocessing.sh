@@ -33,6 +33,7 @@ regTempT2Folder=`getopt1 "--regtempt2folder" $@`
 do_defacing=`getopt1 "--dodefacing" $@`
 RegType=`getopt1 "--regtype" $@`
 do_crop=`getopt1 "--docrop" $@`
+BiancaT2Folder=`getopt1 "--biancat2folder" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -53,6 +54,7 @@ log_Msg 2 "regTempT2Folder:$regTempT2Folder"
 log_Msg 2 "do_defacing:$do_defacing"
 log_Msg 2 "RegType:$RegType"
 log_Msg 2 "do_crop:$do_crop"
+log_Msg 2 "BiancaT2Folder:$BiancaT2Folder"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -91,7 +93,7 @@ elif [ $RegType == 2 ]; then
     ${FSLDIR}/bin/flirt -in ${WD}/T2_orig_ud -ref ${TempT1Folder}/T1_brain -refweight ${TempT1Folder}/T1_brain_mask -nosearch -init ${WD}/T2_tmp2.mat -omat ${WD}/T2_orig_ud_to_T2.mat -dof 6
     ${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r ${TempT1Folder}/T1_brain -o ${WD}/T2 --premat=${WD}/T2_orig_ud_to_T2.mat --interp=spline
 
-    #cp ${TempT1Folder}/T1_brain_mask.nii.gz ${WD}/T2_brain_mask.nii.gz
+    ${FSLDIR}/bin/imcp ${TempT1Folder}/T1_brain_mask.nii.gz ${WD}/T2_brain_mask.nii.gz
     ${FSLDIR}/bin/fslmaths ${WD}/T2 -mul ${WD}/T2_brain_mask ${WD}/T2_brain
 fi
 
@@ -165,6 +167,16 @@ if [ -f ${FastT1Folder}/T1_brain_bias.nii.gz ] ; then
 else
     echo "WARNING: There was no bias field estimation. Bias field correction cannot be applied to T2."
 fi
+
+log_Msg 3  `date`
+log_Msg 3 "Run BIANCA"
+${BRC_SCTRUC_SCR}/run_T2_bianca.sh \
+                  --workingdir=${WD} \
+                  --tempt1folder=${TempT1Folder} \
+                  --fastfolder=${FastT1Folder} \
+                  --biancat2folder=${BiancaT2Folder} \
+                  --regtempt1folder=${regTempT1Folder} \
+                  --logfile=${LogFile}
 
 log_Msg 3 ""
 log_Msg 3 "                       END: T2w Image preprocessing"
