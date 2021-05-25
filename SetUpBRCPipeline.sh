@@ -47,12 +47,14 @@ export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
 export BRC_FMRI_DIR=${BRCDIR}/BRC_functional_pipeline
 export BRC_PMRI_DIR=${BRCDIR}/BRC_perfusion_pipeline
 export BRC_FMRI_GP_DIR=${BRCDIR}/BRC_func_group_analysis
+export BRC_IDPEXTRACT_DIR=${BRCDIR}/BRC_IDP_extraction
 export BRC_GLOBAL_DIR=${BRCDIR}/global
 export BRC_SCTRUC_SCR=${BRC_SCTRUC_DIR}/scripts
 export BRC_DMRI_SCR=${BRC_DMRI_DIR}/scripts
 export BRC_FMRI_SCR=${BRC_FMRI_DIR}/scripts
 export BRC_PMRI_SCR=${BRC_PMRI_DIR}/scripts
 export BRC_FMRI_GP_SCR=${BRC_FMRI_GP_DIR}/scripts
+export BRC_IDPEXTRACT_SCR=${BRC_IDPEXTRACT_DIR}/scripts
 export BRC_GLOBAL_SCR=${BRC_GLOBAL_DIR}/scripts
 
 #SETUP MATLAB and LIBRARIES
