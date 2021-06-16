@@ -15,7 +15,7 @@ set -e
 AnalysisFolderName="analysis"
 AnatMRIFolderName="anatMRI"
 T2FolderName="T2"
-tempFolderName="temp"
+preprocFolderName="preproc"
 lesionsFolderName="lesions"
 
 origDir=`pwd`
@@ -23,7 +23,7 @@ scriptName=`basename "$0"`
 direc=$1
 
 T2wSubjFolder=${direc}/${AnalysisFolderName}/${AnatMRIFolderName}/${T2FolderName}
-LesionsSubjFolder=${T2wSubjFolder}/${tempFolderName}/${lesionsFolderName}
+LesionsSubjFolder=${T2wSubjFolder}/${preprocFolderName}/${lesionsFolderName}
 
 #Setting the string of NaN in case there is a problem.
 result="NaN"

@@ -15,7 +15,7 @@ set -e
 AnalysisFolderName="analysis"
 AnatMRIFolderName="anatMRI"
 T1FolderName="T1"
-tempFolderName="temp"
+preprocFolderName="preproc"
 SienaxFolderName="SIENAX"
 
 origDir=`pwd`
@@ -31,7 +31,7 @@ for i in $(seq 1 $numVars) ; do
     result="NaN $result" ;
 done
 
-filepath=${T1wSubjFolder}/${tempFolderName}/${SienaxFolderName}
+filepath=${T1wSubjFolder}/${preprocFolderName}/${SienaxFolderName}
 if [ ! -f ${filepath}/T1_sienax.txt ] && [ -f ${filepath}/report.sienax ] ; then
   echo `cat ${filepath}/report.sienax` | cut -d " " -f2,7,8,12,13,17,18,20,21,23,24 > ${filepath}/T1_sienax.txt
   result=`cat ${filepath}/T1_sienax.txt`

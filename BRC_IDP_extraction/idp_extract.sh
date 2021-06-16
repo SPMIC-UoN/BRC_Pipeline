@@ -120,48 +120,33 @@ log_Msg 2 "Original command:"
 log_Msg 2 "$log"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 2 "Parsing Command Line Options"
-log_Msg 2 "InputList: $InputList"
-log_Msg 2 "InputDIR: $InputDIR"
-log_Msg 2 "OutDIR: $OutDIR"
+log_Msg 2 "InputList: ${InputList}"
+log_Msg 2 "InputDIR: ${InputDIR}"
+log_Msg 2 "OutDIR: ${OutDIR}"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 #=====================================================================================
 ###                                   DO WORK
 #=====================================================================================
 
-#Generate two different list for the subjects and their status
-cut -d' ' -f1 < ${InputList} > ${ListFolder}/${SubjectList_name}
+if [ ${CLUSTER_MODE} = "YES" ] ; then
 
-for Subject in $(cat ${ListFolder}/${SubjectList_name}) ; do
-    log_Msg 3 "${Subject}"
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_IDPEx -t 03:00:00 -m 10 -c "${BRC_IDPEXTRACT_SCR}/idp_extract_part_1.sh --inputlist=${InputList} --listfolder=${ListFolder} --subjectlist_name=${SubjectList_name} --inputdir=${InputDIR} --analysisfoldername=${AnalysisFolderName} --idp_folder_name=${IDP_folder_name} --groupidpfolder=${GroupIDPFolder} --starttime=${Start_Time} --logidpfolder=${logFolder}/${log_Name}" &`
+    jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
+    echo "jobID_1: ${jobID1}"
 
-    IDPFolder=${InputDIR}/${Subject}/${AnalysisFolderName}/${IDP_folder_name}
+else
 
-    if [ -e ${IDPFolder} ] ; then rm -r ${IDPFolder}; fi; mkdir ${IDPFolder}
+    ${BRC_IDPEXTRACT_SCR}/idp_extract_part_1.sh \
+                          --inputlist=${InputList} \
+                          --listfolder=${ListFolder} \
+                          --subjectlist_name=${SubjectList_name} \
+                          --inputdir=${InputDIR} \
+                          --analysisfoldername=${AnalysisFolderName} \
+                          --idp_folder_name=${IDP_folder_name} \
+                          --groupidpfolder=${GroupIDPFolder} \
+                          --starttime=${Start_Time} \
+                          --logidpfolder=${logFolder}/${log_Name}
 
-    result="${Subject}"
-    for elem in `cat ${BRC_GLOBAL_DIR}/config/IDP_list.txt | awk '{print $3}' | uniq` ; do
-        if [ -f ${IDPFolder}/${elem}.txt ] ; then
-            result="$result `cat ${IDPFolder}/${elem}.txt`"
-        else
-            result="$result `${BRC_IDPEXTRACT_SCR}/${elem}.sh ${InputDIR}/${Subject}`"
-        fi
-    done
 
-    result=`echo $result | sed 's/  / /g'`
-
-    echo $result > ${IDPFolder}/IDPs.txt
-    echo $result
-
-    echo $result >> ${GroupIDPFolder}/IDPs.txt
-
-done
-
-END_Time="$(date -u +%s)"
-
-${RUN} ${BRCDIR}/Show_version.sh \
-      --showdiff="yes" \
-      --start=${Start_Time} \
-      --end=${END_Time} \
-      --type=5 \
-      --logfile=${logFolder}/${log_Name}
+fi

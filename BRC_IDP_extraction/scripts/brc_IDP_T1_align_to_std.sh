@@ -19,6 +19,7 @@ processedFolderName="processed"
 preprocFolderName="preproc"
 tempFolderName="temp"
 dataFolderName="data"
+data2stdFolderName="data2std"
 regFolderName="reg"
 
 ST=$FSLDIR/data/standard
@@ -31,7 +32,7 @@ direc=$1
 T1wSubjFolder=${direc}/${AnalysisFolderName}/${AnatMRIFolderName}/${T1FolderName}
 DataSubjFolder=${T1wSubjFolder}/${processedFolderName}/${dataFolderName}
 RegSubjFolder=${T1wSubjFolder}/${preprocFolderName}/${regFolderName}
-RegTempSubjFolder=${T1wSubjFolder}/${tempFolderName}/${regFolderName}
+Data2StdSubjFolder=${T1wSubjFolder}/${processedFolderName}/${data2stdFolderName}
 
 baseT1="T1"
 
@@ -43,8 +44,8 @@ if [ -f ${DataSubjFolder}/T1_brain.nii.gz ] && [ -f ${RegSubjFolder}/T1_2_std.ma
     result1=`${FSLDIR}/bin/flirt -in ${DataSubjFolder}/T1_brain -ref ${ST}/MNI152_T1_1mm_brain -refweight ${ST}/MNI152_T1_1mm_brain_mask -init ${RegSubjFolder}/T1_2_std.mat -schedule ${MC} | head -1 | cut -f1 -d' '`
 fi
 
-if [ -f ${RegTempSubjFolder}/T1_brain_to_MNI.nii.gz ] ; then
-    result2=`${FSLDIR}/bin/flirt -in ${RegTempSubjFolder}/T1_brain_to_MNI -ref ${ST}/MNI152_T1_1mm_brain -refweight ${ST}/MNI152_T1_1mm_brain_mask -schedule ${MC} | head -1 | cut -f1 -d' ' `
+if [ -f ${Data2StdSubjFolder}/T1_2_std_brain_lin.nii.gz ] ; then
+    result2=`${FSLDIR}/bin/flirt -in ${Data2StdSubjFolder}/T1_2_std_brain_lin -ref ${ST}/MNI152_T1_1mm_brain -refweight ${ST}/MNI152_T1_1mm_brain_mask -schedule ${MC} | head -1 | cut -f1 -d' ' `
 fi
 
 if [ -f ${RegSubjFolder}/T1_2_std_warp_jac.nii.gz ] ; then

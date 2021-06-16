@@ -47,3 +47,9 @@ fi
 
 echo $result > ${direc}/${AnalysisFolderName}/IDP_files/${scriptName%.*}.txt
 echo $result
+
+################################################################################################
+## Cleanup
+################################################################################################
+
+${FSLDIR}/bin/imrm ${T1wSubjFolder}/${tempFolderName}/GMatlas_to_T1
