@@ -27,7 +27,7 @@ getopt1()
 WD=`getopt1 "--workingdir" $@`
 TempT1Folder=`getopt1 "--tempt1folder" $@`
 FastT1Folder=`getopt1 "--fastfolder" $@`
-BiancaT2Folder=`getopt1 "--biancat2folder" $@`
+BiancaTempFolder=`getopt1 "--biancatempfolder" $@`
 regTempT1Folder=`getopt1 "--regtempt1folder" $@`
 LogFile=`getopt1 "--logfile" $@`
 
@@ -37,12 +37,12 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 log_Msg 2 "WD:$WD"
 log_Msg 2 "TempT1Folder:$TempT1Folder"
 log_Msg 2 "FastT1Folder:$FastT1Folder"
-log_Msg 2 "BiancaT2Folder:$BiancaT2Folder"
+log_Msg 2 "BiancaTempFolder:$BiancaTempFolder"
 log_Msg 2 "regTempT1Folder:$regTempT1Folder"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-if [ -e ${BiancaT2Folder} ] ; then rm -r ${BiancaT2Folder}; fi; mkdir ${BiancaT2Folder}
+if [ -e ${BiancaTempFolder} ] ; then rm -r ${BiancaTempFolder}; fi; mkdir ${BiancaTempFolder}
 
 #Check if all required files are in place. In case one is missing, BIANCA will not run
 for required_file in "${TempT1Folder}/T1_unbiased_brain.nii.gz" "${TempT1Folder}/T1_unbiased.nii.gz" "${WD}/T2_unbiased.nii.gz" "${regTempT1Folder}/T1_to_MNI_nonlin_coeff_inv.nii.gz" "${regTempT1Folder}/T1_to_MNI_linear.mat" "${FastT1Folder}/T1_brain_pve_0.nii.gz" ; do
@@ -56,16 +56,16 @@ done
 $FSLDIR/bin/make_bianca_mask ${TempT1Folder}/T1_unbiased.nii.gz ${FastT1Folder}/T1_brain_pve_0.nii.gz ${regTempT1Folder}/T1_to_MNI_nonlin_coeff_inv.nii.gz
 
 #Move the inclusion mask to T2_FLAIR/lesions directory
-mv ${TempT1Folder}/T1_unbiased_bianca_mask.nii.gz ${TempT1Folder}/T1_unbiased_ventmask.nii.gz ${TempT1Folder}/T1_unbiased_brain_mask.nii.gz ${BiancaT2Folder}
+mv ${TempT1Folder}/T1_unbiased_bianca_mask.nii.gz ${TempT1Folder}/T1_unbiased_ventmask.nii.gz ${TempT1Folder}/T1_unbiased_brain_mask.nii.gz ${BiancaTempFolder}
 
 #Generate the configuration file to run Bianca
-echo ${TempT1Folder}/T1_unbiased_brain.nii.gz ${WD}/T2_unbiased.nii.gz ${regTempT1Folder}/T1_to_MNI_linear.mat > ${BiancaT2Folder}/conf_file.txt;
+echo ${TempT1Folder}/T1_unbiased_brain.nii.gz ${WD}/T2_unbiased.nii.gz ${regTempT1Folder}/T1_to_MNI_linear.mat > ${BiancaTempFolder}/conf_file.txt;
 
 #Run BIANCA
-$FSLDIR/bin/bianca --singlefile=${BiancaT2Folder}/conf_file.txt --querysubjectnum=1 --brainmaskfeaturenum=1 --loadclassifierdata=${BRC_GLOBAL_DIR}/templates/bianca_class_data --matfeaturenum=3 --featuresubset=1,2 -o ${BiancaT2Folder}/bianca_mask
+$FSLDIR/bin/bianca --singlefile=${BiancaTempFolder}/conf_file.txt --querysubjectnum=1 --brainmaskfeaturenum=1 --loadclassifierdata=${BRC_GLOBAL_DIR}/templates/bianca_class_data --matfeaturenum=3 --featuresubset=1,2 -o ${BiancaTempFolder}/bianca_mask
 
 #Apply the inclusion mask to BIANCA output to get the final thresholded mask
-fslmaths ${BiancaT2Folder}/bianca_mask -mul ${BiancaT2Folder}/T1_unbiased_bianca_mask.nii.gz -thr 0.8 -bin ${BiancaT2Folder}/final_mask
+fslmaths ${BiancaTempFolder}/bianca_mask -mul ${BiancaTempFolder}/T1_unbiased_bianca_mask.nii.gz -thr 0.8 -bin ${BiancaTempFolder}/final_mask
 
 #Get the volume of the lesions
-fslstats ${BiancaT2Folder}/final_mask -V | awk '{print $1}' > ${BiancaT2Folder}/volume.txt
+fslstats ${BiancaTempFolder}/final_mask -V | awk '{print $1}' > ${BiancaTempFolder}/volume.txt

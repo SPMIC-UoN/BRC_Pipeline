@@ -195,7 +195,8 @@ logT1Folder=${T1Folder}/${logFolderName}
 TempT1Folder=${T1Folder}/${tempFolderName}
 FastT1Folder=${TempT1Folder}/${FastFolderName}
 FirstT1Folder=${TempT1Folder}/${FirstFolderName}
-SienaxT1Folder=${TempT1Folder}/${SienaxFolderName}
+SienaxTempFolder=${TempT1Folder}/${SienaxFolderName}
+SienaxT1Folder=${preprocT1Folder}/${SienaxFolderName}
 regTempT1Folder=${TempT1Folder}/${regFolderName}
 regT1Folder=${preprocT1Folder}/${regFolderName}
 qcT1Folder=${preprocT1Folder}/${qcFolderName}
@@ -211,9 +212,10 @@ processedT2Folder=${T2Folder}/${processedFolderName}
 dataT2Folder=${processedT2Folder}/${dataFolderName}
 data2stdT2Folder=${processedT2Folder}/${data2stdFolderName}
 regT2Folder=${preprocT2Folder}/${regFolderName}
+BiancaT2Folder=${preprocT2Folder}/${BiancaFolderName}
 TempT2Folder=${T2Folder}/${tempFolderName}
 regTempT2Folder=${TempT2Folder}/${regFolderName}
-BiancaT2Folder=${TempT2Folder}/${BiancaFolderName}
+BiancaTempFolder=${TempT2Folder}/${BiancaFolderName}
 
 #Check existance of foldersa= and then create them
 if [ ! -d ${AnalysisFolder} ]; then mkdir ${AnalysisFolder}; fi
@@ -229,9 +231,10 @@ if [ ! -d ${TempT1Folder} ]; then mkdir ${TempT1Folder}; fi
 if [ ! -d ${regT1Folder} ]; then mkdir ${regT1Folder}; fi
 if [ ! -d ${qcT1Folder} ]; then mkdir ${qcT1Folder}; fi
 if [ ! -d ${biasT1Folder} ]; then mkdir ${biasT1Folder}; fi
+if [ ! -d ${SienaxT1Folder} ]; then mkdir ${SienaxT1Folder}; fi
 if [ ! -d ${dataT1Folder} ]; then mkdir ${dataT1Folder}; fi
 if [ ! -d ${data2stdT1Folder} ]; then mkdir ${data2stdT1Folder}; fi
-if [ ! -d ${segT1Folder} ]; then mkdir ${segT1Folder}; fi
+if [ -e ${segT1Folder} ] ; then rm -r ${segT1Folder}; fi; mkdir ${segT1Folder}
 
 
 if [[ $T2 == yes ]]; then
@@ -242,6 +245,7 @@ if [[ $T2 == yes ]]; then
     if [ ! -d ${dataT2Folder} ]; then mkdir ${dataT2Folder}; fi
     if [ ! -d ${data2stdT2Folder} ]; then mkdir ${data2stdT2Folder}; fi
     if [ ! -d ${regT2Folder} ]; then mkdir ${regT2Folder}; fi
+    if [ ! -d ${BiancaT2Folder} ]; then mkdir ${BiancaT2Folder}; fi
     if [ ! -d ${TempT2Folder} ]; then mkdir ${TempT2Folder}; fi
 fi
 
@@ -287,13 +291,6 @@ fi
 
 if [ $CLUSTER_MODE = "YES" ] ; then
 
-#    export MODULEPATH=/gpfs01/software/imaging/modulefiles:$MODULEPATH
-#
-#    module load cuda/local/9.2
-#    module load fsl-img/5.0.11
-#    module load ica-aroma-img/py2.7/0.3
-#    ${JOBSUBpath}/jobsub -q cpu -p 1 -s BRCP_SMRI_${Subject} -t 00:46:00 -m 60 -c "${BRC_SCTRUC_DIR}/struc_preproc.sh --subject ${Sub_ID} --path ${Path} --input ${IN_Img} --t2 ${T2_IN_Img} ${Opt_args}" &
-
     if [ ${do_freesurfer} = "yes" ] ; then
         TIME_LIMIT=48:00:00
         MEM=60
@@ -303,7 +300,7 @@ if [ $CLUSTER_MODE = "YES" ] ; then
     fi
 
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_SMRI_${Subject} -t ${TIME_LIMIT} -m ${MEM} -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${FirstT1Folder} --sienaxt1folder=${SienaxT1Folder} --biancat2folder=${BiancaT2Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --regtype=${RegType} --logt1folder=${logT1Folder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_SMRI_${Subject} -t ${TIME_LIMIT} -m ${MEM} -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${FirstT1Folder} --sienaxt1folder=${SienaxT1Folder} --biancatempfolder=${BiancaTempFolder} --biancat2folder=${BiancaT2Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --sienaxtempfolder=${SienaxTempFolder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --regtype=${RegType} --logt1folder=${logT1Folder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
@@ -319,6 +316,7 @@ else
                       --fastt1folder=${FastT1Folder} \
                       --firstt1folder=${FirstT1Folder} \
                       --sienaxt1folder=${SienaxT1Folder} \
+                      --biancatempfolder=${BiancaTempFolder} \
                       --biancat2folder=${BiancaT2Folder} \
                       --regtempt1folder=${regTempT1Folder} \
                       --t2=${T2} \
@@ -328,6 +326,7 @@ else
                       --t1folder=${T1Folder} \
                       --t2folder=${T2Folder} \
                       --biast1folder=${biasT1Folder} \
+                      --sienaxtempfolder=${SienaxTempFolder} \
                       --datat1folder=${dataT1Folder}  \
                       --data2stdt1folder=${data2stdT1Folder} \
                       --segt1folder=${segT1Folder} \

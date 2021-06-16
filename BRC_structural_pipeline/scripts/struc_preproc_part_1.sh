@@ -32,7 +32,7 @@ do_defacing=`getopt1 "--dodefacing" $@`
 FastT1Folder=`getopt1 "--fastt1folder" $@`
 FirstT1Folder=`getopt1 "--firstt1folder" $@`
 SienaxT1Folder=`getopt1 "--sienaxt1folder" $@`
-BiancaT2Folder=`getopt1 "--biancat2folder" $@`
+BiancaTempFolder=`getopt1 "--biancatempfolder" $@`
 regTempT1Folder=`getopt1 "--regtempt1folder" $@`
 T2=`getopt1 "--t2" $@`
 TempT2Folder=`getopt1 "--tempt2folder" $@`
@@ -55,6 +55,8 @@ FSFolderName=`getopt1 "--fsfoldername" $@`
 Start_Time=`getopt1 "--starttime" $@`
 Sub_ID=`getopt1 "--subid" $@`
 RegType=`getopt1 "--regtype" $@`
+SienaxTempFolder=`getopt1 "--sienaxtempfolder" $@`
+BiancaT2Folder=`getopt1 "--biancat2folder" $@`
 logT1Folder=`getopt1 "--logt1folder" $@`
 
 log_SetPath "${logT1Folder}"
@@ -72,7 +74,7 @@ ${BRC_SCTRUC_SCR}/run_T1_preprocessing.sh \
       --dodefacing=${do_defacing} \
       --fastfolder=${FastT1Folder} \
       --firstfolder=${FirstT1Folder} \
-      --sienaxt1folder=${SienaxT1Folder} \
+      --sienaxtempfolder=${SienaxTempFolder} \
       --regtempt1folder=${regTempT1Folder} \
       --regtype=${RegType} \
       --logfile=${logT1Folder}
@@ -90,7 +92,7 @@ if [[ $T2 == "yes" ]]; then
             --dodefacing=${do_defacing} \
             --regtype=${RegType} \
             --docrop=${do_crop} \
-            --biancat2folder=${BiancaT2Folder} \
+            --biancatempfolder=${BiancaTempFolder} \
             --logfile=${logT1Folder}
 
 fi
@@ -120,6 +122,10 @@ ${BRC_SCTRUC_SCR}/output_organization.sh \
       --regtempt2folder=${regTempT2Folder} \
       --dodefacing=${do_defacing} \
       --regtype=${RegType} \
+      --sienaxt1folder=${SienaxT1Folder} \
+      --sienaxtempfolder=${SienaxTempFolder} \
+      --biancat2folder=${BiancaT2Folder} \
+      --biancatempfolder=${BiancaTempFolder} \
       --logfile=${logT1Folder}
 
 if [[ $do_freesurfer == "yes" ]]; then

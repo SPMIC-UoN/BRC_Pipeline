@@ -33,7 +33,7 @@ regTempT2Folder=`getopt1 "--regtempt2folder" $@`
 do_defacing=`getopt1 "--dodefacing" $@`
 RegType=`getopt1 "--regtype" $@`
 do_crop=`getopt1 "--docrop" $@`
-BiancaT2Folder=`getopt1 "--biancat2folder" $@`
+BiancaTempFolder=`getopt1 "--biancatempfolder" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -54,7 +54,7 @@ log_Msg 2 "regTempT2Folder:$regTempT2Folder"
 log_Msg 2 "do_defacing:$do_defacing"
 log_Msg 2 "RegType:$RegType"
 log_Msg 2 "do_crop:$do_crop"
-log_Msg 2 "BiancaT2Folder:$BiancaT2Folder"
+log_Msg 2 "BiancaTempFolder:$BiancaTempFolder"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -174,7 +174,7 @@ ${BRC_SCTRUC_SCR}/run_T2_bianca.sh \
                   --workingdir=${WD} \
                   --tempt1folder=${TempT1Folder} \
                   --fastfolder=${FastT1Folder} \
-                  --biancat2folder=${BiancaT2Folder} \
+                  --biancatempfolder=${BiancaTempFolder} \
                   --regtempt1folder=${regTempT1Folder} \
                   --logfile=${LogFile}
 

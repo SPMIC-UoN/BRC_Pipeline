@@ -47,6 +47,10 @@ regT2Folder=`getopt1 "--regt2folder" $@`
 regTempT2Folder=`getopt1 "--regtempt2folder" $@`
 do_defacing=`getopt1 "--dodefacing" $@`
 RegType=`getopt1 "--regtype" $@`
+SienaxT1Folder=`getopt1 "--sienaxt1folder" $@`
+SienaxTempFolder=`getopt1 "--sienaxtempfolder" $@`
+BiancaT2Folder=`getopt1 "--biancat2folder" $@`
+BiancaTempFolder=`getopt1 "--biancatempfolder" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -78,7 +82,11 @@ log_Msg 2 "data2stdT2Folder=$data2stdT2Folder"
 log_Msg 2 "regT2Folder=$regT2Folder"
 log_Msg 2 "regTempT2Folder=$regTempT2Folder"
 log_Msg 2 "do_defacing=$do_defacing"
-log_Msg 2 "RegType:$RegType"
+log_Msg 2 "RegType=$RegType"
+log_Msg 2 "SienaxT1Folder=$SienaxT1Folder"
+log_Msg 2 "SienaxTempFolder=$SienaxTempFolder"
+log_Msg 2 "BiancaT2Folder=$BiancaT2Folder"
+log_Msg 2 "BiancaTempFolder=$BiancaTempFolder"
 log_Msg 2 "LogFile=$LogFile"
 
 #=====================================================================================
@@ -155,38 +163,6 @@ if [ $do_Sub_seg = yes ] ; then
 #  mv ${TempT1Folder}/T1_vols.txt  ${SubFolder}/T1_vols.txt
 
   mv ${FirstT1Folder}/T1_first*  ${ShapeFolder}
-#  if [ -e ${FirstT1Folder}/T1_first-BrStem_first.bvars ] ; then
-#      mv ${FirstT1Folder}/T1_first-BrStem_first.bvars  ${ShapeFolder}/T1_BrStem.bvars
-#      mv ${FirstT1Folder}/T1_first-BrStem_first.vtk  ${ShapeFolder}/T1_BrStem.vtk
-#  fi
-#  mv ${FirstT1Folder}/T1_first-L_Accu_first.bvars  ${ShapeFolder}/T1_L_Accu.bvars
-#  mv ${FirstT1Folder}/T1_first-R_Accu_first.bvars  ${ShapeFolder}/T1_R_Accu.bvars
-#  mv ${FirstT1Folder}/T1_first-L_Accu_first.vtk  ${ShapeFolder}/T1_L_Accu.vtk
-#  mv ${FirstT1Folder}/T1_first-R_Accu_first.vtk  ${ShapeFolder}/T1_R_Accu.vtk
-#  mv ${FirstT1Folder}/T1_first-L_Amyg_first.bvars  ${ShapeFolder}/T1_L_Amyg.bvars
-#  mv ${FirstT1Folder}/T1_first-R_Amyg_first.bvars  ${ShapeFolder}/T1_R_Amyg.bvars
-#  mv ${FirstT1Folder}/T1_first-L_Amyg_first.vtk  ${ShapeFolder}/T1_L_Amyg.vtk
-#  mv ${FirstT1Folder}/T1_first-R_Amyg_first.vtk  ${ShapeFolder}/T1_R_Amyg.vtk
-#  mv ${FirstT1Folder}/T1_first-L_Caud_first.bvars  ${ShapeFolder}/T1_L_Caud.bvars
-#  mv ${FirstT1Folder}/T1_first-R_Caud_first.bvars  ${ShapeFolder}/T1_R_Caud.bvars
-#  mv ${FirstT1Folder}/T1_first-L_Caud_first.vtk  ${ShapeFolder}/T1_L_Caud.vtk
-#  mv ${FirstT1Folder}/T1_first-R_Caud_first.vtk  ${ShapeFolder}/T1_R_Caud.vtk
-#  mv ${FirstT1Folder}/T1_first-L_Hipp_first.bvars  ${ShapeFolder}/T1_L_Hipp.bvars
-#  mv ${FirstT1Folder}/T1_first-R_Hipp_first.bvars  ${ShapeFolder}/T1_R_Hipp.bvars
-#  mv ${FirstT1Folder}/T1_first-L_Hipp_first.vtk  ${ShapeFolder}/T1_L_Hipp.vtk
-#  mv ${FirstT1Folder}/T1_first-R_Hipp_first.vtk  ${ShapeFolder}/T1_R_Hipp.vtk
-#  mv ${FirstT1Folder}/T1_first-L_Pall_first.bvars  ${ShapeFolder}/T1_L_Pall.bvars
-#  mv ${FirstT1Folder}/T1_first-R_Pall_first.bvars  ${ShapeFolder}/T1_R_Pall.bvars
-#  mv ${FirstT1Folder}/T1_first-L_Pall_first.vtk  ${ShapeFolder}/T1_L_Pall.vtk
-#  mv ${FirstT1Folder}/T1_first-R_Pall_first.vtk  ${ShapeFolder}/T1_R_Pall.vtk
-#  mv ${FirstT1Folder}/T1_first-R_Puta_first.bvars  ${ShapeFolder}/T1_R_Puta.bvars
-#  mv ${FirstT1Folder}/T1_first-L_Puta_first.bvars  ${ShapeFolder}/T1_L_Puta.bvars
-#  mv ${FirstT1Folder}/T1_first-R_Puta_first.vtk  ${ShapeFolder}/T1_R_Puta.vtk
-#  mv ${FirstT1Folder}/T1_first-L_Puta_first.vtk  ${ShapeFolder}/T1_L_Puta.vtk
-#  mv ${FirstT1Folder}/T1_first-R_Thal_first.bvars  ${ShapeFolder}/T1_R_Thal.bvars
-#  mv ${FirstT1Folder}/T1_first-L_Thal_first.bvars  ${ShapeFolder}/T1_L_Thal.bvars
-#  mv ${FirstT1Folder}/T1_first-R_Thal_first.vtk  ${ShapeFolder}/T1_R_Thal.vtk
-#  mv ${FirstT1Folder}/T1_first-L_Thal_first.vtk  ${ShapeFolder}/T1_L_Thal.vtk
 
   if [ -e ${FirstT1Folder}/T1_unbiased_brain_to_std_sub.mat ] ; then
       mv ${FirstT1Folder}/T1_unbiased_brain_to_std_sub.mat  ${regT1Folder}/T1_2_std_sub.mat
@@ -200,6 +176,7 @@ fi
 log_Msg 3 "Organizing T1 linear registration folder"
 
 $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_linear  ${data2stdT1Folder}/T1_2_std
+$FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_brain_linear  ${data2stdT1Folder}/T1_2_std_brain_lin
 mv ${regTempT1Folder}/T1_to_MNI_linear.mat  ${regT1Folder}/T1_2_std.mat
 $FSLDIR/bin/convert_xfm -inverse ${regT1Folder}/T1_2_std.mat -omat ${regT1Folder}/std_2_T1.mat
 
@@ -208,11 +185,17 @@ if [ $RegType == 2 ]; then
     log_Msg 3 "Organizing T1 non-linear registration folder"
 
     $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin  ${data2stdT1Folder}/T1_2_std_warp
+    $FSLDIR/bin/immv ${regTempT1Folder}/T1_brain_to_MNI_nonlin  ${data2stdT1Folder}/T1_2_std_brain_nonlin
     $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_coeff  ${regT1Folder}/T1_2_std_warp_coeff
     $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_field  ${regT1Folder}/T1_2_std_warp_field
     $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_jac  ${regT1Folder}/T1_2_std_warp_jac
     $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_coeff_inv  ${regT1Folder}/std_2_T1_warp_field
 
+    mv ${SienaxTempFolder}/*  ${SienaxT1Folder}/
+    ${FSLDIR}/bin/imrm ${SienaxT1Folder}/T1_brain*
+    ${FSLDIR}/bin/imrm ${SienaxT1Folder}/T1_pve*
+    ${FSLDIR}/bin/imrm ${SienaxT1Folder}/T1_seg*
+    rm ${SienaxT1Folder}/T1_to*
 fi
 
 if [[ $T2_exist == yes ]]; then
@@ -260,28 +243,14 @@ if [[ $T2_exist == yes ]]; then
         $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg_2  ${MultChanFolder}/T1_GM_mask
         $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg  ${MultChanFolder}/T1_seg
 
-#        log_Msg 3  `date`
-#        log_Msg 3 "Main registration: between corrected T2w and corrected T1w"
-#
-#        ${FSLDIR}/bin/epi_reg --epi=${dataT2Folder}/T2_brain --t1=${dataT1folder}/T1 --t1brain=${dataT1folder}/T1_brain --out=${regT2Folder}/T2_2_T1_init --wmseg=${MultChanFolder}/T1_pve_thr_WM
-#        ${FSLDIR}/bin/flirt -in ${dataT2Folder}/T2_brain -ref ${dataT1folder}/T1_brain -init ${regT2Folder}/T2_2_T1_init.mat -out ${regT2Folder}/T2_2_T1 -omat ${regT2Folder}/T2_2_T1.mat -dof 6
     fi
 
-#    log_Msg 3  `date`
-#    log_Msg 3 "Organizing T2 non-linear registration folder"
-#
-#    ${FSLDIR}/bin/applywarp --rel --in=${dataT2Folder}/T2 --ref=$FSLDIR/data/standard/MNI152_T1_1mm --premat=${regT2Folder}/T2_2_T1.mat --warp=${regT1Folder}/T1_2_std_warp_coeff --out=${data2stdT2Folder}/T2_to_std_warp --interp=spline
-#
-##    ${FSLDIR}/bin/invwarp --ref=${dataT1folder}/T1 -w ${regT1Folder}/T1_2_std_warp_coeff -o ${regT1Folder}/std_2_T1_warp
-#
-#    ${FSLDIR}/bin/convert_xfm -inverse ${regT2Folder}/T2_2_T1.mat -omat ${regT2Folder}/T1_2_T2.mat
-#
-#    ${FSLDIR}/bin/applywarp --rel --in=$FSLDIR/data/standard/MNI152_T1_1mm_brain_mask --ref=${dataT2Folder}/T2 --warp=${regT1Folder}/std_2_T1_warp_field --postmat=${regT2Folder}/T1_2_T2.mat --out=${dataT2Folder}/T2_brain_mask --interp=spline
-#
-#    ${FSLDIR}/bin/fslmaths ${dataT2Folder}/T2 -mul ${dataT2Folder}/T2_brain_mask ${dataT2Folder}/T2_brain
-#
-##    cp -r $T2datadir/* ${FSLanatT2Folder}/
-##    rm -rf $T2datadir
+    mv ${BiancaTempFolder}/*  ${BiancaT2Folder}/
+    ${FSLDIR}/bin/imrm ${BiancaT2Folder}/T1_*
+    ${FSLDIR}/bin/imrm ${BiancaT2Folder}/bianca_*
+    ${FSLDIR}/bin/imrm ${BiancaT2Folder}/final_*
+    rm ${BiancaT2Folder}/conf_*
+
 fi
 
 log_Msg 3 ""
@@ -296,3 +265,5 @@ log_Msg 3 "                             ===============                         
 ################################################################################################
 
 ${FSLDIR}/bin/imrm ${regT2Folder}/T2_2_T1_init*
+${FSLDIR}/bin/imrm ${regTempT1Folder}/T1_tmp*
+${FSLDIR}/bin/imrm ${TempT1Folder}/T1_tmp*
