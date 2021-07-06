@@ -128,10 +128,21 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #=====================================================================================
 ###                                   DO WORK
 #=====================================================================================
-
 if [ ${CLUSTER_MODE} = "YES" ] ; then
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_IDPEx -t 03:00:00 -m 10 -c "${BRC_IDPEXTRACT_SCR}/idp_extract_part_1.sh --inputlist=${InputList} --listfolder=${ListFolder} --subjectlist_name=${SubjectList_name} --inputdir=${InputDIR} --analysisfoldername=${AnalysisFolderName} --idp_folder_name=${IDP_folder_name} --groupidpfolder=${GroupIDPFolder} --starttime=${Start_Time} --logidpfolder=${logFolder}/${log_Name}" &`
+    NSub=`wc -l ${InputList}`
+    NSub=`echo -e $NSub | awk '{ print $1 }'`
+    minutes=$(( ${NSub} * 4 ))
+
+    if [ "${minutes}" -lt 25 ] ; then
+        hour=0
+    else
+        ((hour=${minutes}/60))
+    fi
+    ((min=${minutes}-${hour}*60))
+    Time_Limit=${hour}:${min}:00
+
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_IDPEx -t ${Time_Limit} -m 10 -c "${BRC_IDPEXTRACT_SCR}/idp_extract_part_1.sh --inputlist=${InputList} --listfolder=${ListFolder} --subjectlist_name=${SubjectList_name} --inputdir=${InputDIR} --analysisfoldername=${AnalysisFolderName} --idp_folder_name=${IDP_folder_name} --groupidpfolder=${GroupIDPFolder} --starttime=${Start_Time} --logidpfolder=${logFolder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
