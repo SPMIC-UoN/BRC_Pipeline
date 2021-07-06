@@ -37,6 +37,7 @@ Usage()
   echo " --regtype <method>               The registration method for the registration of structural data to the standard space"
   echo "                                      1: Linear,"
   echo "                                      2: Linear + Non-linear (default value). Here, the linear transformation is used as an initialization step for the Non-linear registration"
+  echo " --t2lesion <path>                Full path of the input labeled lesion mask in T2 native space"
   echo " --help                           help"
   echo " "
   echo " "
@@ -54,6 +55,7 @@ Sub_ID=""
 IN_Img=""
 Path=""
 T2_IN_Img=""
+T2LesionPath=""
 
 T2="no"
 do_Sub_seg="no"
@@ -116,6 +118,10 @@ while [ "$1" != "" ]; do
                                 RegType=$1
                                 ;;
 
+        --t2lesion )            shift
+				                        T2LesionPath=$1
+                                ;;
+
         --help )                Usage
                                 exit
                                 ;;
@@ -130,7 +136,16 @@ done
 ###                          Sanity checking of arguments
 #=====================================================================================
 if [ X$Sub_ID = X ] && [ X$IN_Img = X ] && [ X$Path = X ] ; then
+    echo ""
     echo "All of the compulsory arguments --path, -i and -s MUST be used"
+    echo ""
+    exit 1;
+fi
+
+if [ X$T2LesionPath != X ] && [ X$T2_IN_Img = X ] ; then
+    echo ""
+    echo "The --t2 argument is compulsory when you choose --t2lesion argument"
+    echo ""
     exit 1;
 fi
 
@@ -168,6 +183,8 @@ FastFolderName="FAST"
 FirstFolderName="FIRST"
 SienaxFolderName="SIENAX"
 BiancaFolderName="lesions"
+SubFolderName="sub"
+ShapeFolderName="shape"
 
 log_Name="log.txt"
 
@@ -194,7 +211,7 @@ processedT1Folder=${T1Folder}/${processedFolderName}
 logT1Folder=${T1Folder}/${logFolderName}
 TempT1Folder=${T1Folder}/${tempFolderName}
 FastT1Folder=${TempT1Folder}/${FastFolderName}
-FirstT1Folder=${TempT1Folder}/${FirstFolderName}
+#FirstT1Folder=${TempT1Folder}/${FirstFolderName}
 SienaxTempFolder=${TempT1Folder}/${SienaxFolderName}
 SienaxT1Folder=${preprocT1Folder}/${SienaxFolderName}
 regTempT1Folder=${TempT1Folder}/${regFolderName}
@@ -205,6 +222,8 @@ dataT1Folder=${processedT1Folder}/${dataFolderName}
 data2stdT1Folder=${processedT1Folder}/${data2stdFolderName}
 segT1Folder=${processedT1Folder}/${segFolderName}
 FSFolder=${processedT1Folder}/${FSFolderName}
+SubFolder=${segT1Folder}/${SubFolderName}
+ShapeFolder=${SubFolder}/${ShapeFolderName}
 rawT2Folder=${AnatMRIrawFolder}/${T2FolderName}
 T2Folder=${AnatMRIFolder}/${T2FolderName}
 preprocT2Folder=${T2Folder}/${preprocessFolderName}
@@ -235,6 +254,8 @@ if [ ! -d ${SienaxT1Folder} ]; then mkdir ${SienaxT1Folder}; fi
 if [ ! -d ${dataT1Folder} ]; then mkdir ${dataT1Folder}; fi
 if [ ! -d ${data2stdT1Folder} ]; then mkdir ${data2stdT1Folder}; fi
 if [ -e ${segT1Folder} ] ; then rm -r ${segT1Folder}; fi; mkdir ${segT1Folder}
+if [ ! -d ${SubFolder} ]; then mkdir ${SubFolder}; fi
+#if [ ! -d ${ShapeFolder} ]; then mkdir ${ShapeFolder}; fi
 
 
 if [[ $T2 == yes ]]; then
@@ -247,6 +268,7 @@ if [[ $T2 == yes ]]; then
     if [ ! -d ${regT2Folder} ]; then mkdir ${regT2Folder}; fi
     if [ ! -d ${BiancaT2Folder} ]; then mkdir ${BiancaT2Folder}; fi
     if [ ! -d ${TempT2Folder} ]; then mkdir ${TempT2Folder}; fi
+    if [ -e ${BiancaTempFolder} ] ; then rm -r ${BiancaTempFolder}; fi; mkdir ${BiancaTempFolder}
 fi
 
 #=====================================================================================
@@ -296,11 +318,11 @@ if [ $CLUSTER_MODE = "YES" ] ; then
         MEM=60
     else
         TIME_LIMIT=03:00:00
-        MEM=40
+        MEM=60
     fi
 
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_SMRI_${Subject} -t ${TIME_LIMIT} -m ${MEM} -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${FirstT1Folder} --sienaxt1folder=${SienaxT1Folder} --biancatempfolder=${BiancaTempFolder} --biancat2folder=${BiancaT2Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --sienaxtempfolder=${SienaxTempFolder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --regtype=${RegType} --logt1folder=${logT1Folder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_SMRI_${Subject} -t ${TIME_LIMIT} -m ${MEM} -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${ShapeFolder} --sienaxt1folder=${SienaxT1Folder} --biancatempfolder=${BiancaTempFolder} --biancat2folder=${BiancaT2Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --sienaxtempfolder=${SienaxTempFolder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --regtype=${RegType} --t2lesionpath=${T2LesionPath} --logt1folder=${logT1Folder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
@@ -314,7 +336,7 @@ else
                       --docrop=${do_crop} \
                       --dodefacing=${do_defacing} \
                       --fastt1folder=${FastT1Folder} \
-                      --firstt1folder=${FirstT1Folder} \
+                      --firstt1folder=${ShapeFolder} \
                       --sienaxt1folder=${SienaxT1Folder} \
                       --biancatempfolder=${BiancaTempFolder} \
                       --biancat2folder=${BiancaT2Folder} \
@@ -340,6 +362,7 @@ else
                       --starttime=${Start_Time} \
                       --subid=${Sub_ID} \
                       --regtype=${RegType} \
+                      --t2lesionpath=${T2LesionPath} \
                       --logt1folder=${logT1Folder}/${log_Name}
 
 fi

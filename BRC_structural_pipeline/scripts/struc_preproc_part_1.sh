@@ -57,6 +57,7 @@ Sub_ID=`getopt1 "--subid" $@`
 RegType=`getopt1 "--regtype" $@`
 SienaxTempFolder=`getopt1 "--sienaxtempfolder" $@`
 BiancaT2Folder=`getopt1 "--biancat2folder" $@`
+T2LesionPath=`getopt1 "--t2lesionpath" $@`
 logT1Folder=`getopt1 "--logt1folder" $@`
 
 log_SetPath "${logT1Folder}"
@@ -93,11 +94,11 @@ if [[ $T2 == "yes" ]]; then
             --regtype=${RegType} \
             --docrop=${do_crop} \
             --biancatempfolder=${BiancaTempFolder} \
+            --t2lesionpath=${T2LesionPath} \
             --logfile=${logT1Folder}
 
 fi
 
-#: <<'COMMENT'
 ${BRC_SCTRUC_SCR}/output_organization.sh \
       --t1folder=${T1Folder} \
       --t2folder=${T2Folder} \

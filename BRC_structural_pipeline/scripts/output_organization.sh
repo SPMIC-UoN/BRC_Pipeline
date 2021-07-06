@@ -154,24 +154,22 @@ $FSLDIR/bin/immv ${FastT1Folder}/T1_brain_seg  ${SinChanFolder}/T1_seg
 
 $FSLDIR/bin/immv ${FastT1Folder}/T1_brain_bias  ${biasT1Folder}/T1_brain_bias
 
-if [ $do_Sub_seg = yes ] ; then
-
-  if [ -e ${FirstT1Folder}/T1_first_all_fast_firstseg ] ; then
-    $FSLDIR/bin/immv ${FirstT1Folder}/T1_first_all_fast_firstseg  ${SubFolder}/T1_subcort_seg
-  fi
-
-#  mv ${TempT1Folder}/T1_vols.txt  ${SubFolder}/T1_vols.txt
-
-  mv ${FirstT1Folder}/T1_first*  ${ShapeFolder}
-
-  if [ -e ${FirstT1Folder}/T1_unbiased_brain_to_std_sub.mat ] ; then
-      mv ${FirstT1Folder}/T1_unbiased_brain_to_std_sub.mat  ${regT1Folder}/T1_2_std_sub.mat
-  fi
-
-  if [ -e ${FirstT1Folder}/T1_unbiased_brain_to_std_sub ] ; then
-      $FSLDIR/bin/immv ${FirstT1Folder}/T1_unbiased_brain_to_std_sub  ${data2stdT1Folder}/T1_2_std_sub
-  fi
-fi
+#if [ $do_Sub_seg = yes ] ; then
+#
+#  if [ -e ${FirstT1Folder}/T1_first_all_fast_firstseg ] ; then
+#    $FSLDIR/bin/immv ${FirstT1Folder}/T1_first_all_fast_firstseg  ${SubFolder}/T1_subcort_seg
+#  fi
+#
+#  mv ${FirstT1Folder}/T1_first*  ${ShapeFolder}
+#
+#  if [ -e ${FirstT1Folder}/T1_unbiased_brain_to_std_sub.mat ] ; then
+#      mv ${FirstT1Folder}/T1_unbiased_brain_to_std_sub.mat  ${regT1Folder}/T1_2_std_sub.mat
+#  fi
+#
+#  if [ -e ${FirstT1Folder}/T1_unbiased_brain_to_std_sub ] ; then
+#      $FSLDIR/bin/immv ${FirstT1Folder}/T1_unbiased_brain_to_std_sub  ${data2stdT1Folder}/T1_2_std_sub
+#  fi
+#fi
 
 log_Msg 3 "Organizing T1 linear registration folder"
 
@@ -243,6 +241,10 @@ if [[ $T2_exist == yes ]]; then
         $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg_2  ${MultChanFolder}/T1_GM_mask
         $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg  ${MultChanFolder}/T1_seg
 
+    fi
+
+    if [ `${FSLDIR}/bin/imtest ${BiancaTempFolder}/lesion_mask_2_T1` = 1 ] ; then
+        $FSLDIR/bin/immv ${BiancaTempFolder}/lesion_mask_2_T1  ${dataT2Folder}/lesion_mask_2_T1
     fi
 
     mv ${BiancaTempFolder}/*  ${BiancaT2Folder}/

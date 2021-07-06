@@ -34,6 +34,7 @@ do_defacing=`getopt1 "--dodefacing" $@`
 RegType=`getopt1 "--regtype" $@`
 do_crop=`getopt1 "--docrop" $@`
 BiancaTempFolder=`getopt1 "--biancatempfolder" $@`
+T2LesionPath=`getopt1 "--t2lesionpath" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -55,6 +56,7 @@ log_Msg 2 "do_defacing:$do_defacing"
 log_Msg 2 "RegType:$RegType"
 log_Msg 2 "do_crop:$do_crop"
 log_Msg 2 "BiancaTempFolder:$BiancaTempFolder"
+log_Msg 2 "T2LesionPath:$T2LesionPath"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -83,6 +85,8 @@ if [ $RegType == 1 ]; then
     ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/T2_tmp -r ${TempT1Folder}/T1_brain --premat=${WD}/T2_orig_ud_to_T2.mat -o ${WD}/T2
     ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${WD}/T2_tmp_brain_mask -r ${TempT1Folder}/T1_brain --premat=${WD}/T2_orig_ud_to_T2.mat -o ${WD}/T2_brain_mask
 
+    ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${T2LesionPath} -r ${TempT1Folder}/T1_brain --premat=${WD}/T2_orig_ud_to_T2.mat -o ${BiancaTempFolder}/lesion_mask_2_T1
+
 elif [ $RegType == 2 ]; then
 
     log_Msg 3 `date`
@@ -96,8 +100,6 @@ elif [ $RegType == 2 ]; then
     ${FSLDIR}/bin/imcp ${TempT1Folder}/T1_brain_mask.nii.gz ${WD}/T2_brain_mask.nii.gz
     ${FSLDIR}/bin/fslmaths ${WD}/T2 -mul ${WD}/T2_brain_mask ${WD}/T2_brain
 fi
-
-#: <<'COMMENT'
 
 log_Msg 3 `date`
 log_Msg 3 "Generate the linear matrix from T2 to MNI"
@@ -168,15 +170,19 @@ else
     echo "WARNING: There was no bias field estimation. Bias field correction cannot be applied to T2."
 fi
 
-log_Msg 3  `date`
-log_Msg 3 "Run BIANCA"
-${BRC_SCTRUC_SCR}/run_T2_bianca.sh \
-                  --workingdir=${WD} \
-                  --tempt1folder=${TempT1Folder} \
-                  --fastfolder=${FastT1Folder} \
-                  --biancatempfolder=${BiancaTempFolder} \
-                  --regtempt1folder=${regTempT1Folder} \
-                  --logfile=${LogFile}
+if [ $RegType == 2 ]; then
+
+    log_Msg 3  `date`
+    log_Msg 3 "Run BIANCA"
+    ${BRC_SCTRUC_SCR}/run_T2_bianca.sh \
+                      --workingdir=${WD} \
+                      --tempt1folder=${TempT1Folder} \
+                      --fastfolder=${FastT1Folder} \
+                      --biancatempfolder=${BiancaTempFolder} \
+                      --regtempt1folder=${regTempT1Folder} \
+                      --logfile=${LogFile}
+
+fi
 
 log_Msg 3 ""
 log_Msg 3 "                       END: T2w Image preprocessing"
@@ -188,3 +194,4 @@ log_Msg 3 "                             ===============                         
 ################################################################################################
 ## Cleanup
 ################################################################################################
+#: <<'COMMENT'

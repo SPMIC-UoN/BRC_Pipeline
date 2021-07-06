@@ -42,7 +42,7 @@ log_Msg 2 "regTempT1Folder:$regTempT1Folder"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-if [ -e ${BiancaTempFolder} ] ; then rm -r ${BiancaTempFolder}; fi; mkdir ${BiancaTempFolder}
+#if [ -e ${BiancaTempFolder} ] ; then rm -r ${BiancaTempFolder}; fi; mkdir ${BiancaTempFolder}
 
 #Check if all required files are in place. In case one is missing, BIANCA will not run
 for required_file in "${TempT1Folder}/T1_unbiased_brain.nii.gz" "${TempT1Folder}/T1_unbiased.nii.gz" "${WD}/T2_unbiased.nii.gz" "${regTempT1Folder}/T1_to_MNI_nonlin_coeff_inv.nii.gz" "${regTempT1Folder}/T1_to_MNI_linear.mat" "${FastT1Folder}/T1_brain_pve_0.nii.gz" ; do
