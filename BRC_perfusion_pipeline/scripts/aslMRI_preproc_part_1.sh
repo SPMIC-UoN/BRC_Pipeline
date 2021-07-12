@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 09/06/2020
+# Last update: 12/07/2021
 
 # Authors: Stefan Pszczolkowski, Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -30,6 +30,7 @@ NameOfaslMRI=`getopt1 "--nameofaslmri" $@`
 SinChanT1Folder=`getopt1 "--sinchanfolder" $@`
 PartialVolumeCorrection=`getopt1 "--pvcmethod" $@`
 PVCFolder=`getopt1 "--pvcfolder" $@`
+dataT1Folder=`getopt1 "--datat1folder" $@`
 dof=`getopt1 "--dof" $@`
 superlevel=`getopt1 "--superlevel" $@`
 preprocFolder=`getopt1 "--preprocfolder" $@`
@@ -54,7 +55,9 @@ log_Msg 3 "ASL to T1 registration"
 ${BRC_PMRI_SCR}/ASL_2_T1_Registration.sh \
               --workingdir=${regFolder} \
               --inputasl=${aslMRIrawFolder}/${OrigASLName} \
+			  --inputt1=${dataT1Folder}/T1_unbiased_brain \
               --aslname=${NameOfaslMRI} \
+			  --wmseg=${SinChanT1Folder}/T1_WM_mask \
               --wmpve=${SinChanT1Folder}/T1_pve_WM \
               --gmpve=${SinChanT1Folder}/T1_pve_GM \
               --dof=${dof} \

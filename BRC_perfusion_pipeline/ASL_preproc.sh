@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 09/06/2020
+# Last update: 12/07/2021
 
 # Authors: Stefan Pszczolkowski, Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -120,10 +120,6 @@ dataFolderName="data"
 data2stdFolderName="data2std"
 
 NameOfaslMRI="aslMRI"
-T1wImage="T1"                                                          #<input T1-weighted image>
-T1wImageBrainMask="T1_brain_mask"                                                          #<input T1-weighted image>
-T1wRestoreImage="T1_unbiased"                                                   #<input bias-corrected T1-weighted image>
-T1wRestoreImageBrain="T1_unbiased_brain"                                        #<input bias-corrected, brain-extracted T1-weighted image>
 OrigASLName="${NameOfaslMRI}_orig"
 aslMRI2strOutputTransform="${NameOfaslMRI}2str.mat"
 str2aslMRIOutputTransform="str2${NameOfaslMRI}.mat"
@@ -219,7 +215,7 @@ $FSLDIR/bin/imcp ${PathOfaslMRI} ${aslMRIrawFolder}/${OrigASLName}
 
 if [ $CLUSTER_MODE = "YES" ] ; then
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_PMRI_${Subject} -t 00:30:00 -m 60 -c "${BRC_PMRI_SCR}/aslMRI_preproc_part_1.sh --aslmrirawfolder=${aslMRIrawFolder} --origaslname=${OrigASLName} --nameofaslmri=${NameOfaslMRI} --sinchanfolder=${SinChanT1Folder} --pvcmethod=${PartialVolumeCorrection} --owarp=${aslMRI2strOutputTransform} --oinwarp=${str2aslMRIOutputTransform} --outasl2stdtrans=${aslMRI2StandardTransform} --outstd2asltrans=${Standard2aslMRITransform} --pvcfolder=${PVCFolder} --regfolder=${regFolder} --regt1folder=${regT1Folder} --preprocfolder=${preprocFolder} --processedfolder=${processedFolder} --dof=${dof} --superlevel=${superlevel} --subject=${Subject} --start=${Start_Time} --logfile=${logFolder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_PMRI_${Subject} -t 00:30:00 -m 60 -c "${BRC_PMRI_SCR}/aslMRI_preproc_part_1.sh --aslmrirawfolder=${aslMRIrawFolder} --origaslname=${OrigASLName} --nameofaslmri=${NameOfaslMRI} --sinchanfolder=${SinChanT1Folder} --pvcmethod=${PartialVolumeCorrection} --owarp=${aslMRI2strOutputTransform} --oinwarp=${str2aslMRIOutputTransform} --outasl2stdtrans=${aslMRI2StandardTransform} --outstd2asltrans=${Standard2aslMRITransform} --pvcfolder=${PVCFolder} --datat1folder=${dataT1Folder} --regfolder=${regFolder} --regt1folder=${regT1Folder} --preprocfolder=${preprocFolder} --processedfolder=${processedFolder} --dof=${dof} --superlevel=${superlevel} --subject=${Subject} --start=${Start_Time} --logfile=${logFolder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
@@ -236,6 +232,7 @@ else
                     --outasl2stdtrans=${aslMRI2StandardTransform} \
                     --outstd2asltrans=${Standard2aslMRITransform} \
                     --pvcfolder=${PVCFolder} \
+					--datat1folder=${dataT1Folder} \
                     --regfolder=${regFolder} \
                     --regt1folder=${regT1Folder} \
                     --preprocfolder=${preprocFolder} \

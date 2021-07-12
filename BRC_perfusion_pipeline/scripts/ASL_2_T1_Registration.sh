@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 09/06/2020
+# Last update: 12/07/2021
 
 # Authors: Stefan Pszczolkowski, Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -25,7 +25,9 @@ getopt1()
 # parse arguments
 WD=`getopt1 "--workingdir" $@`
 Inputasl=`getopt1 "--inputasl" $@`
+InputT1=`getopt1 "--inputt1" $@`
 NameOfaslMRI=`getopt1 "--aslname" $@`
+WMseg=`getopt1 "--wmseg" $@`
 WMpve=`getopt1 "--wmpve" $@`
 GMpve=`getopt1 "--gmpve" $@`
 dof=`getopt1 "--dof" $@`
@@ -48,6 +50,7 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 log_Msg 2 "WD:$WD"
 log_Msg 2 "Inputasl:$Inputasl"
 log_Msg 2 "NameOfaslMRI:$NameOfaslMRI"
+log_Msg 2 "WMseg:$WMseg"
 log_Msg 2 "WMpve:$WMpve"
 log_Msg 2 "GMpve:$GMpve"
 log_Msg 2 "dof:$dof"
@@ -59,11 +62,14 @@ log_Msg 2 "Standard2aslMRITransform:$Standard2aslMRITransform"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-log_Msg 3 "Registering ASL to structural Grey Matter partial volume estimation"
+log_Msg 3 "Registering ASL to bias corrected brain extracted T1"
 $FSLDIR/bin/flirt -in ${Inputasl} \
-                  -ref ${GMpve} \
+                  -ref ${InputT1} \
                   -omat ${WD}/${aslMRI2strOutputTransform} \
-                  -dof ${dof}
+				  -wmseg ${WMseg} \
+                  -dof ${dof} \
+				  -cost bbr \
+				  -searchcost bbr
 
 log_Msg 3 "Computing structural to ASL warp"
 $FSLDIR/bin/convert_xfm -omat ${WD}/${str2aslMRIOutputTransform} \
