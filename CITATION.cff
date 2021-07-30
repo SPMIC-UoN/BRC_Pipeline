@@ -1,0 +1,29 @@
+# YAML 1.2
+---
+authors: 
+  -
+    affiliation: "National Institute for Health Research (NIHR) Nottingham Biomedical Research Centre, Queens Medical Centre, Nottingham, United Kingdom"
+    family-names: "Mohammadi-Nejad"
+    given-names: "Ali-Reza"
+    orcid: "https://orcid.org/0000-0002-0710-6700"
+  -
+    affiliation: "National Institute for Health Research (NIHR) Nottingham Biomedical Research Centre, Queens Medical Centre, Nottingham, United Kingdom"
+    family-names: Pszczolkowski
+    given-names: Stefan
+    orcid: "https://orcid.org/0000-0002-5859-3190"
+  -
+    affiliation: "National Institute for Health Research (NIHR) Nottingham Biomedical Research Centre, Queens Medical Centre, Nottingham, United Kingdom"
+    family-names: Auer
+    given-names: Dorothee
+    orcid: "https://orcid.org/0000-0002-4745-3635"
+  -
+    affiliation: "National Institute for Health Research (NIHR) Nottingham Biomedical Research Centre, Queens Medical Centre, Nottingham, United Kingdom"
+    family-names: Sotiropoulos
+    given-names: Stamatios
+    orcid: "https://orcid.org/0000-0003-4735-5776"
+cff-version: "1.1.0"
+date-released: 2019-02-10
+doi: "10.5281/zenodo.3624973"
+message: "If you use this software, please cite it using these metadata."
+title: "Multi-modal neuroimaging pipelines for data preprocessing"
+...
