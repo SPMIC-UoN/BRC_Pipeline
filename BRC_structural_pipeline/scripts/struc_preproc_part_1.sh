@@ -58,6 +58,7 @@ RegType=`getopt1 "--regtype" $@`
 SienaxTempFolder=`getopt1 "--sienaxtempfolder" $@`
 BiancaT2Folder=`getopt1 "--biancat2folder" $@`
 T2LesionPath=`getopt1 "--t2lesionpath" $@`
+fBET=`getopt1 "--fbet" $@`
 logT1Folder=`getopt1 "--logt1folder" $@`
 
 log_SetPath "${logT1Folder}"
@@ -78,9 +79,10 @@ ${BRC_SCTRUC_SCR}/run_T1_preprocessing.sh \
       --sienaxtempfolder=${SienaxTempFolder} \
       --regtempt1folder=${regTempT1Folder} \
       --regtype=${RegType} \
+      --fbet=${fBET} \
       --logfile=${logT1Folder}
 
-#: <<'COMMENT'
+
 if [[ $T2 == "yes" ]]; then
 
       ${BRC_SCTRUC_SCR}/run_T2_preprocessing.sh \

@@ -87,7 +87,7 @@ if [ $RegType == 1 ]; then
 
     ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${T2LesionPath} -r ${TempT1Folder}/T1_brain --premat=${WD}/T2_orig_ud_to_T2.mat -o ${BiancaTempFolder}/lesion_mask_2_T1
 
-elif [ $RegType == 2 ]; then
+elif [ $RegType == 2 ] || [ $RegType == 3 ]; then
 
     log_Msg 3 `date`
     log_Msg 3 "Take T2 to T1 and also the brain mask"
@@ -108,24 +108,17 @@ ${FSLDIR}/bin/convert_xfm -omat ${WD}/T2_orig_ud_to_MNI_linear.mat -concat ${reg
 cp ${regTempT1Folder}/T1_to_MNI_linear.mat ${WD}/T2_to_MNI_linear.mat
 
 
-if [ $RegType == 2 ]; then
-    ${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${WD}/T2_to_MNI_linear --premat=${WD}/T2_to_MNI_linear.mat --interp=spline
-elif [ $RegType == 1 ]; then
+if [ $RegType == 1 ]; then
+
     ${FSLDIR}/bin/flirt -interp spline -dof 12 -in ${WD}/T2 -ref $FSLDIR/data/standard/MNI152_T1_1mm -omat ${WD}/T2_to_MNI_linear.mat -out ${WD}/T2_to_MNI_linear
 
     # Remove negative intensity values (from eddy) from final data
     ${FSLDIR}/bin/fslmaths ${WD}/T2_to_MNI_linear -thr 0 ${WD}/T2_to_MNI_linear
-    #    ${FSLDIR}/bin/applywarp --rel  -i ${WD}/T2 -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${WD}/T2_to_MNI_linear --premat=${WD}/T2_to_MNI_linear.mat --interp=spline
-fi
 
-if [ $RegType == 2 ]; then
+elif [ $RegType == 2 ] || [ $RegType == 3 ]; then
 
-    log_Msg 3 `date`
-    log_Msg 3 "Generate the non-linearly warped T2 in MNI"
-    #Generate the non-linearly warped T2 in MNI (Needed for post-freesurfer processing)
-    ${FSLDIR}/bin/convertwarp --ref=$FSLDIR/data/standard/MNI152_T1_1mm --premat=${WD}/T2_orig_ud_to_T2.mat --warp1=${regTempT1Folder}/T1_to_MNI_nonlin_field --out=${WD}/T2_orig_to_MNI_warp
-    ${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r $FSLDIR/data/standard/MNI152_T1_1mm -w ${WD}/T2_orig_to_MNI_warp -o ${WD}/T2_brain_to_MNI --interp=spline
-    ${FSLDIR}/bin/fslmaths ${WD}/T2_brain_to_MNI -mul ${BRC_GLOBAL_DIR}/templates/MNI152_T1_1mm_brain_mask ${WD}/T2_brain_to_MNI
+#    ${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${WD}/T2_to_MNI_linear --premat=${WD}/T2_to_MNI_linear.mat --interp=spline
+    ${FSLDIR}/bin/applywarp --rel  -i ${T2input} -r $FSLDIR/data/standard/MNI152_T1_1mm -o ${WD}/T2_to_MNI_linear --premat=${WD}/T2_orig_ud_to_MNI_linear.mat --interp=spline
 
 fi
 
@@ -149,14 +142,13 @@ if [ $do_defacing = "yes" ] ; then
     rm ${WD}/grot*
 fi
 
-
 #Clean and reorganize
 rm ${WD}/*_tmp*
 if [ -e ${regTempT2Folder} ] ; then rm -r ${regTempT2Folder}; fi; mkdir ${regTempT2Folder}
 mv ${WD}/*.mat ${regTempT2Folder}
-if [ $RegType == 2 ]; then
-    mv ${WD}/*warp*.* ${regTempT2Folder}
-fi
+#if [ $RegType == 2 ]; then
+#    mv ${WD}/*warp*.* ${regTempT2Folder}
+#fi
 mv ${WD}/*MNI*.* ${regTempT2Folder}
 
 
@@ -170,7 +162,27 @@ else
     echo "WARNING: There was no bias field estimation. Bias field correction cannot be applied to T2."
 fi
 
-if [ $RegType == 2 ]; then
+${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/T2_unbiased -r $FSLDIR/data/standard/MNI152_T1_1mm --premat=${regTempT2Folder}/T2_to_MNI_linear.mat -o ${regTempT2Folder}/T2_to_MNI_linear
+${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/T2_unbiased_brain -r $FSLDIR/data/standard/MNI152_T1_1mm --premat=${regTempT2Folder}/T2_to_MNI_linear.mat -o ${regTempT2Folder}/T2_brain_to_MNI_linear
+
+# Remove negative intensity values (from eddy) from final data
+${FSLDIR}/bin/fslmaths ${regTempT2Folder}/T2_to_MNI_linear -thr 0 ${regTempT2Folder}/T2_to_MNI_linear
+${FSLDIR}/bin/fslmaths ${regTempT2Folder}/T2_brain_to_MNI_linear -thr 0 ${regTempT2Folder}/T2_brain_to_MNI_linear
+
+if [ $RegType == 2 ] || [ $RegType == 3 ]; then
+    log_Msg 3 `date`
+    log_Msg 3 "Generate the non-linearly warped T2 in MNI"
+
+    #Generate the non-linearly warped T2 in MNI (Needed for post-freesurfer processing)
+    ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/T2_unbiased -r $FSLDIR/data/standard/MNI152_T1_1mm -w ${regTempT1Folder}/T1_to_MNI_nonlin_field -o ${regTempT2Folder}/T2_to_MNI
+    ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${WD}/T2_unbiased_brain -r $FSLDIR/data/standard/MNI152_T1_1mm -w ${regTempT1Folder}/T1_to_MNI_nonlin_field -o ${regTempT2Folder}/T2_brain_to_MNI
+
+    # Remove negative intensity values (from eddy) from final data
+    ${FSLDIR}/bin/fslmaths ${regTempT2Folder}/T2_to_MNI -thr 0 ${regTempT2Folder}/T2_to_MNI
+    ${FSLDIR}/bin/fslmaths ${regTempT2Folder}/T2_brain_to_MNI -thr 0 ${regTempT2Folder}/T2_brain_to_MNI
+fi
+
+if [ $RegType == 2 ] || [ $RegType == 3 ]; then
 
     log_Msg 3  `date`
     log_Msg 3 "Run BIANCA"

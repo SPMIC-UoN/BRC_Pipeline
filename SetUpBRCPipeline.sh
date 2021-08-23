@@ -60,3 +60,5 @@ export BRC_GLOBAL_SCR=${BRC_GLOBAL_DIR}/scripts
 #SETUP MATLAB and LIBRARIES
 export SPMpath="/usr/local/SPM/spm12"                                               #TO BE MODIFIED BY USER
 export DVARSpath="/home/mszam12/main/matlab/MATLAB_Codes/DVARS"                     #TO BE MODIFIED BY USER
+export ANTSPATH="/usr/local/ANTs/ants-2.1.0-redhat/"                                #TO BE MODIFIED BY USER
+export C3DPATH="/usr/local/c3d/bin"                                                 #TO BE MODIFIED BY USER

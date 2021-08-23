@@ -93,6 +93,7 @@ SpinEchoPhaseEncodePositive=`getopt1 "--SEPhasePos" $@`
 SpinEchoPhaseEncodeNegative=`getopt1 "--SEPhaseNeg" $@`
 Tmp_Filt_Folder=`getopt1 "--tmpfiltfolder" $@`
 Str2rfMRITransf=`getopt1 "--str2rfmritransf" $@`
+DeleteIntermediates=`getopt1 "--deleteintermediates" $@`
 logFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${logFile}"
@@ -174,7 +175,7 @@ ${RUN} ${BRC_FMRI_SCR}/One_Step_Resampling.sh \
       --workingdir=${OsrFolder} \
       --scoutgdcin=${OSR_Scout_In} \
       --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
-      --t12std=${data2stdT1Folder}/T1_2_std_warp \
+      --t12std=${data2stdT1Folder}/T1_2_std_warped \
       --t1brainmask=${T1wImageBrainMask} \
       --fmriresout=${FinalfMRIResolution} \
       --fmri2structin=${regFolder}/${fMRI2strOutputTransform} \
@@ -304,7 +305,7 @@ ${RUN} ${BRC_FMRI_SCR}/Apply_Registration.sh \
       --infmri=${Tmp_Filt_Folder}/${NameOffMRI}_tempfilt \
       --scoutgdcin=${OSR_Scout_In} \
       --gdfield=${gdcFolder}/${NameOffMRI}_gdc_warp \
-      --t12std=${data2stdT1Folder}/T1_2_std_warp \
+      --t12std=${data2stdT1Folder}/T1_2_std_warped \
       --fmriresout=${FinalfMRIResolution} \
       --owarp=${regFolder}/${OutputfMRI2StandardTransform} \
       --motioncorrectiontype=${MotionCorrectionType} \
@@ -351,6 +352,7 @@ ${RUN} ${BRC_FMRI_SCR}/Data_Organization.sh \
       --str2rfmritransf=${str2fMRIOutputTransform} \
       --rfmri2stdtransf=${OutputfMRI2StandardTransform} \
       --std2rfMRItransf=${Standard2OutputfMRITransform} \
+      --deleteintermediates=${DeleteIntermediates} \
       --logfile=${logFile}
 
 
