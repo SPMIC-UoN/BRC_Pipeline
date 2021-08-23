@@ -80,7 +80,6 @@ Usage()
   echo " --name <folder name>                 Output folder name of the functional analysis pipeline. Default: rfMRI"
 
   echo " --noqc                               Turn off quality control of fMRI data"
-  echo " --clean                              Delete all intermediate files"
 
   echo " --physin <file name>                 Input physiological data filename (text format)"
   echo " --samplingrate <value>	              Sampling rate in Hz (default is 100Hz) [physiological data]"
@@ -127,8 +126,6 @@ Do_ica_aroma="yes"
 OutFolderName="rfMRI"
 DO_RVT="no"
 DO_QC="yes"
-DO_QC="yes"
-DeleteIntermediates="FALSE"
 dof=6
 FinalfMRIResolution=2
 SliceTimingCorrection=0
@@ -291,9 +288,6 @@ while [ "$1" != "" ]; do
                               ;;
 
       --noqc )                DO_QC="no"
-                              ;;
-
-      --clean )               DeleteIntermediates="TRUE"
                               ;;
 
       --printcom )            shift
@@ -651,7 +645,8 @@ if [ $CLUSTER_MODE = "YES" ] ; then
     jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
     echo "jobID_2: ${jobID2}"
 
-    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_fMRI_${Subject} -t 12:00:00 -m 80 -w ${jobID2} -c "${BRC_FMRI_SCR}/fMRI_preproc_part_3.sh --slicetimingcorrection=${SliceTimingCorrection} --stcfolder=${stcFolder} --stcinput=${STC_Input} --nameoffmri=${NameOffMRI} --slicetimingfile=${SliceTimingFile} --dcfolder=${DCFolder} --subjectfolder=${AnalysisFolder} --fmrifolder=${TempFolder} --topupfodername=${topupFolderName} --sebffoldername=${sebfFolderName} --gdcfolder=${gdcFolder} --scoutname=${ScoutName} --t1=${dataT1Folder}/${T1wImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --t1brainmask=${dataT1Folder}/${T1wImageBrainMask} --wmseg=${wmseg} --gmseg=${GMseg} --dof=${dof} --method=${DistortionCorrection} --biascorrection=${BiasCorrection} --usejacobian=${UseJacobian} --motioncorrectiontype=${MotionCorrectionType} --eddyoutname=${EddyOutput} --regfolder=${regFolder} --oregim=${RegOutput} --owarp=${fMRI2strOutputTransform} --oinwarp=${str2fMRIOutputTransform} --ojacobian=${JacobianOut} --osrfolder=${OsrFolder} --t12std=${data2stdT1Folder} --fmriresout=${FinalfMRIResolution} --outfmri2stdtrans=${OutputfMRI2StandardTransform} --oiwarp=${Standard2OutputfMRITransform} --nrfolder=${nrFolder} --fwhm=${smoothingfwhm} --icaaroma=${Do_ica_aroma} --motionparam=${SSNR_motionparam} --pnmfolder=${pnmFolder} --physinputtxt=${PhysInputTXT} --samplingrate=${SamplingRate} --smoothcardiac=${SmoothCardiac} --smoothresp=${SmoothResp} --colresp=${ColResp} --colcardiac=${ColCardiac} --coltrigger=${ColTrigger} --dorvt=${DO_RVT} --sliceorder=${SliceOrder} --sebffolder=${SE_BF_Folder} --regt1folder=${regT1Folder} --eddyfolder=${EddyFolder} --innrmfolder=${In_Nrm_Folder} --dointensitynorm=${Do_intensity_norm} --tempfiltercutoff=${Temp_Filter_Cutoff} --mcfolder=${mcFolder} --motionmatdir=${MotionMatrixFolder} --motionmatprefix=${MotionMatrixPrefix} --doqc=${DO_QC} --qcfolder=${qcFolder} --rfmrirawfolder=${rfMRIrawFolder} --rfmrifolder=${rfMRIFolder} --preprocfolder=${preprocFolder} --processedfolder=${processedFolder} --topupfolder=${TOPUP_Folder} --start=${Start_Time} --subject=${Subject} --SEPhasePos=${SpinEchoPhaseEncodePositive} --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} --tmpfiltfolder=${Tmp_Filt_Folder} --deleteintermediates=${DeleteIntermediates} --logfile=${logFolder}/${log_Name}" &`
+    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_fMRI_${Subject} -t 04:00:00 -m 60 -w ${jobID2} -c "${BRC_FMRI_SCR}/fMRI_preproc_part_3.sh --slicetimingcorrection=${SliceTimingCorrection} --stcfolder=${stcFolder} --stcinput=${STC_Input} --nameoffmri=${NameOffMRI} --slicetimingfile=${SliceTimingFile} --dcfolder=${DCFolder} --subjectfolder=${AnalysisFolder} --fmrifolder=${TempFolder} --topupfodername=${topupFolderName} --sebffoldername=${sebfFolderName} --gdcfolder=${gdcFolder} --scoutname=${ScoutName} --t1=${dataT1Folder}/${T1wImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --t1brainmask=${dataT1Folder}/${T1wImageBrainMask} --wmseg=${wmseg} --gmseg=${GMseg} --dof=${dof} --method=${DistortionCorrection} --biascorrection=${BiasCorrection} --usejacobian=${UseJacobian} --motioncorrectiontype=${MotionCorrectionType} --eddyoutname=${EddyOutput} --regfolder=${regFolder} --oregim=${RegOutput} --owarp=${fMRI2strOutputTransform} --oinwarp=${str2fMRIOutputTransform} --ojacobian=${JacobianOut} --osrfolder=${OsrFolder} --t12std=${data2stdT1Folder} --fmriresout=${FinalfMRIResolution} --outfmri2stdtrans=${OutputfMRI2StandardTransform} --oiwarp=${Standard2OutputfMRITransform} --nrfolder=${nrFolder} --fwhm=${smoothingfwhm} --icaaroma=${Do_ica_aroma} --motionparam=${SSNR_motionparam} --pnmfolder=${pnmFolder} --physinputtxt=${PhysInputTXT} --samplingrate=${SamplingRate} --smoothcardiac=${SmoothCardiac} --smoothresp=${SmoothResp} --colresp=${ColResp} --colcardiac=${ColCardiac} --coltrigger=${ColTrigger} --dorvt=${DO_RVT} --sliceorder=${SliceOrder} --sebffolder=${SE_BF_Folder} --regt1folder=${regT1Folder} --eddyfolder=${EddyFolder} --innrmfolder=${In_Nrm_Folder} --dointensitynorm=${Do_intensity_norm} --tempfiltercutoff=${Temp_Filter_Cutoff} --mcfolder=${mcFolder} --motionmatdir=${MotionMatrixFolder} --motionmatprefix=${MotionMatrixPrefix} --doqc=${DO_QC} --qcfolder=${qcFolder} --rfmrirawfolder=${rfMRIrawFolder} --rfmrifolder=${rfMRIFolder} --preprocfolder=${preprocFolder} --processedfolder=${processedFolder} --topupfolder=${TOPUP_Folder} --start=${Start_Time} --subject=${Subject} --SEPhasePos=${SpinEchoPhaseEncodePositive} --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} --tmpfiltfolder=${Tmp_Filt_Folder} --logfile=${logFolder}/${log_Name}" &`
+#    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_fMRI_${Subject} -t 02:50:00 -m 60 -c "${BRC_FMRI_SCR}/fMRI_preproc_part_3.sh --slicetimingcorrection=${SliceTimingCorrection} --stcfolder=${stcFolder} --stcinput=${STC_Input} --nameoffmri=${NameOffMRI} --slicetimingfile=${SliceTimingFile} --dcfolder=${DCFolder} --subjectfolder=${AnalysisFolder} --fmrifolder=${TempFolder} --topupfodername=${topupFolderName} --sebffoldername=${sebfFolderName} --gdcfolder=${gdcFolder} --scoutname=${ScoutName} --t1=${dataT1Folder}/${T1wImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --t1brainmask=${dataT1Folder}/${T1wImageBrainMask} --wmseg=${wmseg} --gmseg=${GMseg} --dof=${dof} --method=${DistortionCorrection} --biascorrection=${BiasCorrection} --usejacobian=${UseJacobian} --motioncorrectiontype=${MotionCorrectionType} --eddyoutname=${EddyOutput} --regfolder=${regFolder} --oregim=${RegOutput} --owarp=${fMRI2strOutputTransform} --oinwarp=${str2fMRIOutputTransform} --ojacobian=${JacobianOut} --osrfolder=${OsrFolder} --t12std=${data2stdT1Folder} --fmriresout=${FinalfMRIResolution} --outfmri2stdtrans=${OutputfMRI2StandardTransform} --oiwarp=${Standard2OutputfMRITransform} --nrfolder=${nrFolder} --fwhm=${smoothingfwhm} --icaaroma=${Do_ica_aroma} --motionparam=${SSNR_motionparam} --pnmfolder=${pnmFolder} --physinputtxt=${PhysInputTXT} --samplingrate=${SamplingRate} --smoothcardiac=${SmoothCardiac} --smoothresp=${SmoothResp} --colresp=${ColResp} --colcardiac=${ColCardiac} --coltrigger=${ColTrigger} --dorvt=${DO_RVT} --sliceorder=${SliceOrder} --sebffolder=${SE_BF_Folder} --regt1folder=${regT1Folder} --eddyfolder=${EddyFolder} --innrmfolder=${In_Nrm_Folder} --dointensitynorm=${Do_intensity_norm} --tempfiltercutoff=${Temp_Filter_Cutoff} --mcfolder=${mcFolder} --motionmatdir=${MotionMatrixFolder} --motionmatprefix=${MotionMatrixPrefix} --doqc=${DO_QC} --qcfolder=${qcFolder} --rfmrirawfolder=${rfMRIrawFolder} --rfmrifolder=${rfMRIFolder} --preprocfolder=${preprocFolder} --processedfolder=${processedFolder} --topupfolder=${TOPUP_Folder} --start=${Start_Time} --subject=${Subject} --SEPhasePos=${SpinEchoPhaseEncodePositive} --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} --tmpfiltfolder=${Tmp_Filt_Folder} --logfile=${logFolder}/${log_Name}" &`
     jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
     echo "jobID_3: ${jobID3}"
 
@@ -771,7 +766,6 @@ else
                     --SEPhasePos=${SpinEchoPhaseEncodePositive} \
                     --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
                     --tmpfiltfolder=${Tmp_Filt_Folder} \
-                    --deleteintermediates=${DeleteIntermediates} \
                     --logfile=${logFolder}/${log_Name}
 
 fi

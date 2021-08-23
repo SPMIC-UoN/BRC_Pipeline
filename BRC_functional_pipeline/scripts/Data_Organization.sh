@@ -47,7 +47,6 @@ rfMRI2strTransf=`getopt1 "--rfmri2strtransf" $@`
 Str2rfMRITransf=`getopt1 "--str2rfmritransf" $@`
 rfMRI2StandardTransform=`getopt1 "--rfmri2stdtransf" $@`
 Standard2rfMRITransform=`getopt1 "--std2rfMRItransf" $@`
-DeleteIntermediates=`getopt1 "--deleteintermediates" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -82,7 +81,6 @@ log_Msg 2 "rfMRI2strTransf:$rfMRI2strTransf"
 log_Msg 2 "Str2rfMRITransf:$Str2rfMRITransf"
 log_Msg 2 "rfMRI2StandardTransform:$rfMRI2StandardTransform"
 log_Msg 2 "Standard2rfMRITransform:$Standard2rfMRITransform"
-log_Msg 2 "DeleteIntermediates:$DeleteIntermediates"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -191,12 +189,6 @@ $FSLDIR/bin/imcp ${processed_SBRef_file}     ${dataProFolder}/SBref
 $FSLDIR/bin/imcp ${processed_SBRef2str_file} ${dataProFolder}/SBref2str
 $FSLDIR/bin/imcp ${processed_SBRef2std_file} ${data2stdProFolder}/SBref2std
 
-if [[ ${DeleteIntermediates} == "TRUE" ]]; then
-
-    log_Msg 3 "Delete the intermediate files"
-    rm -rf ${TempFolder}
-
-fi
 
 log_Msg 3 ""
 log_Msg 3 "                     END: Organization of the outputs"
