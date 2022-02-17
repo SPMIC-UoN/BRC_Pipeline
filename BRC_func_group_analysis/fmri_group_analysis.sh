@@ -37,7 +37,7 @@ Usage()
   echo "                                       SHEN: a functional atlas that covering both cortical and sub-cortical brain regions"
   echo "                                           This atlas is in the standard MNI152 space and contains 268 ROIs."
   echo "                                       MELODIC: Multivariate Exploratory Linear Optimised Decomposition into Independent Components"
-  echo "                                           By choosing this option you have to specify --approach, --dim options."
+  echo "                                           By choosing this option you have to specify --approach, and --dim options."
   echo "                                       NONE: a user defined atlas which can be used as an input using --inatlas option."
   echo "                                           Also, the label maps should be specified using --labels option."
   echo " --fmrires <value>               Data resolution of fMRI data and ATLAS in mm"
