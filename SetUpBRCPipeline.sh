@@ -37,7 +37,7 @@ else
     export FSLDIR_5_0_11="/usr/local/fsl-5.0.11"                                    #TO BE MODIFIED BY USER
 
     #SET DYNAMIC LIBRARIES FOR Eddy
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64                   #TO BE MODIFIED BY USER
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-8.0/lib64               #TO BE MODIFIED BY USER
 fi
 
 #ENV VARIABLES FOR THE BRC_PIPELINE
@@ -62,3 +62,4 @@ export SPMpath="/usr/local/SPM/spm12"                                           
 export DVARSpath="/home/mszam12/main/matlab/MATLAB_Codes/DVARS"                     #TO BE MODIFIED BY USER
 export ANTSPATH="/usr/local/ANTs/ants-2.1.0-redhat/"                                #TO BE MODIFIED BY USER
 export C3DPATH="/usr/local/c3d/bin"                                                 #TO BE MODIFIED BY USER
+export CUDIMOT="/home/mszam12/main/BRC_Pipeline/global/libs/cuDIMOT"                #TO BE MODIFIED BY USER
