@@ -135,7 +135,7 @@ elif [ $RegType == 3 ]; then
                                -ras2fsl \
                                -o ${WD}/affine_fsl.mat
 
-    /usr/local/c3d/bin/c3d -mcs ${WD}/SynOut1Warp.nii.gz -oo ${WD}/warp_x_tmp.nii.gz ${WD}/warp_y_tmp.nii.gz ${WD}/warp_z_tmp.nii.gz
+    ${C3DPATH}/c3d -mcs ${WD}/SynOut1Warp.nii.gz -oo ${WD}/warp_x_tmp.nii.gz ${WD}/warp_y_tmp.nii.gz ${WD}/warp_z_tmp.nii.gz
     ${FSLDIR}/bin/fslmaths ${WD}/warp_y_tmp -mul -1 ${WD}/warp_y_tmp
     ${FSLDIR}/bin/fslmerge -t ${WD}/warp_fsl ${WD}/warp_x_tmp ${WD}/warp_y_tmp ${WD}/warp_z_tmp
 
