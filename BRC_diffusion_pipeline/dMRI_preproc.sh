@@ -61,7 +61,7 @@ Usage()
   echo " --movebysusceptibility          By setting this option, eddy attempts to estimate how the susceptibility-induced field changes when the subject moves in the scanner"
   echo "                                      This option activates '--estimate_move_by_susceptibility' in EDDY"
   echo "                                      This option is available for FSL 6 onwards"
-  echo " --hires                         This option will increase the time limits and the required memory for processing the pipeline"
+  echo " --hires                         This option will increase the time limits and the required memory for the processing of high-resolution data"
   echo " --help                          help"
   echo " "
   echo " "

@@ -29,7 +29,6 @@ Usage()
   echo " --freesurfer                     Turn on Freesurfer processing pipeline"
   echo " --subseg                         Turn on subcortical segmentation by FIRST"
   echo " --qc                             Turn on quality control of T1 data"
-  echo " --strongbias                     Turn on for images with very strong bias fields"
   echo " --noreg                          Turn off steps that do registration to standard (FLIRT and FNIRT)"
   echo " --noseg                          Turn off the step that does tissue-type segmentation (FAST)"
   echo " --nocrop                         Turn off the step that does automated cropping"
