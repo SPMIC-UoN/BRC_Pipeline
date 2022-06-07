@@ -19,41 +19,41 @@ Usage()
   echo " "
   echo "Usage: `basename $0`"
   echo "Compulsory arguments (You MUST set one or more of):"
-  echo " --input <path>                       full path of the filename of fMRI image"
-  echo " --path <path>                        output directory"
-  echo " --subject <subject name>             output directory is a subject name folder in input image directory"
+  echo " --input <path>                       Full path of the filename of fMRI image."
+  echo " --path <path>                        Output directory."
+  echo " --subject <subject name>             Output directory is a subject name folder in input image directory."
   echo " "
   echo "Optional arguments (You may optionally specify one or more of):"
   echo " --mctype <Type>                      Motion correction method. MCFLIRT: between volumes (default), and EDDY: within/between volumes"
   echo "                                           MCFLIRT6: between volumes with 6 degrees of freedom (default),"
   echo "                                           MCFLIRT12: between volumes with 12 degrees of freedom,"
-  echo "                                           EDDY: within/between volumes"
-  echo " --dcmethod <method>                  Susceptibility distortion correction method (required for accurate processing)"
-  echo "                                      Values: TOPUP, SiemensFieldMap (same as FIELDMAP), GeneralElectricFieldMap, and NONE (default)"
-  echo " --fmriscout <path>                   A single band reference image (SBRef) is recommended if available. Set to NONE if not available (default)"
-  echo "                                      Set to NONE if you want to use the first volume of the timeseries for motion correction"
-  echo " --slice2vol                          If one wants to do slice-to-volome motion correction"
+  echo "                                           EDDY: within/between volumes."
+  echo " --dcmethod <method>                  Susceptibility distortion correction method (required for accurate processing)."
+  echo "                                      Values: TOPUP, SiemensFieldMap (same as FIELDMAP), GeneralElectricFieldMap, and NONE (default)."
+  echo " --fmriscout <path>                   A single band reference image (SBRef) is recommended if available. Set to NONE if not available (default)."
+  echo "                                      Set to NONE if you want to use the first volume of the timeseries for motion correction."
+  echo " --slice2vol                          If one wants to do slice-to-volome motion correction."
   echo " --slspec <path>                      Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
-  echo "                                      slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction"
-  echo " --fmapmag <path>                     Expects 4D Magnitude volume with two 3D volumes (differing echo times). Set to NONE (default) if using TOPUP"
-  echo " --fmapphase <path>                   Expects a 3D Phase difference volume (Siemens style). Set to NONE (default) if using TOPUP"
+  echo "                                      slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction."
+  echo " --fmapmag <path>                     Expects 4D Magnitude volume with two 3D volumes (differing echo times). Set to NONE (default) if using TOPUP."
+  echo " --fmapphase <path>                   Expects a 3D Phase difference volume (Siemens style). Set to NONE (default) if using TOPUP."
   echo " --fmapgeneralelectric                Path to General Electric style B0 fieldmap with two volumes"
   echo "                                           1. field map in degrees"
   echo "                                           2. magnitude"
-  echo "                                      Set to 'NONE' (default) if not using 'GeneralElectricFieldMap' as the value for the DistortionCorrection variable"
-  echo " --echodiff <value>                   Set to NONE if using TOPUP"
-  echo " --SEPhaseNeg <path>                  For the SE field map volume with a 'negative' phase encoding direction (the same direction of fMRI data)"
-  echo "                                      Set to NONE if using regular FIELDMAP"
-  echo " --SEPhasePos <path>                  For the SE field map volume with a 'positive' phase encoding direction (the opposite direction of fMRI data)"
-  echo "                                      Set to NONE if using regular FIELDMAP"
-  echo " --echospacing <value>                Effective Echo Spacing of spin echo field map acquisitions (in sec)"
+  echo "                                      Set to 'NONE' (default) if not using 'GeneralElectricFieldMap' as the value for the DistortionCorrection variable."
+  echo " --echodiff <value>                   Set to NONE if using TOPUP."
+  echo " --SEPhaseNeg <path>                  For the SE field map volume with a 'negative' phase encoding direction (the same direction of fMRI data)."
+  echo "                                      Set to NONE if using regular FIELDMAP."
+  echo " --SEPhasePos <path>                  For the SE field map volume with a 'positive' phase encoding direction (the opposite direction of fMRI data)."
+  echo "                                      Set to NONE if using regular FIELDMAP."
+  echo " --echospacing <value>                Effective Echo Spacing of spin echo field map acquisitions (in sec)."
   echo "                                           NOTE: The pipeline expects you to have used the same phase encoding axis and echo spacing in the fMRI data"
   echo "                                           as in the SE field map acquisitions. Otherwise, you need to specify the fMRI Echo spacing using --echospacing_fMRI"
   echo " --unwarpdir <direction>              ‌Based on Phase Encoding Direction: PA: 'y', AP: 'y-', RL: 'x', and LR: 'x-'"
   echo " --biascorrection <method>            Receive coil bias field correction method"
-  echo "                                           Values: NONE (default), or SEBASED (Spin-Echo Based)"
-  echo "                                           SEBASED calculates bias field from spin echo images (which requires TOPUP distortion correction)"
-  echo " --intensitynorm                      If one wants to do intensity normalization"
+  echo "                                           Values: NONE (default), or SEBASED (Spin-Echo Based)."
+  echo "                                           SEBASED calculates bias field from spin echo images (which requires TOPUP distortion correction)."
+  echo " --intensitynorm                      If one wants to do intensity normalization."
   echo " --stcmethod <method>                 Slice timing correction method"
   echo "                                           0: NONE (default value),"
   echo "                                           1: (SPM) If the slices were acquired with interleaved order (0, 2, 4 ... 1, 3, 5 ...),"
@@ -63,24 +63,24 @@ Usage()
   echo "                                           5: (FSL) If slices were acquired from the top of the brain to the bottom,"
   echo "                                           6: (FSL) If the slices were acquired with interleaved order (0, 2, 4 ... 1, 3, 5 ...),"
   echo "                                           7: (FSL) If slices were not acquired in regular order you will need to use a slice order file or a slice timings file."
-  echo "                                                    If a slice order file is to be used, create a text file with a single number on each line, "
-  echo "                                                    where the first line states which slice was acquired first, the second line states which slice was acquired second, etc."
+  echo "                                                    If a slice order file is to be used, create a text file with a single number on each line, where the first "
+  echo "                                                    line states which slice was acquired first, the second line states which slice was acquired second, etc."
   echo "                                                    The first slice is numbered 1 not 0."
-  echo "                                                    The file path should be specified using --slstiming"
+  echo "                                                    The file path should be specified using --slstiming."
   echo "                                           8: (FSL) If a slice timings file is to be used, put one value (ie for each slice) on each line of a text file."
-  echo "                                                    The units are in TRs, with 0.5 corresponding to no shift. Therefore a sensible range of values will be between 0 and 1."
-  echo "                                                    The file path should be specified using --slstiming"
-  echo " --slstiming <path>                   File path of a single-column custom interleave order/timing file"
-  echo " --fwhm <value>                       Spatial size (sigma, i.e., half-width) of smoothing, in mm. Set to 0 (default) for no spatial smooting"
-  echo " --noaroma                            Disable ICA-AROMA for Artifact/Physiological Noise Removal"
-  echo " --fmrires <value>                    Target final resolution of fMRI data in mm (default is 2 mm)"
-  echo " --tempfilter <value>                 Non-zero value of this option means that one wants to do temporal filtering with High pass filter curoff <value> in Sec"
+  echo "                                                    The units are in TRs, with 0.5 corresponding to no shift. Therefore a sensible range of values will "
+  echo "                                                    be between 0 and 1. The file path should be specified using --slstiming."
+  echo " --slstiming <path>                   File path of a single-column custom interleave order/timing file."
+  echo " --fwhm <value>                       Spatial size (sigma, i.e., half-width) of smoothing, in mm. Set to 0 (default) for no spatial smooting."
+  echo " --noaroma                            Disable ICA-AROMA for Artifact/Physiological Noise Removal."
+  echo " --fmrires <value>                    Target final resolution of fMRI data in mm (default is 2 mm)."
+  echo " --tempfilter <value>                 Non-zero value of this option means that one wants to do temporal filtering with High pass filter curoff <value> in Sec."
   echo "                                      Default value is 0, means No Temporal Filtering"
   echo " --echospacing_fMRI <value>           Echo Spacing of fMRI image (in sec)"
   echo " --name <folder name>                 Output folder name of the functional analysis pipeline. Default: rfMRI"
-
   echo " --noqc                               Turn off quality control of fMRI data"
   echo " --clean                              Delete all intermediate files"
+  echo " --delvolumes <value>                 Delete a number of volumes from the start of the fMRI 4D data"
 
   echo " --physin <file name>                 Input physiological data filename (text format)"
   echo " --samplingrate <value>	              Sampling rate in Hz (default is 100Hz) [physiological data]"
@@ -97,7 +97,7 @@ Usage()
   echo "                                           3: Interleaved Up,"
   echo "                                           4: Interleaved Down."
 
-  echo " --printcom                           use 'echo' for just printing everything and not running the commands (default is to run)"
+  echo " --printcom                           Use 'echo' for just printing everything and not running the commands (default is to run)"
   echo " --help                               help"
   echo " "
   echo " "
@@ -138,6 +138,7 @@ EchoSpacing_fMRI=0.0
 SamplingRate=100
 SmoothCardiac=0.1
 SmoothResp=0.1
+DelVols=0
 
 opts_DefaultOpt()
 {
@@ -294,6 +295,10 @@ while [ "$1" != "" ]; do
                               ;;
 
       --clean )               DeleteIntermediates="TRUE"
+                              ;;
+
+      --delvolumes )          shift
+                              DelVols=$1
                               ;;
 
       --printcom )            shift
@@ -582,6 +587,7 @@ log_Msg 2 "smoothingfwhm: $smoothingfwhm"
 log_Msg 2 "Do_ica_aroma: $Do_ica_aroma"
 log_Msg 2 "FinalfMRIResolution: $FinalfMRIResolution"
 log_Msg 2 "EchoSpacing_fMRI: $EchoSpacing_fMRI"
+log_Msg 2 "DelVols: $DelVols"
 log_Msg 2 "RUN: $RUN"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -596,19 +602,33 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 log_Msg 3 "OutputDir is: ${rfMRIFolder}"
 
 #Check WM segment exist or no
-if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_WM_mask` = 1 ] ; then
-    wmseg="${MultChanT1Folder}/T1_WM_mask"
-elif [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_WM_mask` = 1 ]]; then
+#if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_WM_mask` = 1 ] ; then
+#    wmseg="${MultChanT1Folder}/T1_WM_mask"
+#el
+if [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_WM_mask` = 1 ]]; then
     wmseg="${SinChanT1Folder}/T1_WM_mask"
 fi
 
-if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_GM_mask` = 1 ] ; then
-    GMseg="${MultChanT1Folder}/T1_GM_mask"
-elif [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_GM_mask` = 1 ]]; then
+#if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_GM_mask` = 1 ] ; then
+#    GMseg="${MultChanT1Folder}/T1_GM_mask"
+#el
+if [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_GM_mask` = 1 ]]; then
     GMseg="${SinChanT1Folder}/T1_GM_mask"
 fi
 
 $FSLDIR/bin/imcp ${PathOffMRI} ${rfMRIrawFolder}/${OrigTCSName}
+
+if [ $DelVols != 0 ]; then
+
+    log_Msg 3 "Deleting the first ${DelVols} volumes from the original file and save it to the raw folder"
+
+    dimt=`${FSLDIR}/bin/fslval ${rfMRIrawFolder}/${OrigTCSName} dim4`
+
+    ${FSLDIR}/bin/fslroi ${rfMRIrawFolder}/${OrigTCSName} ${rfMRIrawFolder}/${OrigTCSName}_temp ${DelVols} $(( ${dimt} - ${DelVols} - 1 ))
+    $FSLDIR/bin/imrm ${rfMRIrawFolder}/${OrigTCSName}
+    $FSLDIR/bin/immv ${rfMRIrawFolder}/${OrigTCSName}_temp ${rfMRIrawFolder}/${OrigTCSName}
+
+fi
 
 #Create fake "Scout" if it doesn't exist
 if [ $fMRIScout = "NONE" ] ; then
