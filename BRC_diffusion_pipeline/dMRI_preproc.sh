@@ -36,32 +36,32 @@ Usage()
   echo "Usage: `basename $0`"
   echo "Compulsory arguments (You MUST set one or more of):"
   echo " --input <path>	                 dataLR(AP)1@dataLR(AP)2@...dataLR(AP)N, filenames of input images (For input filenames,"
-  echo "                                 if for a LR/RL (AP/PA) pair one of the two files are missing set the entry to EMPTY)"
-  echo " --path <path>                   output directory. Please provide absolute path"
-  echo " --subject <subject name>        output directory is a subject name folder in output path directory"
-  echo " --echospacing <value>           EchoSpacing should be in Sec"
+  echo "                                 if for a LR/RL (AP/PA) pair one of the two files are missing set the entry to EMPTY)."
+  echo " --path <path>                   output directory. Please provide absolute path."
+  echo " --subject <subject name>        output directory is a subject name folder in output path directory."
+  echo " --echospacing <value>           EchoSpacing should be in Sec."
   echo " --pe_dir <value>                Phase Encoding Direction"
   echo "                                      1 for LR/RL,"
   echo "                                      2 for AP/PA"
   echo " "
   echo "Optional arguments (You may optionally specify one or more of):"
   echo " --input_2 <path>                dataRL(PA)1@dataRL(PA)2@...dataRL(PA)N, filenames of input images (reverse phase encoding direction),"
-  echo "                                 Set to NONE if not available (default)"
-  echo " --qc                            Turn on steps that do quality control of dMRI data"
-  echo " --reg                           Turn on steps that do registration to standard (FLIRT and FNIRT)"
-  echo " --slice2vol                     If one wants to do slice-to-volome motion correction"
+  echo "                                 Set to NONE if not available (default)."
+  echo " --qc                            Turn on steps that do quality control of dMRI data."
+  echo " --reg                           Turn on steps that do registration to standard (FLIRT and FNIRT)."
+  echo " --slice2vol                     If one wants to do slice-to-volome motion correction."
   echo " --slspec <path>                 Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
-  echo "                                 slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction"
+  echo "                                 slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction."
   echo " --cm_flag <value>               CombineMatchedFlag"
   echo "                                      2 for including in the output all volumes uncombined (default),"
   echo "                                      1 for including in the output and combine only volumes where both LR/RL (or AP/PA) pairs have been acquired,"
-  echo "                                      0 for including (uncombined) single volumes as well"
+  echo "                                      0 for including (uncombined) single volumes as well."
   echo " --p_im <value>                  ParallelImaging_Factor, In-plane parallel imaging factor"
   echo "                                      1 for No_Parallel_Imaging"
-  echo " --movebysusceptibility          By setting this option, eddy attempts to estimate how the susceptibility-induced field changes when the subject moves in the scanner"
-  echo "                                      This option activates '--estimate_move_by_susceptibility' in EDDY"
-  echo "                                      This option is available for FSL 6 onwards"
-  echo " --hires                         This option will increase the time limits and the required memory for the processing of high-resolution data"
+  echo " --movebysusceptibility          By setting this option, eddy attempts to estimate how the susceptibility-induced field changes when the subject"
+  echo "                                 moves in the scanner. This option activates '--estimate_move_by_susceptibility' in EDDY."
+  echo "                                 This option is available for FSL 6 onwards."
+  echo " --hires                         This option will increase the time limits and the required memory for the processing of high-resolution data."
   echo " --help                          help"
   echo " "
   echo " "
@@ -266,7 +266,6 @@ regT1Folder=${preprocT1Folder}/${regFolderName}
 
 if [ -d ${dMRIrawFolder} ]; then rm -rf ${dMRIrawFolder}; fi; mkdir -p ${dMRIrawFolder}
 if [ -d ${dMRIFolder} ]; then rm -rf ${dMRIFolder}; fi; mkdir -p ${dMRIFolder}
-#if [ ! -d ${dMRIFolder} ]; then mkdir ${dMRIFolder}; fi
 if [ -e ${logFolder} ] ; then rm -r ${logFolder}; fi; mkdir ${logFolder}
 if [ ! -d ${preprocFolder} ]; then mkdir ${preprocFolder}; fi
 if [ ! -d ${processedFolder} ]; then mkdir ${processedFolder}; fi
@@ -354,7 +353,6 @@ if [ $CLUSTER_MODE = "YES" ] ; then
     echo "jobID_3: ${jobID3}"
 
 else
-#    ${BRC_DMRI_DIR}/dMRI_preproc.sh
 
     ${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh \
                     --dmrirawfolder=${dMRIrawFolder} \

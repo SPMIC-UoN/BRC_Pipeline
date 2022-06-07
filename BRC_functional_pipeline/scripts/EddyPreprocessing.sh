@@ -225,53 +225,6 @@ else
 
 fi
 
-#${BRC_FMRI_SCR}/eddy_cuda  ""$EDDY_arg""
-
-
-#        --imain=${Eddy_Input} \
-#        --mask=${BrainMask} \
-#        --index=${EddyFolder}/index.txt \
-#        --acqp=$txtfname \
-#        --bvecs=${EddyFolder}/${NameOffMRI}.bvecs \
-#        --bvals=${EddyFolder}/${NameOffMRI}.bvals \
-#        --fwhm=10 \
-#        --topup=${DCFolder}/FieldMap/Coefficents \
-#        --out=${EddyFolder}/${EddyOut} \
-#        --s2v_niter=10 \
-#        --very_verbose \
-#
-#
-#        --data_is_shelled \
-#        --niter=1 \
-#        --mporder=${MPOrder} \
-#        --s2v_fwhm=0 \
-#        --s2v_interp=trilinear \
-#        --s2v_lambda=1 \
-#        --nvoxhp=1000 \
-#        --b0_only \
-#        --dont_mask_output \
-#        --mbs_niter=20 \
-#        --mbs_lambda=5 \
-#        --mbs_ksp=5
-#         ""${TOPUP_arg}""
-#        --slspec=${EddyFolder}/slspec.txt \
-#
-#--niter=10 \
-#--fwhm=10,10,5,5,0,0,0 \
-
-
-#     ß   --repol
-#        --estimate_move_by_susceptibility \
-#        --slspec=slice_order.txt \
-#        --field=fieldmap_in_Hz.nii.gz \
-#--b0_only=field_to_func_rigid_transform.mat \
-
-#eddy_quad ${EddyFolder}/${EddyOut} \
-#          -idx ${EddyFolder}/index.txt \
-#          -par ${txtfname} \
-#          -m ${BrainMask} \
-#          -b ${EddyFolder}/${NameOffMRI}.bvals \
-#          -g ${EddyFolder}/${NameOffMRI}.bvecs
 
 log_Msg 3 "Extract the outputs"
 ${FSLDIR}/bin/fslroi ${EddyFolder}/${EddyOut} ${EddyFolder}/SBRef_dc 0 1
