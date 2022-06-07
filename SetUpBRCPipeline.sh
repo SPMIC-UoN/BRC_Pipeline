@@ -63,3 +63,7 @@ export DVARSpath="/home/mszam12/main/matlab/MATLAB_Codes/DVARS"                 
 export ANTSPATH="/usr/local/ANTs/ants-2.1.0-redhat/"                                #TO BE MODIFIED BY USER
 export C3DPATH="/usr/local/c3d/bin"                                                 #TO BE MODIFIED BY USER
 export CUDIMOT="/home/mszam12/main/BRC_Pipeline/global/libs/cuDIMOT"                #TO BE MODIFIED BY USER
+
+#ADD ENV VARIABLES TO THE PATH
+PATH=$PATH:$BRC_SCTRUC_DIR:$BRC_DMRI_DIR:$BRC_FMRI_DIR:$BRC_PMRI_DIR:$BRC_FMRI_GP_DIR:$BRC_IDPEXTRACT_DIR
+export PATH
