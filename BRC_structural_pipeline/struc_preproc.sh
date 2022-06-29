@@ -27,6 +27,7 @@ Usage()
   echo "Optional arguments (You may optionally specify one or more of):"
   echo " --t2 <path>                      Full path of the input T2W image (for processing of T2 data)"
   echo " --freesurfer                     Turn on Freesurfer processing pipeline"
+  echo " --fastsurfer                     Turn on Fastsurfer processing pipeline"
   echo " --subseg                         Turn on subcortical segmentation by FIRST"
   echo " --qc                             Turn on quality control of T1 data"
   echo " --noreg                          Turn off steps that do registration to standard (FLIRT and FNIRT)"
@@ -66,6 +67,7 @@ T2="no"
 do_Sub_seg="no"
 do_QC="no"
 do_freesurfer="no"
+do_fastsurfer="no"
 do_tissue_seg="yes"
 do_anat_based_on_FS="yes"
 do_crop="yes"
@@ -112,6 +114,9 @@ while [ "$1" != "" ]; do
                                 ;;
 
         --freesurfer )         	do_freesurfer=yes
+                                ;;
+
+        --fastsurfer )         	do_fastsurfer=yes
                                 ;;
 
         --nocrop)               do_crop="no";
@@ -189,6 +194,7 @@ dataFolderName="data"
 data2stdFolderName="data2std"
 segFolderName="seg"
 FSFolderName="FS"
+FastSurferFolderName="FastSurfer"
 FastFolderName="FAST"
 FirstFolderName="FIRST"
 SienaxFolderName="SIENAX"
@@ -232,6 +238,7 @@ dataT1Folder=${processedT1Folder}/${dataFolderName}
 data2stdT1Folder=${processedT1Folder}/${data2stdFolderName}
 segT1Folder=${processedT1Folder}/${segFolderName}
 FSFolder=${processedT1Folder}/${FSFolderName}
+FastSurferFolder=${processedT1Folder}/${FastSurferFolderName}
 SubFolder=${segT1Folder}/${SubFolderName}
 ShapeFolder=${SubFolder}/${ShapeFolderName}
 rawT2Folder=${AnatMRIrawFolder}/${T2FolderName}
@@ -306,6 +313,7 @@ log_Msg 2 "do_Sub_seg: $do_Sub_seg"
 log_Msg 2 "do_QC: $do_QC"
 log_Msg 2 "do_tissue_seg: $do_tissue_seg"
 log_Msg 2 "do_freesurfer: $do_freesurfer"
+log_Msg 2 "do_fastsurfer: $do_fastsurfer"
 log_Msg 2 "RegType: $RegType"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -327,7 +335,7 @@ if [ $CLUSTER_MODE = "YES" ] ; then
         TIME_LIMIT=48:00:00
         MEM=60
     else
-        TIME_LIMIT=03:00:00
+        TIME_LIMIT=05:00:00
         MEM=100
     fi
 
@@ -336,7 +344,7 @@ if [ $CLUSTER_MODE = "YES" ] ; then
         Cores=24
     fi
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p ${Cores} -s BRC_SMRI_${Subject} -t ${TIME_LIMIT} -m ${MEM} -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${ShapeFolder} --sienaxt1folder=${SienaxT1Folder} --biancatempfolder=${BiancaTempFolder} --biancat2folder=${BiancaT2Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --sienaxtempfolder=${SienaxTempFolder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --regtype=${RegType} --t2lesionpath=${T2LesionPath} --fbet=${fBET} --logt1folder=${logT1Folder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p ${Cores} -s BRC_SMRI_${Subject} -t ${TIME_LIMIT} -m ${MEM} -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${ShapeFolder} --sienaxt1folder=${SienaxT1Folder} --biancatempfolder=${BiancaTempFolder} --biancat2folder=${BiancaT2Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --sienaxtempfolder=${SienaxTempFolder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --dofastsurfer=${do_fastsurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --fastsurferfoldername=${FastSurferFolderName}--starttime=${Start_Time} --subid=${Sub_ID} --regtype=${RegType} --t2lesionpath=${T2LesionPath} --fbet=${fBET} --logt1folder=${logT1Folder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
@@ -371,8 +379,10 @@ else
                       --data2stdt2folder=${data2stdT2Folder} \
                       --regt2folder=${regT2Folder} \
                       --dofreesurfer=${do_freesurfer} \
+                      --dofastsurfer=${do_fastsurfer} \
                       --processedt1folder=${processedT1Folder} \
                       --fsfoldername=${FSFolderName} \
+                      --fastsurferfoldername=${FastSurferFolderName} \
                       --starttime=${Start_Time} \
                       --subid=${Sub_ID} \
                       --regtype=${RegType} \
