@@ -50,8 +50,10 @@ data2stdT2Folder=`getopt1 "--data2stdt2folder" $@`
 regT2Folder=`getopt1 "--regt2folder" $@`
 regT2Folder=`getopt1 "--regt2folder" $@`
 do_freesurfer=`getopt1 "--dofreesurfer" $@`
+do_fastsurfer=`getopt1 "--dofastsurfer" $@`
 processedT1Folder=`getopt1 "--processedt1folder" $@`
 FSFolderName=`getopt1 "--fsfoldername" $@`
+FastSurferFolderName=`getopt1 "--fastsurferfoldername" $@`
 Start_Time=`getopt1 "--starttime" $@`
 Sub_ID=`getopt1 "--subid" $@`
 RegType=`getopt1 "--regtype" $@`
@@ -145,14 +147,35 @@ if [[ $do_freesurfer == "yes" ]]; then
     fi
 
     if [[ $T2 == yes ]]; then
-        recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s FS -FLAIR ${rawT2Folder}/T2_orig.nii.gz -all
+        recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s ${FSFolderName} -FLAIR ${rawT2Folder}/T2_orig.nii.gz -all
     else
-        recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s FS -all
+        recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s ${FSFolderName} -all
     fi
 
     rm -r ${processedT1Folder}/fsaverage
 fi
 
+if [[ $do_fastsurfer == "yes" ]]; then
+    SUBJECTS_DIR=${processedT1Folder}
+
+    log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    log_Msg 3 "+                                                                        +"
+    log_Msg 3 "+                       START: FastSurfer Analysis                       +"
+    log_Msg 3 "+                                                                        +"
+    log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+    if [ -e "${processedT1Folder}/${FastSurferFolderName}" ] ; then
+        rm -r ${processedT1Folder}/${FastSurferFolderName}
+    fi
+
+    if [[ $T2 == yes ]]; then
+        log_Msg 3 "WARNING: T2 specified but will be ignored by FastSurfer"
+    fi
+
+    run_fastsurfer.sh --t1 ${rawT1Folder}/T1_orig.nii.gz --sid ${FastSurferFolderName} --sd ${processedT1Folder}
+
+    rm -r ${processedT1Folder}/fsaverage
+fi
 
 END_Time="$(date -u +%s)"
 
