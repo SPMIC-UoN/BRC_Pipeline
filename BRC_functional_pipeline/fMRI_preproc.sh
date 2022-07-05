@@ -617,6 +617,9 @@ if [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_GM_mask` = 1 ]]; then
 fi
 
 $FSLDIR/bin/imcp ${PathOffMRI} ${rfMRIrawFolder}/${OrigTCSName}
+if [[ ${SliceSpec} != "NONE" ]] ; then
+    cp ${SliceSpec} ${rfMRIrawFolder}/${OrigTCSName}.json
+fi
 
 if [ $DelVols != 0 ]; then
 
