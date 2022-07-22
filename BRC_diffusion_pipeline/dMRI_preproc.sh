@@ -49,6 +49,7 @@ Usage()
   echo "                                 Set to NONE if not available (default)."
   echo " --qc                            Turn on steps that do quality control of dMRI data."
   echo " --reg                           Turn on steps that do registration to standard (FLIRT and FNIRT)."
+  echo " --tbss                          Turn on steps that run TBSS analysis."
   echo " --slice2vol                     If one wants to do slice-to-volome motion correction."
   echo " --slspec <path>                 Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
   echo "                                 slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction."
@@ -86,6 +87,7 @@ PIFactor=1
 
 do_QC="no"
 do_REG="no"
+do_TBSS="no"
 Apply_Topup="yes"
 dof=6
 Opt_args=""
@@ -114,6 +116,9 @@ while [ "$1" != "" ]; do
                                 ;;
 
         --reg )           	    do_REG="yes"
+                                ;;
+
+        --tbss )           	    do_TBSS="yes"
                                 ;;
 
         --slice2vol )           Slice2Volume="yes"
@@ -203,6 +208,7 @@ preprocessFolderName="preproc"
 processedFolderName="processed"
 topupFolderName="topup"
 eddyFolderName="eddy"
+tbssFolderName="tbss"
 regFolderName="reg"
 qcFolderName="qc"
 dataFolderName="data"
@@ -249,6 +255,7 @@ processedFolder=${dMRIFolder}/${processedFolderName}
 
 topupFolder=${preprocFolder}/${topupFolderName}
 eddyFolder=${preprocFolder}/${eddyFolderName}
+tbssFolder=${preprocFolder}/${tbssFolderName}
 qcFolder=${preprocFolder}/${qcFolderName}
 regFolder=${preprocFolder}/${regFolderName}
 dataFolder=${processedFolder}/${dataFolderName}
@@ -273,6 +280,7 @@ if [ $Apply_Topup = yes ] ; then
     if [ ! -d ${topupFolder} ]; then mkdir ${topupFolder}; fi
 fi
 if [ ! -d ${eddyFolder} ]; then mkdir ${eddyFolder}; fi
+if [ ! -d ${tbssFolder} ]; then mkdir ${tbssFolder}; fi
 if [ $do_REG = yes ] ; then
     if [ ! -d ${regFolder} ]; then mkdir ${regFolder}; fi
     if [ ! -d ${data2strFolder} ]; then mkdir ${data2strFolder}; fi
@@ -306,6 +314,7 @@ log_Msg 2 "InputImages: $InputImages"
 log_Msg 2 "InputImages2: $InputImages2"
 log_Msg 2 "do_QC: $do_QC"
 log_Msg 2 "do_REG: $do_REG"
+log_Msg 2 "do_TBSS: $do_TBSS"
 log_Msg 2 "Slice2Volume: $Slice2Volume"
 log_Msg 2 "SliceSpec: $SliceSpec"
 log_Msg 2 "echospacing: $echospacing"
@@ -390,6 +399,8 @@ else
                     --combinematched=${CombineMatched} \
                     --applytopup=${Apply_Topup} \
                     --doreg=${do_REG} \
+                    --dotbss=${do_TBSS} \
+                    --tbssfolder=${tbssFolder} \
                     --multchant1folder=${MultChanT1Folder} \
                     --sinchant1folder=${SinChanT1Folder} \
                     --regfolder=${regFolder} \

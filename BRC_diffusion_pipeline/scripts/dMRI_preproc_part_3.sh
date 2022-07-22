@@ -30,6 +30,8 @@ dataFolder=`getopt1 "--datafolder" $@`
 CombineMatched=`getopt1 "--combinematched" $@`
 Apply_Topup=`getopt1 "--applytopup" $@`
 do_REG=`getopt1 "--doreg" $@`
+do_TBSS=`getopt1 "--dotbss" $@`
+tbssFolder=`getopt1 "--tbssfolder" $@`
 MultChanT1Folder=`getopt1 "--multchant1folder" $@`
 SinChanT1Folder=`getopt1 "--sinchant1folder" $@`
 regFolder=`getopt1 "--regfolder" $@`
@@ -59,6 +61,16 @@ ${BRC_DMRI_SCR}/eddy_postproc.sh \
       --hires=${HIRES} \
       --logfile=${LogFile}
 
+
+if [[ $do_TBSS == "yes" ]]; then
+
+    ${BRC_DMRI_SCR}/run_tbss.sh \
+        --workingdir=${dMRIFolder} \
+        --tbssfolder=${tbssFolder} \
+        --datafolder=${dataFolder} \
+        --logfile=${LogFile}
+
+fi
 
 if [[ $do_REG == "yes" ]]; then
 
