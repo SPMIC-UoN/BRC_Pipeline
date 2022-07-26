@@ -36,6 +36,7 @@ b0dist=`getopt1 "--b0dist" $@`
 b0maxbval=`getopt1 "--b0maxbval" $@`
 PIFactor=`getopt1 "--pifactor" $@`
 HIRES=`getopt1 "--hires" $@`
+do_NODDI=`getopt1 "--donoddi" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 #=====================================================================================
@@ -49,6 +50,7 @@ ${BRC_DMRI_SCR}/data_copy.sh \
               --inputimage2=${InputImages2} \
               --pedirection=${PEdir} \
               --applytopup=${Apply_Topup} \
+              --donoddi=${do_NODDI} \
               --logfile=${LogFile}
 
 ${BRC_DMRI_SCR}/basic_preproc.sh \
@@ -69,3 +71,5 @@ if [ ${Apply_Topup} = yes ] ; then
               --hires=${HIRES} \
               --logfile=${LogFile}
 fi
+
+#: <<'COMMENT'
