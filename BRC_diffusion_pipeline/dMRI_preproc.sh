@@ -50,6 +50,7 @@ Usage()
   echo " --qc                            Turn on steps that do quality control of dMRI data."
   echo " --reg                           Turn on steps that do registration to standard (FLIRT and FNIRT)."
   echo " --tbss                          Turn on steps that run TBSS analysis."
+  echo " --noddi                         Turn on steps that run NODDI analysis."
   echo " --slice2vol                     If one wants to do slice-to-volome motion correction."
   echo " --slspec <path>                 Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
   echo "                                 slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction."
@@ -88,6 +89,7 @@ PIFactor=1
 do_QC="no"
 do_REG="no"
 do_TBSS="no"
+do_NODDI="no"
 Apply_Topup="yes"
 dof=6
 Opt_args=""
@@ -119,6 +121,9 @@ while [ "$1" != "" ]; do
                                 ;;
 
         --tbss )           	    do_TBSS="yes"
+                                ;;
+
+        --noddi )           	  do_NODDI="yes"
                                 ;;
 
         --slice2vol )           Slice2Volume="yes"
@@ -315,6 +320,7 @@ log_Msg 2 "InputImages2: $InputImages2"
 log_Msg 2 "do_QC: $do_QC"
 log_Msg 2 "do_REG: $do_REG"
 log_Msg 2 "do_TBSS: $do_TBSS"
+log_Msg 2 "do_NODDI: $do_NODDI"
 log_Msg 2 "Slice2Volume: $Slice2Volume"
 log_Msg 2 "SliceSpec: $SliceSpec"
 log_Msg 2 "echospacing: $echospacing"
@@ -336,20 +342,20 @@ if [ $CLUSTER_MODE = "YES" ] ; then
     if [ $HIRES = "yes" ] ; then
         TIME_LIMIT_1=24:00:00
         TIME_LIMIT_2=20:00:00
-        TIME_LIMIT_3=20:00:00
+        TIME_LIMIT_3=24:00:00
         MEM_1=30
         MEM_2=90
         MEM_3=100
     else
       TIME_LIMIT_1=01:40:00
       TIME_LIMIT_2=06:00:00
-      TIME_LIMIT_3=02:00:00
+      TIME_LIMIT_3=03:00:00
       MEM_1=20
       MEM_2=60
       MEM_3=20
     fi
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_dMRI_${Subject} -t ${TIME_LIMIT_1} -m ${MEM_1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh --dmrirawfolder=${dMRIrawFolder} --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --inputimage=${InputImages} --inputimage2=${InputImages2} --pedirection=${PEdir} --applytopup=${Apply_Topup} --echospacing=${echospacing} --b0dist=${b0dist} --b0maxbval=${b0maxbval} --pifactor=${PIFactor} --hires=${HIRES} --logfile=${logFolder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_dMRI_${Subject} -t ${TIME_LIMIT_1} -m ${MEM_1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh --dmrirawfolder=${dMRIrawFolder} --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --inputimage=${InputImages} --inputimage2=${InputImages2} --pedirection=${PEdir} --applytopup=${Apply_Topup} --echospacing=${echospacing} --b0dist=${b0dist} --b0maxbval=${b0maxbval} --pifactor=${PIFactor} --hires=${HIRES} --donoddi=${do_NODDI} --logfile=${logFolder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
@@ -357,7 +363,7 @@ if [ $CLUSTER_MODE = "YES" ] ; then
     jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
     echo "jobID_2: ${jobID2}"
 
-    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --hires=${HIRES} --logfile=${logFolder}/${log_Name}" &`
+    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --dotbss=${do_TBSS} --tbssfolder=${tbssFolder} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --hires=${HIRES} --donoddi=${do_NODDI} --logfile=${logFolder}/${log_Name}" &`
     jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
     echo "jobID_3: ${jobID3}"
 
@@ -376,6 +382,7 @@ else
                     --b0maxbval=${b0maxbval} \
                     --pifactor=${PIFactor} \
                     --hires=${HIRES} \
+                    --donoddi=${do_NODDI} \
                     --logfile=${logFolder}/${log_Name}
 
 
@@ -415,6 +422,7 @@ else
                     --start=${Start_Time} \
                     --subject=${Subject} \
                     --hires=${HIRES} \
+                    --donoddi=${do_NODDI} \
                     --logfile=${logFolder}/${log_Name}
 
 fi
