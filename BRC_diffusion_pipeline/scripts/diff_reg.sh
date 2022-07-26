@@ -116,15 +116,15 @@ log_Msg 3 "Non-Linear registration to standard space"
 
 ###${FSLDIR}/bin/convertwarp --ref=${Standard} --premat=./dMRI/reg/FLIRT/DTI_2_T1_vol1.mat --warp1=./T1/T1.anat/T1_to_MNI_nonlin_coeff.nii.gz --out=./dMRI/reg/FNIRT/DTI_to_MNI_warp.nii.gz
 
-${FSLDIR}/bin/applywarp --rel --interp=spline --in=${datadir}/nodif --ref=${Standard} --premat=${regdir}/diff_2_T1.mat --warp=${regT1Folder}/T1_2_std_warp_coeff \
+${FSLDIR}/bin/applywarp --rel --interp=spline --in=${datadir}/nodif --ref=${Standard} --premat=${regdir}/diff_2_T1.mat --warp=${regT1Folder}/T1_2_std_warp_field \
                                           --out=${data2stdFolder}/nodif2std
 ${FSLDIR}/bin/fslmaths ${data2stdFolder}/nodif2std -thr 0 ${data2stdFolder}/nodif2std
 
-${FSLDIR}/bin/applywarp --rel --interp=spline --in=${datadir}/data --ref=${Standard} --premat=${regdir}/diff_2_T1.mat --warp=${regT1Folder}/T1_2_std_warp_coeff \
+${FSLDIR}/bin/applywarp --rel --interp=spline --in=${datadir}/data --ref=${Standard} --premat=${regdir}/diff_2_T1.mat --warp=${regT1Folder}/T1_2_std_warp_field \
                                           --out=${data2stdFolder}/data2std
 ${FSLDIR}/bin/fslmaths ${data2stdFolder}/data2std -thr 0 ${data2stdFolder}/data2std
 
-${FSLDIR}/bin/convertwarp  --relout --ref=${Standard} --premat=${regdir}/diff_2_T1.mat --warp1=${regT1Folder}/T1_2_std_warp_coeff --out=${regdir}/diff_2_std_warp_coeff
+${FSLDIR}/bin/convertwarp  --relout --ref=${Standard} --premat=${regdir}/diff_2_T1.mat --warp1=${regT1Folder}/T1_2_std_warp_field --out=${regdir}/diff_2_std_warp_coeff
 #$FSLDIR/bin/invwarp --ref=${datadir}/nodif -w ${regdir}/diff_2_std_warp_coeff -o std_to_diff_warp_coeff
 
 ${FSLDIR}/bin/invwarp -w ${regdir}/diff_2_std_warp_coeff -o ${regdir}/std_2_diff_warp_coeff -r ${datadir}/nodif
