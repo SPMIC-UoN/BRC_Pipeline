@@ -23,7 +23,7 @@ if [ $CLUSTER_MODE = "YES" ] ; then
 else
     # Setup FSL (if not already done so in the running environment)
     # Uncomment the following 2 lines (remove the leading #) and correct the FSLDIR setting for your setup
-    export FSLDIR="/usr/local/fsl-6.0.3"
+    export FSLDIR="/usr/local/fsl-6.0.5"
     . $FSLDIR/etc/fslconf/fsl.sh
     export FSLCONFDIR=${FSLDIR}/config
     export FSLOUTPUTTYPE="NIFTI_GZ"
@@ -56,10 +56,10 @@ export BRC_PMRI_SCR=${BRC_PMRI_DIR}/scripts
 export BRC_FMRI_GP_SCR=${BRC_FMRI_GP_DIR}/scripts
 export BRC_IDPEXTRACT_SCR=${BRC_IDPEXTRACT_DIR}/scripts
 export BRC_GLOBAL_SCR=${BRC_GLOBAL_DIR}/scripts
+export CUDIMOT="${BRC_GLOBAL_DIR}/libs/cuDIMOT"
 
 #SETUP MATLAB and LIBRARIES
 export SPMpath="/usr/local/SPM/spm12"
 export DVARSpath="/usr/local/DVARS"
 export ANTSPATH="/usr/local/ANTs/ants-2.1.0-redhat/"
 export C3DPATH="/usr/local/c3d/bin"
-export CUDIMOT="/home/mszam12/main/BRC_Pipeline/global/libs/cuDIMOT"                #TO BE MODIFIED BY USER
