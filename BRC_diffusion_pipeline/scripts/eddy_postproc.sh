@@ -29,6 +29,7 @@ datadir=`getopt1 "--datafolder" $@`
 CombineMatchedFlag=`getopt1 "--combinematched" $@`
 Apply_Topup=`getopt1 "--Apply_Topup" $@`
 HIRES=`getopt1 "--hires" $@`
+do_NODDI=`getopt1 "--donoddi" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -46,6 +47,7 @@ log_Msg 2 "datadir:$datadir"
 log_Msg 2 "CombineMatchedFlag:$CombineMatchedFlag"
 log_Msg 2 "Apply_Topup:$Apply_Topup"
 log_Msg 2 "HIRES:$HIRES"
+log_Msg 2 "do_NODDI:$do_NODDI"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -93,7 +95,13 @@ else
 fi
 ${FSLDIR}/bin/fslroi ${datadir}/data ${datadir}/nodif 0 1
 
-${FSLDIR}/bin/dtifit -k ${datadir}/data -m ${datadir}/nodif_brain -r ${datadir}/bvecs -b ${datadir}/bvals -o ${datadir}/dti
+if [ ${do_NODDI} = "yes" ] ; then
+    log_Msg 3 "NODDI model"
+    ${CUDIMOT}/bin/Pipeline_NODDI_Watson.sh ${datadir}
+else
+    log_Msg 3 "DTIFIT model"
+    ${FSLDIR}/bin/dtifit -k ${datadir}/data -m ${datadir}/nodif_brain -r ${datadir}/bvecs -b ${datadir}/bvals -o ${datadir}/dti
+fi
 
 #Cleaning up unnecessary files
 rm -rf ${workingdir}/raw

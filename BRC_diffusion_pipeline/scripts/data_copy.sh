@@ -40,6 +40,7 @@ InputImages=`getopt1 "--inputimage" $@`
 InputImages2=`getopt1 "--inputimage2" $@`
 PEdir=`getopt1 "--pedirection" $@`
 Apply_Topup=`getopt1 "--applytopup" $@`
+do_NODDI=`getopt1 "--donoddi" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -57,6 +58,7 @@ log_Msg 2 "InputImages:$InputImages"
 log_Msg 2 "InputImages2:$InputImages2"
 log_Msg 2 "PEdir:$PEdir"
 log_Msg 2 "Apply_Topup:$Apply_Topup"
+log_Msg 2 "do_NODDI:$do_NODDI"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -76,6 +78,8 @@ log_Msg 3 "Copying raw data"
 InputImages=`echo ${InputImages} | sed 's/@/ /g'`
 Pos_count=1
 
+#echo "InputImages: ${InputImages}"
+
 for Image in ${InputImages} ; do
     if [[ ${Image} =~ ^.*EMPTY$  ]]  ;
     then
@@ -88,6 +92,46 @@ for Image in ${InputImages} ; do
     else
 	      PosVols[${Pos_count}]=`${FSLDIR}/bin/fslval ${Image} dim4`
         absname=`${FSLDIR}/bin/imglob ${Image}`
+
+        if [[ ${do_NODDI} == "yes" ]]; then
+
+            bvalues=`cat ${absname}.bval`
+#            echo "bvalues: $bvalues"
+
+            Shells=($(echo ${bvalues[@]} | tr ' ' '\n' | sort -nu))
+            Shells=${Shells[@]}
+#            echo "Shells: $Shells"
+
+            Shell_0000=0
+            Shell_1000=0
+            Shell_2000=0
+            for i in ${Shells}; do
+                if [ $i -ge 2000 ]; then
+                    Shell_2000=$(($Shell_2000 + 1))
+                elif [ $i -ge 1000 ]; then
+                    Shell_1000=$(($Shell_1000 + 1))
+                elif [ $i -lt 1000 ]; then
+                    Shell_0000=$(($Shell_0000 + 1))
+                fi
+            done
+
+#            echo "Shell_0000: $Shell_0000"
+#            echo "Shell_1000: $Shell_1000"
+#            echo "Shell_2000: $Shell_2000"
+
+            if [ ${Shell_2000} == 0 ] && [ ${Shell_1000} == 0 ]; then
+                echo ""
+                echo "ERROR: --noddi option is just available in multishell datasets."
+                echo ""
+                exit 1;
+            elif [ $Shell_2000 == 0 ]; then
+                echo ""
+                echo "ERROR: --noddi option is just available in multi-shell datasets with highest b-shell >= 2000."
+                echo ""
+                exit 1;
+            fi
+        fi
+
         ${FSLDIR}/bin/imcp ${absname} ${dMRIrawFolder}/${basePos}_${Pos_count}
         cp ${absname}.bval ${dMRIrawFolder}/${basePos}_${Pos_count}.bval
         cp ${absname}.bvec ${dMRIrawFolder}/${basePos}_${Pos_count}.bvec
@@ -126,7 +170,6 @@ else
     NegVols[${Neg_count}]=0
     Neg_count=$((${Neg_count} + 1))
 fi
-
 
 log_Msg 3 "Copying raw data"
 

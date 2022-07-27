@@ -73,6 +73,7 @@ mkdir -p $WD
 if [[ `${FSLDIR}/bin/fslhd $PhaseEncodeOne | grep '^pixdim[123]'` != `${FSLDIR}/bin/fslhd $ScoutInputName | grep '^pixdim[123]'` ]]
 then
     log_Msg 3 "Error: Spin echo fieldmap (Neg) has different pixel size than scout image, this requires a manual fix"
+    log_Msg 3 "For example using this command: flirt -in <SE fieldmap (Neg)> -ref <fMRI data> -applyxfm -out <resliced fieldmap>"
     exit 1
 fi
 if [[ `${FSLDIR}/bin/fslhd $PhaseEncodeOne | grep '^dim[123]'` != `${FSLDIR}/bin/fslhd $ScoutInputName | grep '^dim[123]'` ]]

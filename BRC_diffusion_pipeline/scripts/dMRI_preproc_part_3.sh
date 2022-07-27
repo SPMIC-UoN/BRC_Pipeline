@@ -30,6 +30,8 @@ dataFolder=`getopt1 "--datafolder" $@`
 CombineMatched=`getopt1 "--combinematched" $@`
 Apply_Topup=`getopt1 "--applytopup" $@`
 do_REG=`getopt1 "--doreg" $@`
+do_TBSS=`getopt1 "--dotbss" $@`
+tbssFolder=`getopt1 "--tbssfolder" $@`
 MultChanT1Folder=`getopt1 "--multchant1folder" $@`
 SinChanT1Folder=`getopt1 "--sinchant1folder" $@`
 regFolder=`getopt1 "--regfolder" $@`
@@ -44,6 +46,7 @@ data2stdFolder=`getopt1 "--outstd" $@`
 Start_Time=`getopt1 "--start" $@`
 Subject=`getopt1 "--subject" $@`
 HIRES=`getopt1 "--hires" $@`
+do_NODDI=`getopt1 "--donoddi" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 #=====================================================================================
@@ -57,14 +60,15 @@ ${BRC_DMRI_SCR}/eddy_postproc.sh \
       --combinematched=${CombineMatched} \
       --Apply_Topup=${Apply_Topup} \
       --hires=${HIRES} \
+      --donoddi=${do_NODDI} \
       --logfile=${LogFile}
 
 
 if [[ $do_REG == "yes" ]]; then
 
-    #if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_WM_mask` = 1 ] ; then
-    #    wmseg="${MultChanT1Folder}/T1_WM_mask"
-    #el
+#    if [ `$FSLDIR/bin/imtest ${MultChanT1Folder}/T1_WM_mask` = 1 ] ; then
+#        wmseg="${MultChanT1Folder}/T1_WM_mask"
+#    el
     if [[ `$FSLDIR/bin/imtest ${SinChanT1Folder}/T1_WM_mask` = 1 ]]; then
         wmseg="${SinChanT1Folder}/T1_WM_mask"
     fi
@@ -82,6 +86,17 @@ if [[ $do_REG == "yes" ]]; then
           --outstr=${data2strFolder} \
           --outstd=${data2stdFolder} \
           --logfile=${LogFile}
+fi
+
+
+if [[ $do_TBSS == "yes" ]]; then
+
+    ${BRC_DMRI_SCR}/run_tbss.sh \
+        --workingdir=${dMRIFolder} \
+        --tbssfolder=${tbssFolder} \
+        --datafolder=${dataFolder} \
+        --logfile=${LogFile}
+
 fi
 
 
