@@ -49,22 +49,22 @@ direc="$PWD"
 cd "${tbssdir}"
 
 if [ ! -f dti_FA.nii.gz ] ; then
-    ln ${datadir}/dti_FA.nii.gz dti_FA.nii.gz
+    ln ${datadir}/data.dti/dti_FA.nii.gz dti_FA.nii.gz
 fi
 
-#${BRC_DMRI_SCR}/tbss_step_1_preproc.sh \
-#                  --data="dti_FA" \
-#                  --logfile=${LogFile}
+${BRC_DMRI_SCR}/tbss_step_1_preproc.sh \
+                  --data="dti_FA" \
+                  --logfile=${LogFile}
 
-#"${BRC_DMRI_SCR}"/tbss_step_2_reg.sh \
-#                  --logfile=${LogFile}
+"${BRC_DMRI_SCR}"/tbss_step_2_reg.sh \
+                  --logfile=${LogFile}
 
-#"${BRC_DMRI_SCR}"/tbss_step_3_postreg.sh \
-#                  --logfile=${LogFile}
+"${BRC_DMRI_SCR}"/tbss_step_3_postreg.sh \
+                  --logfile=${LogFile}
 
-#"${BRC_DMRI_SCR}"/tbss_step_4_prestats.sh \
-#                  --thresh=2000 \
-#                  --logfile=${LogFile}
+"${BRC_DMRI_SCR}"/tbss_step_4_prestats.sh \
+                  --thresh=2000 \
+                  --logfile=${LogFile}
 
 "${BRC_DMRI_SCR}"/tbss_non_FA.sh \
                   --datadir=${datadir} \
