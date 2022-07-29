@@ -251,15 +251,15 @@ postproc=`${bindir}/jobs_wrapper.sh ${subjdir}.${modelname} $postproc $modelname
 #########################################
 ### Calculate Dispersion Index & dyads ###
 ##########################################
-finish_command="${bindir}/${modelname}_finish.sh ${subjdir}.${modelname}"
+finish_command="${bindir}/${modelname}_finish.sh ${subjdir}.${modelname} ${subjdir}"
 #SGE
-finishProcess=`${FSLDIR}/bin/fsl_sub $queue -l ${subjdir}.${modelname}/logs -N ${modelname}_finish -j $postproc $finish_command`
+finishProcess=`${FSLDIR}/bin/fsl_sub $queue -l ${subjdir}.${modelname}/logs -N ${modelname}_finish -j ${postproc} ${finish_command}`
 jobID4=`echo -e $finishProcess | awk '{ print $NF }'`
 echo "jobID_4: ${jobID4}"
 
-jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_4_dMRI_${Subject} -t 00:00:05 -m 1 -w ${jobID4} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_4.sh --workingdir=${subjdir}.NODDI_Watson --datadir=${subjdir}" &`
-jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
-echo "jobID_3: ${jobID3}"
+#jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_4_dMRI_${Subject} -t 00:00:05 -m 1 -w ${jobID4} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_4.sh --workingdir=${subjdir}.${modelname} --datadir=${subjdir}" &`
+#jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
+#echo "jobID_3: ${jobID3}"
 
 endt=`date +%s`
 runtime=$((endt-start))

@@ -33,8 +33,6 @@ log_Msg 3 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 cd stats
 
-#dtifitDir=../../dMRI/
-log_Msg 3 "pwd=$PWD"
 dtifitDir=${datadir}
 
 suffix="L1 L2 L3 MO MD"
