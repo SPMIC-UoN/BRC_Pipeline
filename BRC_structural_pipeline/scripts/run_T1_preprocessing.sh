@@ -64,6 +64,11 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 $FSLDIR/bin/imcp ${T1input} ${WD}/T1_orig_ud
 
+#### REORIENTATION 2 STANDARD
+log_Msg 3 `date`
+log_Msg 3 "Reorienting to standard orientation"
+$FSLDIR/bin/fslreorient2std ${WD}/T1_orig_ud ${WD}/T1_orig_ud
+
 if [ $do_crop = "yes" ] ; then
     log_Msg 3 `date`
     log_Msg 3 "Automatically cropping the image"
