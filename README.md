@@ -4,7 +4,7 @@
 <div align="center">
 
   [![Status](https://img.shields.io/badge/status-active-success.svg)]() 
-  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6908232.svg)](https://doi.org/10.5281/zenodo.6908232)
+  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7185780.svg)](https://doi.org/10.5281/zenodo.7185780)
   [![Release](https://img.shields.io/github/release/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/releases/latest)
   [![Stars](https://img.shields.io/github/stars/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/stargazers)
   [![Forks](https://img.shields.io/github/forks/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/network/members)
