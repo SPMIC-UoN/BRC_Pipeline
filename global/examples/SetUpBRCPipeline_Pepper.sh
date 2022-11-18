@@ -61,5 +61,5 @@ export CUDIMOT="${BRC_GLOBAL_DIR}/libs/cuDIMOT"
 #SETUP MATLAB and LIBRARIES
 export SPMpath="/usr/local/SPM/spm12"
 export DVARSpath="/usr/local/DVARS"
-export ANTSPATH="/usr/local/ANTs/ants-2.1.0-redhat/"
+export ANTSPATH="/usr/local/ants"
 export C3DPATH="/usr/local/c3d/bin"
