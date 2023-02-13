@@ -39,7 +39,7 @@ result=""
 
 for i in FA MD MO L1 L2 L3 ICVF ISOVF ODI ; do
     if [ -f ${TBSSFolder}/stats/JHUrois_${i}.txt ] ; then
-        if [ `cat ${TBSSFolder}/stats/JHUrois_${i}.txt | wc -w` = 48 ] ; then
+        if [ `cat ${TBSSFolder}/stats/JHUrois_${i}.txt | wc -w` = 50 ] ; then
             miniResult=`cat ${TBSSFolder}/stats/JHUrois_${i}.txt`
         else
             miniResult="$nanResult"
