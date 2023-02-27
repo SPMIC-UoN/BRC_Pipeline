@@ -47,6 +47,8 @@ Start_Time=`getopt1 "--start" $@`
 Subject=`getopt1 "--subject" $@`
 HIRES=`getopt1 "--hires" $@`
 do_NODDI=`getopt1 "--donoddi" $@`
+b0maxbval=`getopt1 "--b0maxbval" $@`
+DTIMaxShell=`getopt1 "--dtimaxshell" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 #=====================================================================================
@@ -61,6 +63,8 @@ ${BRC_DMRI_SCR}/eddy_postproc.sh \
       --Apply_Topup=${Apply_Topup} \
       --hires=${HIRES} \
       --donoddi=${do_NODDI} \
+      --b0maxbval=${b0maxbval} \
+      --dtimaxshell=${DTIMaxShell} \
       --logfile=${LogFile}
 
 
@@ -88,13 +92,13 @@ if [[ $do_REG == "yes" ]]; then
           --logfile=${LogFile}
 fi
 
-
 if [[ $do_TBSS == "yes" ]]; then
 
     ${BRC_DMRI_SCR}/run_tbss.sh \
         --workingdir=${dMRIFolder} \
         --tbssfolder=${tbssFolder} \
         --datafolder=${dataFolder} \
+        --donoddi=${do_NODDI} \
         --logfile=${LogFile}
 
 fi

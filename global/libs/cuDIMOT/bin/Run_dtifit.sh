@@ -24,7 +24,12 @@ Usage() {
 subjdir=$1
 output=$2
 
-${FSLDIR}/bin/dtifit -k ${subjdir}/data -m ${subjdir}/nodif_brain_mask -r ${subjdir}/bvecs -b ${subjdir}/bvals -o ${output}/Dtifit/dtifit --save_tensor
+${FSLDIR}/bin/dtifit -k ${subjdir}/data \
+                     -m ${subjdir}/nodif_brain_mask \
+                     -r ${subjdir}/bvecs \
+                     -b ${subjdir}/bvals \
+                     -o ${output}/Dtifit/dtifit \
+                     --save_tensor
 
 PathDTI=${output}/Dtifit
 

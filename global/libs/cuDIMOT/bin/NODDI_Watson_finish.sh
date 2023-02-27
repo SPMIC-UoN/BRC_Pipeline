@@ -59,3 +59,5 @@ ${FSLDIR}/bin/immv ${directory}/mean_fintra ${Datadir}/"data.noddi"/NODDI_ICVF
 ${FSLDIR}/bin/immv ${directory}/mean_fiso ${Datadir}/"data.noddi"/NODDI_ISOVF
 
 rm -r ${directory}
+rm ${Datadir}/data_dti* 
+rm ${Datadir}/shells.txt

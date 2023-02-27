@@ -30,6 +30,8 @@ CombineMatchedFlag=`getopt1 "--combinematched" $@`
 Apply_Topup=`getopt1 "--Apply_Topup" $@`
 HIRES=`getopt1 "--hires" $@`
 do_NODDI=`getopt1 "--donoddi" $@`
+b0maxbval=`getopt1 "--b0maxbval" $@`
+DTIMaxShell=`getopt1 "--dtimaxshell" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -48,6 +50,8 @@ log_Msg 2 "CombineMatchedFlag:$CombineMatchedFlag"
 log_Msg 2 "Apply_Topup:$Apply_Topup"
 log_Msg 2 "HIRES:$HIRES"
 log_Msg 2 "do_NODDI:$do_NODDI"
+log_Msg 2 "b0maxbval:$b0maxbval"
+log_Msg 2 "DTIMaxShell:$DTIMaxShell"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -95,12 +99,55 @@ else
 fi
 ${FSLDIR}/bin/fslroi ${datadir}/data ${datadir}/nodif 0 1
 
+log_Msg 3 "Prepare the data for DTI model"
+
+${FSLDIR}/fslpython/envs/fslpython/bin/python ${BRC_DMRI_SCR}/extract_shells.py ${datadir}/bvals ${DTIMaxShell}
+
+CMD=""
+for shell in `cat ${datadir}/shells.txt` 
+do 
+    CMD="${CMD} -b ${shell}"
+done
+
+${FSLDIR}/bin/select_dwi_vols ${datadir}/data \
+                                ${datadir}/bvals \
+                                ${datadir}/data_dti \
+                                0 \
+                                ${CMD} \
+                                -obv ${datadir}/bvecs \
+                                -db ${b0maxbval}
+
 if [ ${do_NODDI} = "yes" ] ; then
+
     log_Msg 3 "NODDI model"
     ${CUDIMOT}/bin/Pipeline_NODDI_Watson.sh ${datadir}
+
 else
     log_Msg 3 "DTIFIT model"
-    ${FSLDIR}/bin/dtifit -k ${datadir}/data -m ${datadir}/nodif_brain -r ${datadir}/bvecs -b ${datadir}/bvals -o ${datadir}/dti
+
+    ${FSLDIR}/bin/dtifit -k ${datadir}/data_dti \
+                         -m ${datadir}/nodif_brain \
+                         -r ${datadir}/data_dti.bvec \
+                         -b ${datadir}/data_dti.bval \
+                         -o ${datadir}/dti \
+                         --save_tensor
+
+    if [ ! -d ${datadir}/"data.dti" ]; then mkdir ${datadir}/"data.dti"; fi
+
+    ${FSLDIR}/bin/immv ${datadir}/dti_FA ${datadir}/"data.dti"/dti_FA
+    ${FSLDIR}/bin/immv ${datadir}/dti_L1 ${datadir}/"data.dti"/dti_L1
+    ${FSLDIR}/bin/immv ${datadir}/dti_L2 ${datadir}/"data.dti"/dti_L2
+    ${FSLDIR}/bin/immv ${datadir}/dti_L3 ${datadir}/"data.dti"/dti_L3
+    ${FSLDIR}/bin/immv ${datadir}/dti_V1 ${datadir}/"data.dti"/dti_V1
+    ${FSLDIR}/bin/immv ${datadir}/dti_V2 ${datadir}/"data.dti"/dti_V2
+    ${FSLDIR}/bin/immv ${datadir}/dti_V3 ${datadir}/"data.dti"/dti_V3
+    ${FSLDIR}/bin/immv ${datadir}/dti_MD ${datadir}/"data.dti"/dti_MD
+    ${FSLDIR}/bin/immv ${datadir}/dti_MO ${datadir}/"data.dti"/dti_MO
+    ${FSLDIR}/bin/immv ${datadir}/dti_S0 ${datadir}/"data.dti"/dti_S0
+    ${FSLDIR}/bin/immv ${datadir}/dti_tensor ${datadir}/"data.dti"/dti_tensor
+
+    rm ${datadir}/data_dti*
+    rm ${datadir}/shells.txt
 fi
 
 #Cleaning up unnecessary files

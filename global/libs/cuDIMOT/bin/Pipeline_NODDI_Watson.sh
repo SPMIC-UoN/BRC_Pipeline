@@ -177,6 +177,7 @@ echo ${subjdir}.${modelname}/S0 >> $FixPFile
 ################################ First Dtifit  ###############################
 ##############################################################################
 echo "Queue Dtifit"
+
 PathDTI=${subjdir}.${modelname}/Dtifit
 dtifit_command="${bindir}/Run_dtifit.sh ${subjdir} ${subjdir}.${modelname} ${bindir}"
 #SGE

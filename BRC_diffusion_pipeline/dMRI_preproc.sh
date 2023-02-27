@@ -50,7 +50,7 @@ Usage()
   echo " --qc                            Turn on steps that do quality control of dMRI data."
   echo " --reg                           Turn on steps that do registration to standard (FLIRT and FNIRT)."
   echo " --tbss                          Turn on steps that run TBSS analysis."
-  echo " --noddi                         Turn on steps that run NODDI analysis."
+  echo " --noddi                         Turn on steps that run NODDI analysis. NOTE: The pipeline always generate the DTI model maps."
   echo " --slice2vol                     If one wants to do slice-to-volome motion correction."
   echo " --slspec <path>                 Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
   echo "                                 slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction."
@@ -64,6 +64,7 @@ Usage()
   echo "                                 moves in the scanner. This option activates '--estimate_move_by_susceptibility' in EDDY."
   echo "                                 This option is available for FSL 6 onwards."
   echo " --hires                         This option will increase the time limits and the required memory for the processing of high-resolution data."
+  echo " --dtimaxshell <value>           Select the maximum shell value to calculate the DTI model. Default: 1500"
   echo " --help                          help"
   echo " "
   echo " "
@@ -85,6 +86,7 @@ echospacing=""
 PEdir=""
 CombineMatched=2
 PIFactor=1
+DTIMaxShell=1500
 
 do_QC="no"
 do_REG="no"
@@ -153,6 +155,10 @@ while [ "$1" != "" ]; do
                                 ;;
 
         --hires )               HIRES="yes"
+                                ;;
+
+        --dtimaxshell )         shift
+                                DTIMaxShell=$1
                                 ;;
 
         --help )                Usage
@@ -363,7 +369,7 @@ if [ $CLUSTER_MODE = "YES" ] ; then
     jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
     echo "jobID_2: ${jobID2}"
 
-    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --dotbss=${do_TBSS} --tbssfolder=${tbssFolder} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --hires=${HIRES} --donoddi=${do_NODDI} --logfile=${logFolder}/${log_Name}" &`
+    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --dotbss=${do_TBSS} --tbssfolder=${tbssFolder} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --hires=${HIRES} --donoddi=${do_NODDI} --b0maxbval=${b0maxbval} --dtimaxshell=${DTIMaxShell} --logfile=${logFolder}/${log_Name}" &`
     jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
     echo "jobID_3: ${jobID3}"
 
@@ -423,6 +429,8 @@ else
                     --subject=${Subject} \
                     --hires=${HIRES} \
                     --donoddi=${do_NODDI} \
+                    --b0maxbval=${b0maxbval} \
+                    --dtimaxshell=${DTIMaxShell} \
                     --logfile=${logFolder}/${log_Name}
 
 fi
