@@ -50,7 +50,7 @@ Usage()
   echo " --qc                            Turn on steps that do quality control of dMRI data."
   echo " --reg                           Turn on steps that do registration to standard (FLIRT and FNIRT)."
   echo " --tbss                          Turn on steps that run TBSS analysis."
-  echo " --noddi                         Turn on steps that run NODDI analysis. NOTE: The pipeline always generate the DTI model maps."
+  echo " --noddi                         Turn on steps that run NODDI analysis. NOTE: The pipeline always generates the DTI model maps."
   echo " --slice2vol                     If one wants to do slice-to-volome motion correction."
   echo " --slspec <path>                 Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
   echo "                                 slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction."
