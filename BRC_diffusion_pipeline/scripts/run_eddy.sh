@@ -89,7 +89,7 @@ else
 fi
 
 EDDY_arg="--imain=${imain_arg} --mask=${WD}/nodif_brain_mask --index=${WD}/index.txt --acqp=${WD}/acqparams.txt --bvecs=${bvecs_arg} --bvals=${bvals_arg} --out=${WD}/eddy_unwarped_images"
-EDDY_arg="${EDDY_arg} --data_is_shelled --fwhm=0 --flm=quadratic --cnr_maps --repol --s2v_niter=0 -v"
+EDDY_arg="${EDDY_arg} --data_is_shelled --fwhm=0 --flm=quadratic --cnr_maps --repol -v"
 EDDY_arg="${EDDY_arg} --mporder=${MPOrder} --s2v_niter=10 --s2v_fwhm=0 --s2v_interp=trilinear --s2v_lambda=1"
 
 if [ ! $SliceSpec = "NONE" ] ; then

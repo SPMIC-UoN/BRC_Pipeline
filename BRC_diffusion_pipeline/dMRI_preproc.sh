@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 20/05/2019
+# Last update: 20/05/2023
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -50,7 +50,12 @@ Usage()
   echo " --qc                            Turn on steps that do quality control of dMRI data."
   echo " --reg                           Turn on steps that do registration to standard (FLIRT and FNIRT)."
   echo " --tbss                          Turn on steps that run TBSS analysis."
-  echo " --noddi                         Turn on steps that run NODDI analysis. NOTE: The pipeline always generates the DTI model maps."
+  echo " --noddi                         Turn on steps that run NODDI analysis. NOTE: requires multi-shell data."
+  echo "                                      NOTE: The pipeline always generates the DTI model maps."
+  echo " --dki                           Turn on steps that generates microsctructural maps using diffusion kurtosis model."
+  echo "                                      NOTE: requires multi-shell data."
+  echo " --wmti                          Turn on steps that generates microsctructural maps using white matter tract integrity model."
+  echo "                                      NOTE: requires multi-shell data."
   echo " --slice2vol                     If one wants to do slice-to-volome motion correction."
   echo " --slspec <path>                 Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
   echo "                                 slices/multi-band-groups were acquired. This file is necessary when using the slice-to-vol movement correction."
@@ -65,6 +70,8 @@ Usage()
   echo "                                 This option is available for FSL 6 onwards."
   echo " --hires                         This option will increase the time limits and the required memory for the processing of high-resolution data."
   echo " --dtimaxshell <value>           Select the maximum shell value to calculate the DTI model. Default: 1500"
+  echo " --mppca                         Perform denoising using Marcenko-Pastur PCA. Default: No denoising"
+  echo " --use_topup <path>              If one wants to skip the TOPUP step of the pipeline and use the previously prepared folder. Please provide absolute path."
   echo " --help                          help"
   echo " "
   echo " "
@@ -92,10 +99,15 @@ do_QC="no"
 do_REG="no"
 do_TBSS="no"
 do_NODDI="no"
+do_DKI="no"
+do_WMTI="no"
+do_FWDTI="no"
+do_MPPCA="no"
 Apply_Topup="yes"
 dof=6
 Opt_args=""
 HIRES="no"
+USE_TOPUP_PATH=""
 
 # parse arguments
 while [ "$1" != "" ]; do
@@ -116,7 +128,7 @@ while [ "$1" != "" ]; do
                                 InputImages2=$1
                                 ;;
 
-        --qc )           	      do_QC="yes"
+        --qc )           	    do_QC="yes"
                                 ;;
 
         --reg )           	    do_REG="yes"
@@ -125,7 +137,16 @@ while [ "$1" != "" ]; do
         --tbss )           	    do_TBSS="yes"
                                 ;;
 
-        --noddi )           	  do_NODDI="yes"
+        --noddi )           	do_NODDI="yes"
+                                ;;
+
+        --dki )           	    do_DKI="yes"
+                                ;;
+
+        --wmti )           	    do_WMTI="yes"
+                                ;;
+
+        --fwdti )           	do_FWDTI="yes"
                                 ;;
 
         --slice2vol )           Slice2Volume="yes"
@@ -159,6 +180,13 @@ while [ "$1" != "" ]; do
 
         --dtimaxshell )         shift
                                 DTIMaxShell=$1
+                                ;;
+
+        --mppca )           	do_MPPCA="yes"
+                                ;;
+
+        --use_topup )           shift
+                                USE_TOPUP_PATH=`make_absolute $1`
                                 ;;
 
         --help )                Usage
@@ -327,6 +355,9 @@ log_Msg 2 "do_QC: $do_QC"
 log_Msg 2 "do_REG: $do_REG"
 log_Msg 2 "do_TBSS: $do_TBSS"
 log_Msg 2 "do_NODDI: $do_NODDI"
+log_Msg 2 "do_DKI: $do_DKI"
+log_Msg 2 "do_WMTI: $do_WMTI"
+log_Msg 2 "do_MPPCA: $do_MPPCA"
 log_Msg 2 "Slice2Volume: $Slice2Volume"
 log_Msg 2 "SliceSpec: $SliceSpec"
 log_Msg 2 "echospacing: $echospacing"
@@ -335,6 +366,7 @@ log_Msg 2 "CombineMatched: $CombineMatched"
 log_Msg 2 "PIFactor: $PIFactor"
 log_Msg 2 "MoveBySusceptibility: $MoveBySusceptibility"
 log_Msg 2 "HIRES: $HIRES"
+log_Msg 2 "USE_TOPUP_PATH: $USE_TOPUP_PATH"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 #=====================================================================================
@@ -353,15 +385,15 @@ if [ $CLUSTER_MODE = "YES" ] ; then
         MEM_2=90
         MEM_3=100
     else
-      TIME_LIMIT_1=01:40:00
-      TIME_LIMIT_2=06:00:00
-      TIME_LIMIT_3=03:00:00
-      MEM_1=20
-      MEM_2=60
-      MEM_3=20
+        TIME_LIMIT_1=01:40:00
+        TIME_LIMIT_2=06:00:00
+        TIME_LIMIT_3=04:00:00
+        MEM_1=20
+        MEM_2=60
+        MEM_3=20
     fi
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_dMRI_${Subject} -t ${TIME_LIMIT_1} -m ${MEM_1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh --dmrirawfolder=${dMRIrawFolder} --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --inputimage=${InputImages} --inputimage2=${InputImages2} --pedirection=${PEdir} --applytopup=${Apply_Topup} --echospacing=${echospacing} --b0dist=${b0dist} --b0maxbval=${b0maxbval} --pifactor=${PIFactor} --hires=${HIRES} --donoddi=${do_NODDI} --logfile=${logFolder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_dMRI_${Subject} -t ${TIME_LIMIT_1} -m ${MEM_1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh --dmrirawfolder=${dMRIrawFolder} --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --inputimage=${InputImages} --inputimage2=${InputImages2} --pedirection=${PEdir} --applytopup=${Apply_Topup} --echospacing=${echospacing} --b0dist=${b0dist} --b0maxbval=${b0maxbval} --pifactor=${PIFactor} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --domppca=${do_MPPCA} --usetopuppath=${USE_TOPUP_PATH} --logfile=${logFolder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
@@ -369,7 +401,8 @@ if [ $CLUSTER_MODE = "YES" ] ; then
     jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
     echo "jobID_2: ${jobID2}"
 
-    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --dotbss=${do_TBSS} --tbssfolder=${tbssFolder} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --hires=${HIRES} --donoddi=${do_NODDI} --b0maxbval=${b0maxbval} --dtimaxshell=${DTIMaxShell} --logfile=${logFolder}/${log_Name}" &`
+    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --dotbss=${do_TBSS} --tbssfolder=${tbssFolder} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --b0maxbval=${b0maxbval} --dtimaxshell=${DTIMaxShell} --logfile=${logFolder}/${log_Name}" &`
+    # jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --dotbss=${do_TBSS} --tbssfolder=${tbssFolder} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --b0maxbval=${b0maxbval} --dtimaxshell=${DTIMaxShell} --logfile=${logFolder}/${log_Name}" &`
     jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
     echo "jobID_3: ${jobID3}"
 
@@ -389,6 +422,11 @@ else
                     --pifactor=${PIFactor} \
                     --hires=${HIRES} \
                     --donoddi=${do_NODDI} \
+                    --dodki=${do_DKI} \
+                    --dowmti=${do_WMTI} \
+                    --dofwdti=${do_FWDTI} \
+                    --domppca=${do_MPPCA} \
+                    --usetopuppath=${USE_TOPUP_PATH} \
                     --logfile=${logFolder}/${log_Name}
 
 
@@ -429,6 +467,9 @@ else
                     --subject=${Subject} \
                     --hires=${HIRES} \
                     --donoddi=${do_NODDI} \
+                    --dodki=${do_DKI} \
+                    --dowmti=${do_WMTI} \
+                    --dofwdti=${do_FWDTI} \
                     --b0maxbval=${b0maxbval} \
                     --dtimaxshell=${DTIMaxShell} \
                     --logfile=${logFolder}/${log_Name}

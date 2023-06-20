@@ -41,6 +41,9 @@ InputImages2=`getopt1 "--inputimage2" $@`
 PEdir=`getopt1 "--pedirection" $@`
 Apply_Topup=`getopt1 "--applytopup" $@`
 do_NODDI=`getopt1 "--donoddi" $@`
+do_DKI=`getopt1 "--dodki" $@`
+do_WMTI=`getopt1 "--dowmti" $@`
+do_FWDTI=`getopt1 "--dofwdti" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -59,6 +62,9 @@ log_Msg 2 "InputImages2:$InputImages2"
 log_Msg 2 "PEdir:$PEdir"
 log_Msg 2 "Apply_Topup:$Apply_Topup"
 log_Msg 2 "do_NODDI:$do_NODDI"
+log_Msg 2 "do_DKI:$do_DKI"
+log_Msg 2 "do_WMTI:$do_WMTI"
+log_Msg 2 "do_FWDTI:$do_FWDTI"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -90,17 +96,16 @@ for Image in ${InputImages} ; do
     then
         PosVols[${Pos_count}]=0
     else
-	      PosVols[${Pos_count}]=`${FSLDIR}/bin/fslval ${Image} dim4`
+	    PosVols[${Pos_count}]=`${FSLDIR}/bin/fslval ${Image} dim4`
         absname=`${FSLDIR}/bin/imglob ${Image}`
 
-        if [[ ${do_NODDI} == "yes" ]]; then
+        # if [[ ${do_NODDI} == "yes" ]]; then
+        if [ ${do_NODDI} == "yes" ] || [ ${do_DKI} == "yes" ] || [ ${do_WMTI} == "yes" ]; then
 
             bvalues=`cat ${absname}.bval`
-#            echo "bvalues: $bvalues"
 
             Shells=($(echo ${bvalues[@]} | tr ' ' '\n' | sort -nu))
             Shells=${Shells[@]}
-#            echo "Shells: $Shells"
 
             Shell_0000=0
             Shell_1000=0
@@ -115,18 +120,14 @@ for Image in ${InputImages} ; do
                 fi
             done
 
-#            echo "Shell_0000: $Shell_0000"
-#            echo "Shell_1000: $Shell_1000"
-#            echo "Shell_2000: $Shell_2000"
-
             if [ ${Shell_2000} == 0 ] && [ ${Shell_1000} == 0 ]; then
                 echo ""
-                echo "ERROR: --noddi option is just available in multishell datasets."
+                echo "ERROR: --noddi and --dki options are just available in multishell datasets."
                 echo ""
                 exit 1;
             elif [ $Shell_2000 == 0 ]; then
                 echo ""
-                echo "ERROR: --noddi option is just available in multi-shell datasets with highest b-shell >= 2000."
+                echo "ERROR: --noddi and --dki options are just available in multi-shell datasets with highest b-shell >= 2000."
                 echo ""
                 exit 1;
             fi

@@ -37,6 +37,7 @@ b0dist=`getopt1 "--b0dist" $@`
 b0maxbval=`getopt1 "--b0maxbval" $@`
 GRAPPA=`getopt1 "--pifactor" $@`
 Apply_Topup=`getopt1 "--applytopup" $@`
+do_MPPCA=`getopt1 "--domppca" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -57,6 +58,7 @@ log_Msg 2 "b0dist:$b0dist"
 log_Msg 2 "b0maxbval:$b0maxbval"
 log_Msg 2 "GRAPPA:$GRAPPA"
 log_Msg 2 "Apply_Topup:$Apply_Topup"
+log_Msg 2 "do_MPPCA:$do_MPPCA"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -81,8 +83,47 @@ fi
 nPEsteps=$(($dimP - 1))                         #If GRAPPA is used this needs to include the GRAPPA factor!
 #Total_readout=Echo_spacing*(#of_PE_steps-1)
 ro_time=`echo "scale=6; ${echo_spacing} / ${GRAPPA} * ${nPEsteps} " | bc -l`
-#ro_time=`echo "scale=6; ${ro_time} / 1000" | bc -l`
 log_Msg 3 "Total readout time is $ro_time secs"
+
+if [ $Apply_Topup = yes ] ; then
+    Files="${rawdir}/${basePos}*.nii* ${rawdir}/${baseNeg}*.nii*"
+else
+    Files="${rawdir}/${basePos}*.nii*"
+fi
+
+################################################################################################
+## denoising
+################################################################################################
+
+if [[ ${do_MPPCA} == "yes" ]]; then
+
+    log_Msg 3 "Denoising using MP-PCA approach"
+
+    if [ ${CLUSTER_MODE} = "YES" ] ; then
+        module load brcpython-img
+    else
+        module load brcpython
+    fi
+
+    ${FSLDIR}/bin/fslmerge -t ${rawdir}/data `echo ${Files}`
+
+    python ${BRC_DMRI_SCR}/run_DKI.py ${rawdir} ${do_MPPCA} "no" "no" "no" "no"
+
+    total_vol=0
+    for entry in ${Files}  #For each series, get the mean b0 and rescale to match the first series baseline
+    do
+        basename=`imglob ${entry}`
+        echo ${basename}
+
+        dimt=`${FSLDIR}/bin/fslval ${basename} dim4`
+        ${FSLDIR}/bin/fslroi ${rawdir}/data_denoised ${basename} ${total_vol} ${dimt}
+
+        total_vol=$((${total_vol} + ${dimt}))
+    done
+
+    $FSLDIR/bin/imrm ${rawdir}/data
+    $FSLDIR/bin/imrm ${rawdir}/data_denoised
+fi
 
 ################################################################################################
 ## Intensity Normalisation across Series
@@ -91,13 +132,6 @@ log_Msg 3 "Total readout time is $ro_time secs"
 log_Msg 3 "Rescaling series to ensure consistency across baseline intensities"
 
 entry_cnt=0
-
-if [ $Apply_Topup = yes ] ; then
-    Files="${rawdir}/${basePos}*.nii* ${rawdir}/${baseNeg}*.nii*"
-else
-    Files="${rawdir}/${basePos}*.nii*"
-fi
-
 for entry in ${Files}  #For each series, get the mean b0 and rescale to match the first series baseline
 do
     basename=`imglob ${entry}`

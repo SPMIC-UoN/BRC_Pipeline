@@ -47,6 +47,9 @@ Start_Time=`getopt1 "--start" $@`
 Subject=`getopt1 "--subject" $@`
 HIRES=`getopt1 "--hires" $@`
 do_NODDI=`getopt1 "--donoddi" $@`
+do_DKI=`getopt1 "--dodki" $@`
+do_WMTI=`getopt1 "--dowmti" $@`
+do_FWDTI=`getopt1 "--dofwdti" $@`
 b0maxbval=`getopt1 "--b0maxbval" $@`
 DTIMaxShell=`getopt1 "--dtimaxshell" $@`
 LogFile=`getopt1 "--logfile" $@`
@@ -63,10 +66,14 @@ ${BRC_DMRI_SCR}/eddy_postproc.sh \
       --Apply_Topup=${Apply_Topup} \
       --hires=${HIRES} \
       --donoddi=${do_NODDI} \
+      --dodki=${do_DKI} \
+      --dowmti=${do_WMTI} \
+      --dofwdti=${do_FWDTI} \
       --b0maxbval=${b0maxbval} \
       --dtimaxshell=${DTIMaxShell} \
       --logfile=${LogFile}
 
+# : <<'COMMENT'
 
 if [[ $do_REG == "yes" ]]; then
 
@@ -114,3 +121,5 @@ ${BRCDIR}/Show_version.sh \
       --subject=${Subject} \
       --type=2 \
       --logfile=${LogFile}
+
+# : <<'COMMENT'

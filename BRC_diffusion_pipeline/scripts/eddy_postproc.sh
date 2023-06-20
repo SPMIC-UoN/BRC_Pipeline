@@ -30,6 +30,9 @@ CombineMatchedFlag=`getopt1 "--combinematched" $@`
 Apply_Topup=`getopt1 "--Apply_Topup" $@`
 HIRES=`getopt1 "--hires" $@`
 do_NODDI=`getopt1 "--donoddi" $@`
+do_DKI=`getopt1 "--dodki" $@`
+do_WMTI=`getopt1 "--dowmti" $@`
+do_FWDTI=`getopt1 "--dofwdti" $@`
 b0maxbval=`getopt1 "--b0maxbval" $@`
 DTIMaxShell=`getopt1 "--dtimaxshell" $@`
 LogFile=`getopt1 "--logfile" $@`
@@ -50,6 +53,9 @@ log_Msg 2 "CombineMatchedFlag:$CombineMatchedFlag"
 log_Msg 2 "Apply_Topup:$Apply_Topup"
 log_Msg 2 "HIRES:$HIRES"
 log_Msg 2 "do_NODDI:$do_NODDI"
+log_Msg 2 "do_DKI:$do_DKI"
+log_Msg 2 "do_WMTI:$do_WMTI"
+log_Msg 2 "do_FWDTI:$do_FWDTI"
 log_Msg 2 "b0maxbval:$b0maxbval"
 log_Msg 2 "DTIMaxShell:$DTIMaxShell"
 log_Msg 2 "LogFile:$LogFile"
@@ -98,6 +104,38 @@ else
     ${FSLDIR}/bin/bet ${datadir}/data ${datadir}/nodif_brain -m -f 0.20
 fi
 ${FSLDIR}/bin/fslroi ${datadir}/data ${datadir}/nodif 0 1
+
+if [[ $do_DKI == "yes" ]] || [[ ${do_WMTI} == "yes" ]] || [[ ${do_FWDTI} == "yes" ]]; then
+
+    if [ ${CLUSTER_MODE} = "YES" ] ; then
+        module load brcpython-img
+    else
+        module load brcpython
+    fi
+
+    if [[ $do_DKI == "yes" ]]; then
+        log_Msg 3 "DKI model"
+        if [ ! -d ${datadir}/"data.dki" ]; then mkdir ${datadir}/"data.dki"; fi
+    fi
+    if [[ ${do_WMTI} == "yes" ]]; then
+        log_Msg 3 "WMTI model"
+        if [ ! -d ${datadir}/"data.wmti" ]; then mkdir ${datadir}/"data.wmti"; fi
+    fi
+    if [[ ${do_FWDTI} == "yes" ]]; then
+        log_Msg 3 "Free Water Model"
+        if [ ! -d ${datadir}/"data.fwdti" ]; then mkdir ${datadir}/"data.fwdti"; fi
+    fi
+
+    $FSLDIR/bin/fslmaths ${datadir}/data -mul ${datadir}/nodif_brain_mask ${datadir}/data_brain
+
+    python ${BRC_DMRI_SCR}/run_DKI.py ${datadir} "no" ${do_DKI} ${do_WMTI} ${do_FWDTI}
+
+    # if [ `${FSLDIR}/bin/imtest ${datadir}/data_brain` = 1 ] ; then
+    #     $FSLDIR/bin/imrm ${datadir}/data_brain
+    # fi
+
+fi
+: <<'COMMENT'
 
 log_Msg 3 "Prepare the data for DTI model"
 
