@@ -4,7 +4,7 @@
 <div align="center">
 
   [![Status](https://img.shields.io/badge/status-active-success.svg)]() 
-  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7681822.svg)](https://doi.org/10.5281/zenodo.7681822)
+  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8059550.svg)](https://doi.org/10.5281/zenodo.8059550)
   [![Release](https://img.shields.io/github/release/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/releases/latest)
   [![Stars](https://img.shields.io/github/stars/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/stargazers)
   [![Forks](https://img.shields.io/github/forks/SPMIC-UoN/BRC_Pipeline)](https://github.com/SPMIC-UoN/BRC_Pipeline/network/members)
@@ -15,7 +15,7 @@
 ---
 # BRC Pipeline
 
-The BRC Pipeline scripts are being released for processing magnetic resonance imaging (MRI) data. This processing pipeline could be applied to different modalities such as T1w/T2w MRI, diffusion MRI, and functional MRI datasets. Also, it can be used for the functional connectivity and network analysis.
+The BRC Pipeline scripts are being released for processing magnetic resonance imaging (MRI) data. This processing pipeline could be applied to different modalities such as T1w/T2w MRI, diffusion MRI, and functional MRI datasets. Also, it can be used for functional connectivity and network analysis.
 
 # Installation
 The instruction of step by step installation is available at the [Release Notes, Installation, and Usage][release-install-use] document
