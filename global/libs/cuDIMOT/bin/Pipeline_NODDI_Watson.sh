@@ -6,13 +6,13 @@
 #
 #   SHCOPYRIGHT
 #
-# Pipeline for fitting NODDI-Watson
+# Pipeline for fitting NODDI-Watson 
 
 if [ "x$CUDIMOT" == "x" ]; then
 	echo ""
 	echo "Please, set enviroment variable CUDIMOT with the path where cuDIMOT is installed"
 	echo "The path must contain a bin directory with binary files, i.e. \$CUDIMOT/bin"
-	echo "For instance:   export CUDA=/home/moises/CUDIMOT"
+	echo "For instance:   export CUDIMOT=/home/moises/CUDIMOT"
 	echo ""
   exit 1
 fi
@@ -119,7 +119,7 @@ if [ `${FSLDIR}/bin/imtest ${subjdir}/nodif_brain_mask` -eq 0 ]; then
 fi
 
 if [ -e ${subjdir}.${modelname}/xfms/eye.mat ]; then
-	echo "${subjdir} has already been processed: ${subjdir}.${modelname}."
+	echo "${subjdir} has already been processed: ${subjdir}.${modelname}." 
 	echo "Delete or rename ${subjdir}.${modelname} before repeating the process."
 	exit 1
 fi
@@ -159,10 +159,10 @@ opts=$opts" --data=${subjdir}/data --maskfile=$subjdir.${modelname}/nodif_brain_
 bvals=`cat ${subjdir}/bvals`
 mkdir -p ${subjdir}.${modelname}/temporal
 pos=0
-for i in $bvals; do
-    if [ $i -le 50 ]; then
-       	fslroi ${subjdir}/data  ${subjdir}.${modelname}/temporal/volume_$pos $pos 1
-    fi
+for i in $bvals; do 
+    if [ $i -le 50 ]; then  
+       	fslroi ${subjdir}/data  ${subjdir}.${modelname}/temporal/volume_$pos $pos 1    
+    fi 
     pos=$(($pos + 1))
 done
 fslmerge -t ${subjdir}.${modelname}/temporal/S0s ${subjdir}.${modelname}/temporal/volume*
@@ -177,7 +177,6 @@ echo ${subjdir}.${modelname}/S0 >> $FixPFile
 ################################ First Dtifit  ###############################
 ##############################################################################
 echo "Queue Dtifit"
-
 PathDTI=${subjdir}.${modelname}/Dtifit
 dtifit_command="${bindir}/Run_dtifit.sh ${subjdir} ${subjdir}.${modelname} ${bindir}"
 #SGE
@@ -254,13 +253,7 @@ postproc=`${bindir}/jobs_wrapper.sh ${subjdir}.${modelname} $postproc $modelname
 ##########################################
 finish_command="${bindir}/${modelname}_finish.sh ${subjdir}.${modelname} ${subjdir}"
 #SGE
-finishProcess=`${FSLDIR}/bin/fsl_sub $queue -l ${subjdir}.${modelname}/logs -N ${modelname}_finish -j ${postproc} ${finish_command}`
-jobID4=`echo -e $finishProcess | awk '{ print $NF }'`
-echo "jobID_4: ${jobID4}"
-
-#jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_4_dMRI_${Subject} -t 00:00:05 -m 1 -w ${jobID4} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_4.sh --workingdir=${subjdir}.${modelname} --datadir=${subjdir}" &`
-#jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
-#echo "jobID_3: ${jobID3}"
+finishProcess=`${FSLDIR}/bin/fsl_sub $queue -l ${subjdir}.${modelname}/logs -N ${modelname}_finish -j $postproc $finish_command`
 
 endt=`date +%s`
 runtime=$((endt-start))

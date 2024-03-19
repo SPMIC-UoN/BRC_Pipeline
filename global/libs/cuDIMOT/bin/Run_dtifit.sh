@@ -8,6 +8,10 @@
 #
 # Run Dtifit and calculate the spherical coordinates from the tensors
 
+export LC_ALL=C
+#
+# Run Dtifit and calculate the spherical coordinates from the tensors
+
 bindir=${CUDIMOT}/bin
 
 Usage() {

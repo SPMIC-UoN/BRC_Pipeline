@@ -8,6 +8,10 @@
 #
 #  Script to submit 3 jobs: Split_parts, FitModel, Merge_parts  
 
+export LC_ALL=C
+#
+#  Script to submit 3 jobs: Split_parts, FitModel, Merge_parts  
+
 bindir=${CUDIMOT}/bin  
 
 Usage() {
