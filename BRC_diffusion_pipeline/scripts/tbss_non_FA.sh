@@ -38,17 +38,25 @@ dtifitDir=${datadir}
 suffix="L1 L2 L3 MO MD"
 
 for elem in ${suffix} ; do
-    ${FSLDIR}/bin/applywarp --rel -i ${dtifitDir}/data.dti/dti_${elem} -o all_${elem} -r ${FSLDIR}/data/standard/FMRIB58_FA_1mm -w ../FA/dti_FA_to_MNI_warp
-    ${FSLDIR}/bin/fslmaths all_${elem} -mas mean_FA_skeleton_mask all_${elem}_skeletonised
-    ${FSLDIR}/bin/fslstats -K ${FSLDIR}/data/atlases/JHU/JHU-ICBM-labels-1mm all_${elem}_skeletonised.nii.gz -M >JHUrois_${elem}.txt
+    if [ -e ${dtifitDir}/data.dti/dti_${elem}.nii.gz ] ; then
+
+        ${FSLDIR}/bin/applywarp --rel -i ${dtifitDir}/data.dti/dti_${elem} -o all_${elem} -r ${FSLDIR}/data/standard/FMRIB58_FA_1mm -w ../FA/dti_FA_to_MNI_warp
+        ${FSLDIR}/bin/fslmaths all_${elem} -mas mean_FA_skeleton_mask all_${elem}_skeletonised
+        ${FSLDIR}/bin/fslstats -K ${FSLDIR}/data/atlases/JHU/JHU-ICBM-labels-1mm all_${elem}_skeletonised.nii.gz -M >JHUrois_${elem}.txt
+
+    fi
 done
 
 suffix="ICVF ISOVF ODI"
 
 for elem in ${suffix} ; do
-    ${FSLDIR}/bin/applywarp --rel -i ${dtifitDir}/data.noddi/NODDI_${elem} -o all_${elem} -r ${FSLDIR}/data/standard/FMRIB58_FA_1mm -w ../FA/dti_FA_to_MNI_warp
-    ${FSLDIR}/bin/fslmaths all_${elem} -mas mean_FA_skeleton_mask all_${elem}_skeletonised
-    ${FSLDIR}/bin/fslstats -K ${FSLDIR}/data/atlases/JHU/JHU-ICBM-labels-1mm all_${elem}_skeletonised.nii.gz -M >JHUrois_${elem}.txt
+    if [ -e ${dtifitDir}/data.noddi/NODDI_${elem}.nii.gz ] ; then
+
+        ${FSLDIR}/bin/applywarp --rel -i ${dtifitDir}/data.noddi/NODDI_${elem} -o all_${elem} -r ${FSLDIR}/data/standard/FMRIB58_FA_1mm -w ../FA/dti_FA_to_MNI_warp
+        ${FSLDIR}/bin/fslmaths all_${elem} -mas mean_FA_skeleton_mask all_${elem}_skeletonised
+        ${FSLDIR}/bin/fslstats -K ${FSLDIR}/data/atlases/JHU/JHU-ICBM-labels-1mm all_${elem}_skeletonised.nii.gz -M >JHUrois_${elem}.txt
+
+    fi
 done
 
 cd ..
