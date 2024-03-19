@@ -29,7 +29,7 @@ TBSSFolder=${dMRIFolder}/${preprocessFolderName}/${tbssFolderName}
 #basedMRI="dMRI"
 
 #Setting the string of NaN in case there is a problem.
-numVars="48"
+numVars="50"
 nanResult="";
 for i in $(seq 1 $numVars) ; do
     nanResult="NaN $nanResult" ;
