@@ -135,11 +135,11 @@ if [[ $do_DKI == "yes" ]] || [[ ${do_WMTI} == "yes" ]] || [[ ${do_FWDTI} == "yes
     # fi
 
 fi
-: <<'COMMENT'
 
 log_Msg 3 "Prepare the data for DTI model"
 
-${FSLDIR}/fslpython/envs/fslpython/bin/python ${BRC_DMRI_SCR}/extract_shells.py ${datadir}/bvals ${DTIMaxShell}
+# ${FSLDIR}/fslpython/envs/fslpython/bin/python ${BRC_DMRI_SCR}/extract_shells.py ${datadir}/bvals ${DTIMaxShell}
+${FSLDIR}/bin/fslpython ${BRC_DMRI_SCR}/extract_shells.py ${datadir}/bvals ${DTIMaxShell}
 
 CMD=""
 for shell in `cat ${datadir}/shells.txt` 
@@ -157,8 +157,16 @@ ${FSLDIR}/bin/select_dwi_vols ${datadir}/data \
 
 if [ ${do_NODDI} = "yes" ] ; then
 
+    if [ ${CLUSTER_MODE} = "YES" ] ; then
+        module load cuda-12.2.2
+    fi
+
     log_Msg 3 "NODDI model"
     ${CUDIMOT}/bin/Pipeline_NODDI_Watson.sh ${datadir}
+
+    if [ ${CLUSTER_MODE} = "YES" ] ; then
+        module load cuda-img/9.1
+    fi
 
 else
     log_Msg 3 "DTIFIT model"
@@ -207,3 +215,4 @@ log_Msg 3 "                             ===============                         
 ################################################################################################
 ## Cleanup
 ################################################################################################
+# : <<'COMMENT'
