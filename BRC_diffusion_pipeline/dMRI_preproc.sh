@@ -52,9 +52,9 @@ Usage()
   echo " --tbss                          Turn on steps that run TBSS analysis."
   echo " --noddi                         Turn on steps that run NODDI analysis. NOTE: requires multi-shell data."
   echo "                                      NOTE: The pipeline always generates the DTI model maps."
-  echo " --dki                           Turn on steps that generates microsctructural maps using diffusion kurtosis model."
+  echo " --dki                           Turn on steps that generates microstructural maps using diffusion kurtosis model."
   echo "                                      NOTE: requires multi-shell data."
-  echo " --wmti                          Turn on steps that generates microsctructural maps using white matter tract integrity model."
+  echo " --wmti                          Turn on steps that generates microstructural maps using white matter tract integrity model."
   echo "                                      NOTE: requires multi-shell data."
   echo " --slice2vol                     If one wants to do slice-to-volome motion correction."
   echo " --slspec <path>                 Specifies a .json file (created by your DICOM->niftii conversion software) that describes how the"
@@ -209,6 +209,15 @@ if [ X$Subject = X ] || [ X$InputImages = X ] || [ X$Path = X ] || [ X$echospaci
     echo "All of the compulsory arguments --path, --input, --subject, --pe_dir, and --echospacing MUST be used"
     echo ""
     exit 1;
+fi
+
+if [[ ${CLUSTER_MODE} == "No" ]] ; then
+    if [ ${do_NODDI} == "yes" ] ; then
+        echo ""
+        echo "The NODDI step can only be run on a cluster environment."
+        echo ""
+        exit 1
+    fi
 fi
 
 if [ $InputImages2 = "NONE" ] ; then
