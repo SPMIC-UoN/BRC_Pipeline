@@ -121,7 +121,14 @@ log_Msg 3 ""
 log_Msg 3 "$EDDY_arg"
 log_Msg 3 ""
 
-$FSLDIR/bin/eddy_cuda  ""$EDDY_arg""
+if [ -e ${FSLDIR}/bin/eddy_cuda9.1 ]; then
+    EDDY_CUDA=${FSLDIR}/bin/eddy_cuda9.1
+elif [ -e ${FSLDIR}/bin/eddy_cuda ]; then
+    EDDY_CUDA=${FSLDIR}/bin/eddy_cuda
+elif [ -e ${FSLDIR}/bin/eddy ]; then
+    EDDY_CUDA=${FSLDIR}/bin/eddy
+fi
+${EDDY_CUDA} ""$EDDY_arg""
 
 #if [ $Apply_Topup = yes ] ; then
 #    ${FSLDIR}/bin/eddy_cuda --imain=${WD}/Pos_Neg \
