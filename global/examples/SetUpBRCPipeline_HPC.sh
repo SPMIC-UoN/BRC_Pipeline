@@ -41,7 +41,7 @@ else
 fi
 
 #ENV VARIABLES FOR THE BRC_PIPELINE
-export BRCDIR="/gpfs01/software/imaging/BRC_Pipeline"                               #TO BE MODIFIED BY USER
+export BRCDIR="/gpfs01/software/imaging/BRC_Pipeline/1.6.3"                               #TO BE MODIFIED BY USER
 export BRC_SCTRUC_DIR=${BRCDIR}/BRC_structural_pipeline
 export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
 export BRC_FMRI_DIR=${BRCDIR}/BRC_functional_pipeline
@@ -62,4 +62,4 @@ export CUDIMOT="${BRC_GLOBAL_DIR}/libs/cuDIMOT"
 export SPMpath="/gpfs01/software/imaging/spm12"
 export DVARSpath="/gpfs01/software/imaging/DVARS"
 export ANTSPATH="/gpfs01/software/imaging/ANTs/2.3.5/bin/"
-export C3DPATH="/gpfs01/software/imaging/c3d/c3d-1.3.0-Linux-gcc64"
+export C3DPATH="/gpfs01/software/imaging/c3d/c3d-1.3.0-Linux-gcc64/bin"

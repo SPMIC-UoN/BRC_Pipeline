@@ -30,18 +30,18 @@ else
 
     # Setup FreeSurfer (if not already done so in the running environment)
     # Uncomment the following 2 lines (remove the leading #) and correct the FREESURFER_HOME setting for your setup
-#    export FREESURFER_HOME="/usr/local/freesurfer"
-#    source $FREESURFER_HOME/SetUpFreeSurfer.sh
+    export FREESURFER_HOME="/usr/local/freesurfer"
+    source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
     export MATLABpath="/usr/local/matlab/R2018a/bin"
     export FSLDIR_5_0_11="/usr/local/fsl-5.0.11"
 
     #SET DYNAMIC LIBRARIES FOR Eddy
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
+    # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
 fi
 
 #ENV VARIABLES FOR THE BRC_PIPELINE
-export BRCDIR="/home/mszam12/main/BRC_Pipeline"                                     #TO BE MODIFIED BY USER
+export BRCDIR="/usr/local/BRC_Pipeline-1.6.3"                                     #TO BE MODIFIED BY USER
 export BRC_SCTRUC_DIR=${BRCDIR}/BRC_structural_pipeline
 export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
 export BRC_FMRI_DIR=${BRCDIR}/BRC_functional_pipeline
@@ -63,3 +63,7 @@ export SPMpath="/usr/local/SPM/spm12"
 export DVARSpath="/usr/local/DVARS"
 export ANTSPATH="/usr/local/ants"
 export C3DPATH="/usr/local/c3d/bin"
+
+#ADD ENV VARIABLES TO THE PATH
+PATH=$PATH:$BRC_SCTRUC_DIR:$BRC_DMRI_DIR:$BRC_FMRI_DIR:$BRC_PMRI_DIR:$BRC_FMRI_GP_DIR:$BRC_IDPEXTRACT_DIR
+export PATH

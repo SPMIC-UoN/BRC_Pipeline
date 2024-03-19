@@ -41,7 +41,7 @@ else
 fi
 
 #ENV VARIABLES FOR THE BRC_PIPELINE
-export BRCDIR="/home/mszam12/main/BRC_Pipeline"                                     #TO BE MODIFIED BY USER
+export BRCDIR="/usr/local/BRC_Pipeline-1.6.3"                                     #TO BE MODIFIED BY USER
 export BRC_SCTRUC_DIR=${BRCDIR}/BRC_structural_pipeline
 export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
 export BRC_FMRI_DIR=${BRCDIR}/BRC_functional_pipeline
@@ -63,3 +63,7 @@ export SPMpath="/usr/local/SPM/spm12"
 export DVARSpath="/usr/local/DVARS"
 export ANTSPATH="/usr/local/ANTs/ants-2.1.0-redhat/"
 export C3DPATH="/usr/local/c3d/bin"
+
+#ADD ENV VARIABLES TO THE PATH
+PATH=$PATH:$BRC_SCTRUC_DIR:$BRC_DMRI_DIR:$BRC_FMRI_DIR:$BRC_PMRI_DIR:$BRC_FMRI_GP_DIR:$BRC_IDPEXTRACT_DIR
+export PATH
