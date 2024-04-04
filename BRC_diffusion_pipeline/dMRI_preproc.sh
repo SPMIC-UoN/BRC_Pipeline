@@ -211,15 +211,6 @@ if [ X$Subject = X ] || [ X$InputImages = X ] || [ X$Path = X ] || [ X$echospaci
     exit 1;
 fi
 
-if [[ ${CLUSTER_MODE} == "No" ]] ; then
-    if [ ${do_NODDI} == "yes" ] ; then
-        echo ""
-        echo "The NODDI step can only be run on a cluster environment."
-        echo ""
-        exit 1
-    fi
-fi
-
 if [ $InputImages2 = "NONE" ] ; then
     Apply_Topup=no
 fi
@@ -389,17 +380,21 @@ if [ $CLUSTER_MODE = "YES" ] ; then
     if [ $HIRES = "yes" ] ; then
         TIME_LIMIT_1=24:00:00
         TIME_LIMIT_2=20:00:00
-        TIME_LIMIT_3=24:00:00
+        TIME_LIMIT_3=8:00:00
+        TIME_LIMIT_3=20:00:00
         MEM_1=30
         MEM_2=90
-        MEM_3=100
+        MEM_3=60
+        MEM_4=100
     else
         TIME_LIMIT_1=01:40:00
         TIME_LIMIT_2=06:00:00
-        TIME_LIMIT_3=04:00:00
+        TIME_LIMIT_3=03:00:00
+        TIME_LIMIT_4=03:00:00
         MEM_1=20
         MEM_2=60
         MEM_3=20
+        MEM_4=20
     fi
 
     jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_dMRI_${Subject} -t ${TIME_LIMIT_1} -m ${MEM_1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh --dmrirawfolder=${dMRIrawFolder} --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --inputimage=${InputImages} --inputimage2=${InputImages2} --pedirection=${PEdir} --applytopup=${Apply_Topup} --echospacing=${echospacing} --b0dist=${b0dist} --b0maxbval=${b0maxbval} --pifactor=${PIFactor} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --domppca=${do_MPPCA} --usetopuppath=${USE_TOPUP_PATH} --logfile=${logFolder}/${log_Name}" &`
@@ -410,10 +405,15 @@ if [ $CLUSTER_MODE = "YES" ] ; then
     jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
     echo "jobID_2: ${jobID2}"
 
-    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --dotbss=${do_TBSS} --tbssfolder=${tbssFolder} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --b0maxbval=${b0maxbval} --dtimaxshell=${DTIMaxShell} --logfile=${logFolder}/${log_Name}" &`
+    # jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --dotbss=${do_TBSS} --tbssfolder=${tbssFolder} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --b0maxbval=${b0maxbval} --dtimaxshell=${DTIMaxShell} --logfile=${logFolder}/${log_Name}" &`
     # jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --doreg=${do_REG} --dotbss=${do_TBSS} --tbssfolder=${tbssFolder} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --start=${Start_Time} --subject=${Subject} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --b0maxbval=${b0maxbval} --dtimaxshell=${DTIMaxShell} --logfile=${logFolder}/${log_Name}" &`
+    jobID3=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --b0maxbval=${b0maxbval} --dtimaxshell=${DTIMaxShell} --logfile=${logFolder}/${log_Name}" &`
     jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
     echo "jobID_3: ${jobID3}"
+
+    jobID4=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_4_dMRI_${Subject} -t ${TIME_LIMIT_4} -m ${MEM_4} -w ${jobID3} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_4.sh --doreg=${do_REG} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --datafolder=${dataFolder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --dotbss=${do_TBSS} --workingdir=${dMRIFolder} --tbssfolder=${tbssFolder} --donoddi=${do_NODDI} --start=${Start_Time} --subject=${Subject} --logfile=${logFolder}/${log_Name}" &`
+    jobID4=`echo -e $jobID4 | awk '{ print $NF }'`
+    echo "jobID_4: ${jobID4}"
 
 else
 
@@ -452,17 +452,57 @@ else
                     --logfile=${logFolder}/${log_Name}
 
 
-     ${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh \
+    # ${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh \
+    #                 --workingdir=${dMRIFolder} \
+    #                 --eddyfolder=${eddyFolder} \
+    #                 --datafolder=${dataFolder} \
+    #                 --combinematched=${CombineMatched} \
+    #                 --applytopup=${Apply_Topup} \
+    #                 --doreg=${do_REG} \
+    #                 --dotbss=${do_TBSS} \
+    #                 --tbssfolder=${tbssFolder} \
+    #                 --multchant1folder=${MultChanT1Folder} \
+    #                 --sinchant1folder=${SinChanT1Folder} \
+    #                 --regfolder=${regFolder} \
+    #                 --t1=${dataT1Folder}/${T1wImage} \
+    #                 --t1restore=${dataT1Folder}/${T1wRestoreImage} \
+    #                 --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} \
+    #                 --dof=${dof} \
+    #                 --datat1folder=${dataT1Folder} \
+    #                 --regt1folder=${regT1Folder} \
+    #                 --outstr=${data2strFolder} \
+    #                 --outstd=${data2stdFolder} \
+    #                 --start=${Start_Time} \
+    #                 --subject=${Subject} \
+    #                 --hires=${HIRES} \
+    #                 --donoddi=${do_NODDI} \
+    #                 --dodki=${do_DKI} \
+    #                 --dowmti=${do_WMTI} \
+    #                 --dofwdti=${do_FWDTI} \
+    #                 --b0maxbval=${b0maxbval} \
+    #                 --dtimaxshell=${DTIMaxShell} \
+    #                 --logfile=${logFolder}/${log_Name}
+
+    ${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh \
                     --workingdir=${dMRIFolder} \
                     --eddyfolder=${eddyFolder} \
                     --datafolder=${dataFolder} \
                     --combinematched=${CombineMatched} \
                     --applytopup=${Apply_Topup} \
+                    --hires=${HIRES} \
+                    --donoddi=${do_NODDI} \
+                    --dodki=${do_DKI} \
+                    --dowmti=${do_WMTI} \
+                    --dofwdti=${do_FWDTI} \
+                    --b0maxbval=${b0maxbval} \
+                    --dtimaxshell=${DTIMaxShell} \
+                    --logfile=${logFolder}/${log_Name}                    
+
+    ${BRC_DMRI_SCR}/dMRI_preproc_part_4.sh \
                     --doreg=${do_REG} \
-                    --dotbss=${do_TBSS} \
-                    --tbssfolder=${tbssFolder} \
                     --multchant1folder=${MultChanT1Folder} \
                     --sinchant1folder=${SinChanT1Folder} \
+                    --datafolder=${dataFolder} \
                     --regfolder=${regFolder} \
                     --t1=${dataT1Folder}/${T1wImage} \
                     --t1restore=${dataT1Folder}/${T1wRestoreImage} \
@@ -472,15 +512,11 @@ else
                     --regt1folder=${regT1Folder} \
                     --outstr=${data2strFolder} \
                     --outstd=${data2stdFolder} \
+                    --dotbss=${do_TBSS} \
+                    --workingdir=${dMRIFolder} \
+                    --tbssfolder=${tbssFolder} \
+                    --donoddi=${do_NODDI} \
                     --start=${Start_Time} \
                     --subject=${Subject} \
-                    --hires=${HIRES} \
-                    --donoddi=${do_NODDI} \
-                    --dodki=${do_DKI} \
-                    --dowmti=${do_WMTI} \
-                    --dofwdti=${do_FWDTI} \
-                    --b0maxbval=${b0maxbval} \
-                    --dtimaxshell=${DTIMaxShell} \
                     --logfile=${logFolder}/${log_Name}
-
 fi
