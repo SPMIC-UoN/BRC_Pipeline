@@ -331,24 +331,100 @@ fi
 
 if [ $CLUSTER_MODE = "YES" ] ; then
 
-    if [ ${do_freesurfer} = "yes" ] ; then
-        TIME_LIMIT=48:00:00
-        MEM=60
+    TIME_LIMIT1=05:00:00
+    TIME_LIMIT2=24:00:00
+    MEM1=100
+    MEM2=60
+    
+    if [ ${do_fastsurfer} = "yes" ] ; then
+        TIME_LIMIT3=05:00:00
+        MEM3=60
     else
-        TIME_LIMIT=05:00:00
-        MEM=100
+        TIME_LIMIT3=00:10:00
+        MEM3=10
     fi
+
+
+    # if [ ${do_freesurfer} = "yes" ] ; then
+    #     TIME_LIMIT=48:00:00
+    #     MEM=60
+    # else
+    #     TIME_LIMIT=05:00:00
+    #     MEM=100
+    # fi
 
     Cores=1
     if [ $RegType == 3 ]; then
         Cores=24
     fi
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p ${Cores} -s BRC_SMRI_${Subject} -t ${TIME_LIMIT} -m ${MEM} -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${ShapeFolder} --sienaxt1folder=${SienaxT1Folder} --biancatempfolder=${BiancaTempFolder} --biancat2folder=${BiancaT2Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --sienaxtempfolder=${SienaxTempFolder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --dofastsurfer=${do_fastsurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --fastsurferfoldername=${FastSurferFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --regtype=${RegType} --t2lesionpath=${T2LesionPath} --fbet=${fBET} --logt1folder=${logT1Folder}/${log_Name}" &`
+    # jobID1=`${JOBSUBpath}/jobsub -q cpu -p ${Cores} -s BRC_SMRI_${Subject} -t ${TIME_LIMIT} -m ${MEM} -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${ShapeFolder} --sienaxt1folder=${SienaxT1Folder} --biancatempfolder=${BiancaTempFolder} --biancat2folder=${BiancaT2Folder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --sienaxtempfolder=${SienaxTempFolder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --regt1folder=${regT1Folder} --datat2folder=${dataT2Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofreesurfer=${do_freesurfer} --dofastsurfer=${do_fastsurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --fastsurferfoldername=${FastSurferFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --regtype=${RegType} --t2lesionpath=${T2LesionPath} --fbet=${fBET} --logt1folder=${logT1Folder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p ${Cores} -s BRC_1_SMRI_${Subject} -t ${TIME_LIMIT1} -m ${MEM1} -c "${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh --tempt1folder=${TempT1Folder} --rawt1folder=${rawT1Folder} --dosubseg=${do_Sub_seg} --dotissueseg=${do_tissue_seg} --docrop=${do_crop} --dodefacing=${do_defacing} --fastt1folder=${FastT1Folder} --firstt1folder=${ShapeFolder} --sienaxt1folder=${SienaxT1Folder} --biancatempfolder=${BiancaTempFolder} --regtempt1folder=${regTempT1Folder} --t2=${T2} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --regtempt2folder=${regTempT2Folder} --sienaxtempfolder=${SienaxTempFolder} --t2lesionpath=${T2LesionPath} --fbet=${fBET} --regtype=${RegType} --logt1folder=${logT1Folder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
+    WaitJob=${jobID1}
+    JobName=2
+
+    if [ ${do_freesurfer} = "yes" ] ; then
+        jobID2=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_${JobName}_SMRI_${Subject} -t ${TIME_LIMIT2} -m ${MEM2} -c "${BRC_SCTRUC_SCR}/struc_preproc_part_2.sh --dofreesurfer=${do_freesurfer} --processedt1folder=${processedT1Folder} --fsfoldername=${FSFolderName} --t2=${T2} --rawt1folder=${rawT1Folder} --rawt2folder=${rawT2Folder} --logt1folder=${logT1Folder}/${log_Name}" &`
+        jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
+        echo "jobID_2: ${jobID2}"
+
+        WaitJob=${jobID2}
+        JobName=3
+    fi
+
+    jobID3=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_${JobName}_SMRI_${Subject} -t ${TIME_LIMIT3} -m ${MEM3} -w ${WaitJob} -c "${BRC_SCTRUC_SCR}/struc_preproc_part_3.sh --biancat2folder=${BiancaT2Folder} --t1folder=${T1Folder} --t2folder=${T2Folder} --biast1folder=${biasT1Folder} --datat1folder=${dataT1Folder} --data2stdt1folder=${data2stdT1Folder} --segt1folder=${segT1Folder} --datat2folder=${dataT2Folder} --regt1folder=${regT1Folder} --data2stdt2folder=${data2stdT2Folder} --regt2folder=${regT2Folder} --dofastsurfer=${do_fastsurfer} --fastsurferfoldername=${FastSurferFolderName} --starttime=${Start_Time} --subid=${Sub_ID} --processedt1folder=${processedT1Folder} --t2=${T2} --rawt1folder=${rawT1Folder} --fastt1folder=${FastT1Folder} --firstt1folder=${ShapeFolder} --sienaxt1folder=${SienaxT1Folder} --biancatempfolder=${BiancaTempFolder} --regtempt1folder=${regTempT1Folder} --dosubseg=${do_Sub_seg} --tempt1folder=${TempT1Folder} --tempt2folder=${TempT2Folder} --rawt2folder=${rawT2Folder} --dotissueseg=${do_tissue_seg} --regtempt2folder=${regTempT2Folder} --dodefacing=${do_defacing} --regtype=${RegType} --sienaxtempfolder=${SienaxTempFolder} --logt1folder=${logT1Folder}/${log_Name}" &`
+    jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
+
+    if [ ${do_freesurfer} = "yes" ] ; then
+        echo "jobID_3: ${jobID3}"
+    else
+        echo "jobID_2: ${jobID3}"
+    fi
+
 else
+
+    # ${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh \
+    #                   --tempt1folder=${TempT1Folder} \
+    #                   --rawt1folder=${rawT1Folder} \
+    #                   --dosubseg=${do_Sub_seg} \
+    #                   --dotissueseg=${do_tissue_seg} \
+    #                   --docrop=${do_crop} \
+    #                   --dodefacing=${do_defacing} \
+    #                   --fastt1folder=${FastT1Folder} \
+    #                   --firstt1folder=${ShapeFolder} \
+    #                   --sienaxt1folder=${SienaxT1Folder} \
+    #                   --biancatempfolder=${BiancaTempFolder} \
+    #                   --biancat2folder=${BiancaT2Folder} \
+    #                   --regtempt1folder=${regTempT1Folder} \
+    #                   --t2=${T2} \
+    #                   --tempt2folder=${TempT2Folder} \
+    #                   --rawt2folder=${rawT2Folder} \
+    #                   --regtempt2folder=${regTempT2Folder} \
+    #                   --t1folder=${T1Folder} \
+    #                   --t2folder=${T2Folder} \
+    #                   --biast1folder=${biasT1Folder} \
+    #                   --sienaxtempfolder=${SienaxTempFolder} \
+    #                   --datat1folder=${dataT1Folder}  \
+    #                   --data2stdt1folder=${data2stdT1Folder} \
+    #                   --segt1folder=${segT1Folder} \
+    #                   --regt1folder=${regT1Folder} \
+    #                   --datat2folder=${dataT2Folder} \
+    #                   --data2stdt2folder=${data2stdT2Folder} \
+    #                   --regt2folder=${regT2Folder} \
+    #                   --dofreesurfer=${do_freesurfer} \
+    #                   --dofastsurfer=${do_fastsurfer} \
+    #                   --processedt1folder=${processedT1Folder} \
+    #                   --fsfoldername=${FSFolderName} \
+    #                   --fastsurferfoldername=${FastSurferFolderName} \
+    #                   --starttime=${Start_Time} \
+    #                   --subid=${Sub_ID} \
+    #                   --regtype=${RegType} \
+    #                   --t2lesionpath=${T2LesionPath} \
+    #                   --fbet=${fBET} \
+    #                   --logt1folder=${logT1Folder}/${log_Name}
 
     ${BRC_SCTRUC_SCR}/struc_preproc_part_1.sh \
                       --tempt1folder=${TempT1Folder} \
@@ -361,33 +437,57 @@ else
                       --firstt1folder=${ShapeFolder} \
                       --sienaxt1folder=${SienaxT1Folder} \
                       --biancatempfolder=${BiancaTempFolder} \
-                      --biancat2folder=${BiancaT2Folder} \
                       --regtempt1folder=${regTempT1Folder} \
                       --t2=${T2} \
                       --tempt2folder=${TempT2Folder} \
                       --rawt2folder=${rawT2Folder} \
                       --regtempt2folder=${regTempT2Folder} \
+                      --sienaxtempfolder=${SienaxTempFolder} \
+                      --t2lesionpath=${T2LesionPath} \
+                      --fbet=${fBET} \
+                      --regtype=${RegType} \
+                      --logt1folder=${logT1Folder}/${log_Name}
+
+    ${BRC_SCTRUC_SCR}/struc_preproc_part_2.sh \
+                      --dofreesurfer=${do_freesurfer} \
+                      --processedt1folder=${processedT1Folder} \
+                      --fsfoldername=${FSFolderName} \
+                      --t2=${T2} \
+                      --rawt1folder=${rawT1Folder} \
+                      --rawt2folder=${rawT2Folder} \
+                      --logt1folder=${logT1Folder}/${log_Name}
+    
+    ${BRC_SCTRUC_SCR}/struc_preproc_part_3.sh \
+                      --biancat2folder=${BiancaT2Folder} \
                       --t1folder=${T1Folder} \
                       --t2folder=${T2Folder} \
                       --biast1folder=${biasT1Folder} \
-                      --sienaxtempfolder=${SienaxTempFolder} \
-                      --datat1folder=${dataT1Folder}  \
+                      --datat1folder=${dataT1Folder} \
                       --data2stdt1folder=${data2stdT1Folder} \
                       --segt1folder=${segT1Folder} \
-                      --regt1folder=${regT1Folder} \
                       --datat2folder=${dataT2Folder} \
+                      --regt1folder=${regT1Folder} \
                       --data2stdt2folder=${data2stdT2Folder} \
                       --regt2folder=${regT2Folder} \
-                      --dofreesurfer=${do_freesurfer} \
                       --dofastsurfer=${do_fastsurfer} \
-                      --processedt1folder=${processedT1Folder} \
-                      --fsfoldername=${FSFolderName} \
                       --fastsurferfoldername=${FastSurferFolderName} \
                       --starttime=${Start_Time} \
                       --subid=${Sub_ID} \
+                      --processedt1folder=${processedT1Folder} \
+                      --t2=${T2} \
+                      --rawt1folder=${rawT1Folder} \
+                      --fastt1folder=${FastT1Folder} \
+                      --firstt1folder=${ShapeFolder} \
+                      --sienaxt1folder=${SienaxT1Folder} \
+                      --biancatempfolder=${BiancaTempFolder} \
+                      --regtempt1folder=${regTempT1Folder} \
+                      --dosubseg=${do_Sub_seg} \
+                      --tempt1folder=${TempT1Folder} \
+                      --tempt2folder=${TempT2Folder} \
+                      --rawt2folder=${rawT2Folder} \
+                      --dotissueseg=${do_tissue_seg} \
+                      --dodefacing=${do_defacing} \
                       --regtype=${RegType} \
-                      --t2lesionpath=${T2LesionPath} \
-                      --fbet=${fBET} \
+                      --sienaxtempfolder=${SienaxTempFolder} \
                       --logt1folder=${logT1Folder}/${log_Name}
-
 fi

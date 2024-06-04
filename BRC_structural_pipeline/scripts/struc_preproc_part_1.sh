@@ -38,30 +38,31 @@ T2=`getopt1 "--t2" $@`
 TempT2Folder=`getopt1 "--tempt2folder" $@`
 rawT2Folder=`getopt1 "--rawt2folder" $@`
 regTempT2Folder=`getopt1 "--regtempt2folder" $@`
-T1Folder=`getopt1 "--t1folder" $@`
-T2Folder=`getopt1 "--t2folder" $@`
-biasT1Folder=`getopt1 "--biast1folder" $@`
-dataT1Folder=`getopt1 "--datat1folder" $@`
-data2stdT1Folder=`getopt1 "--data2stdt1folder" $@`
-segT1Folder=`getopt1 "--segt1folder" $@`
-regT1Folder=`getopt1 "--regt1folder" $@`
-dataT2Folder=`getopt1 "--datat2folder" $@`
-data2stdT2Folder=`getopt1 "--data2stdt2folder" $@`
-regT2Folder=`getopt1 "--regt2folder" $@`
-regT2Folder=`getopt1 "--regt2folder" $@`
-do_freesurfer=`getopt1 "--dofreesurfer" $@`
-do_fastsurfer=`getopt1 "--dofastsurfer" $@`
-processedT1Folder=`getopt1 "--processedt1folder" $@`
-FSFolderName=`getopt1 "--fsfoldername" $@`
-FastSurferFolderName=`getopt1 "--fastsurferfoldername" $@`
-Start_Time=`getopt1 "--starttime" $@`
-Sub_ID=`getopt1 "--subid" $@`
-RegType=`getopt1 "--regtype" $@`
 SienaxTempFolder=`getopt1 "--sienaxtempfolder" $@`
-BiancaT2Folder=`getopt1 "--biancat2folder" $@`
 T2LesionPath=`getopt1 "--t2lesionpath" $@`
 fBET=`getopt1 "--fbet" $@`
+RegType=`getopt1 "--regtype" $@`
 logT1Folder=`getopt1 "--logt1folder" $@`
+
+# T1Folder=`getopt1 "--t1folder" $@`
+# T2Folder=`getopt1 "--t2folder" $@`
+# biasT1Folder=`getopt1 "--biast1folder" $@`
+# dataT1Folder=`getopt1 "--datat1folder" $@`
+# data2stdT1Folder=`getopt1 "--data2stdt1folder" $@`
+# segT1Folder=`getopt1 "--segt1folder" $@`
+# regT1Folder=`getopt1 "--regt1folder" $@`
+# dataT2Folder=`getopt1 "--datat2folder" $@`
+# data2stdT2Folder=`getopt1 "--data2stdt2folder" $@`
+# regT2Folder=`getopt1 "--regt2folder" $@`
+# do_freesurfer=`getopt1 "--dofreesurfer" $@`
+# do_fastsurfer=`getopt1 "--dofastsurfer" $@`
+# processedT1Folder=`getopt1 "--processedt1folder" $@`
+# FSFolderName=`getopt1 "--fsfoldername" $@`
+# FastSurferFolderName=`getopt1 "--fastsurferfoldername" $@`
+# Start_Time=`getopt1 "--starttime" $@`
+# Sub_ID=`getopt1 "--subid" $@`
+# BiancaT2Folder=`getopt1 "--biancat2folder" $@` 
+
 
 log_SetPath "${logT1Folder}"
 
@@ -103,89 +104,89 @@ if [[ $T2 == "yes" ]]; then
 
 fi
 
-${BRC_SCTRUC_SCR}/output_organization.sh \
-      --t1folder=${T1Folder} \
-      --t2folder=${T2Folder} \
-      --rawt1folder=${rawT1Folder} \
-      --fastfolder=${FastT1Folder} \
-      --firstfolder=${FirstT1Folder} \
-      --regtempt1folder=${regTempT1Folder} \
-      --biast1folder=${biasT1Folder} \
-      --dosubseg=${do_Sub_seg} \
-      --datat1folder=${dataT1Folder} \
-      --data2stdt1folder=${data2stdT1Folder} \
-      --segt1folder=${segT1Folder} \
-      --regt1folder=${regT1Folder} \
-      --tempt1folder=${TempT1Folder} \
-      --t2exist=${T2} \
-      --tempt2folder=${TempT2Folder} \
-      --rawt2folder=${rawT2Folder} \
-      --dotissueseg=${do_tissue_seg} \
-      --datat2folder=${dataT2Folder} \
-      --data2stdt2folder=${data2stdT2Folder} \
-      --regt2folder=${regT2Folder} \
-      --regtempt2folder=${regTempT2Folder} \
-      --dodefacing=${do_defacing} \
-      --regtype=${RegType} \
-      --sienaxt1folder=${SienaxT1Folder} \
-      --sienaxtempfolder=${SienaxTempFolder} \
-      --biancat2folder=${BiancaT2Folder} \
-      --biancatempfolder=${BiancaTempFolder} \
-      --logfile=${logT1Folder}
+# ${BRC_SCTRUC_SCR}/output_organization.sh \
+#       --t1folder=${T1Folder} \
+#       --t2folder=${T2Folder} \
+#       --rawt1folder=${rawT1Folder} \
+#       --fastfolder=${FastT1Folder} \
+#       --firstfolder=${FirstT1Folder} \
+#       --regtempt1folder=${regTempT1Folder} \
+#       --biast1folder=${biasT1Folder} \
+#       --dosubseg=${do_Sub_seg} \
+#       --datat1folder=${dataT1Folder} \
+#       --data2stdt1folder=${data2stdT1Folder} \
+#       --segt1folder=${segT1Folder} \
+#       --regt1folder=${regT1Folder} \
+#       --tempt1folder=${TempT1Folder} \
+#       --t2exist=${T2} \
+#       --tempt2folder=${TempT2Folder} \
+#       --rawt2folder=${rawT2Folder} \
+#       --dotissueseg=${do_tissue_seg} \
+#       --datat2folder=${dataT2Folder} \
+#       --data2stdt2folder=${data2stdT2Folder} \
+#       --regt2folder=${regT2Folder} \
+#       --regtempt2folder=${regTempT2Folder} \
+#       --dodefacing=${do_defacing} \
+#       --regtype=${RegType} \
+#       --sienaxt1folder=${SienaxT1Folder} \
+#       --sienaxtempfolder=${SienaxTempFolder} \
+#       --biancat2folder=${BiancaT2Folder} \
+#       --biancatempfolder=${BiancaTempFolder} \
+#       --logfile=${logT1Folder}
 
-if [[ $do_freesurfer == "yes" ]]; then
-    SUBJECTS_DIR=${processedT1Folder}
+# if [[ $do_freesurfer == "yes" ]]; then
+#     SUBJECTS_DIR=${processedT1Folder}
 
-    log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    log_Msg 3 "+                                                                        +"
-    log_Msg 3 "+                       START: FreeSurfer Analysis                       +"
-    log_Msg 3 "+                                                                        +"
-    log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+#     log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+#     log_Msg 3 "+                                                                        +"
+#     log_Msg 3 "+                       START: FreeSurfer Analysis                       +"
+#     log_Msg 3 "+                                                                        +"
+#     log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-    if [ -e "${processedT1Folder}/${FSFolderName}" ] ; then
-        rm -r ${processedT1Folder}/${FSFolderName}
-    fi
+#     if [ -e "${processedT1Folder}/${FSFolderName}" ] ; then
+#         rm -r ${processedT1Folder}/${FSFolderName}
+#     fi
 
-    if [[ $T2 == yes ]]; then
-        recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s ${FSFolderName} -FLAIR ${rawT2Folder}/T2_orig.nii.gz -all
-    else
-        recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s ${FSFolderName} -all
-    fi
+#     if [[ $T2 == yes ]]; then
+#         recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s ${FSFolderName} -FLAIR ${rawT2Folder}/T2_orig.nii.gz -all
+#     else
+#         recon-all -i ${rawT1Folder}/T1_orig.nii.gz -s ${FSFolderName} -all
+#     fi
 
-    rm -r ${processedT1Folder}/fsaverage
-fi
+#     rm -r ${processedT1Folder}/fsaverage
+# fi
 
-if [[ $do_fastsurfer == "yes" ]]; then
-    SUBJECTS_DIR=${processedT1Folder}
+# if [[ $do_fastsurfer == "yes" ]]; then
+#     SUBJECTS_DIR=${processedT1Folder}
 
-    log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    log_Msg 3 "+                                                                        +"
-    log_Msg 3 "+                       START: FastSurfer Analysis                       +"
-    log_Msg 3 "+                                                                        +"
-    log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+#     log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+#     log_Msg 3 "+                                                                        +"
+#     log_Msg 3 "+                       START: FastSurfer Analysis                       +"
+#     log_Msg 3 "+                                                                        +"
+#     log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-    if [ -e "${processedT1Folder}/${FastSurferFolderName}" ] ; then
-        rm -r ${processedT1Folder}/${FastSurferFolderName}
-    fi
+#     if [ -e "${processedT1Folder}/${FastSurferFolderName}" ] ; then
+#         rm -r ${processedT1Folder}/${FastSurferFolderName}
+#     fi
 
-    if [[ $T2 == yes ]]; then
-        log_Msg 3 "WARNING: T2 specified but will be ignored by FastSurfer"
-    fi
+#     if [[ $T2 == yes ]]; then
+#         log_Msg 3 "WARNING: T2 specified but will be ignored by FastSurfer"
+#     fi
 
-    run_fastsurfer.sh --t1 ${rawT1Folder}/T1_orig.nii.gz --sid ${FastSurferFolderName} --sd ${processedT1Folder}
+#     run_fastsurfer.sh --t1 ${rawT1Folder}/T1_orig.nii.gz --sid ${FastSurferFolderName} --sd ${processedT1Folder}
 
-    rm -r ${processedT1Folder}/fsaverage
-fi
+#     rm -r ${processedT1Folder}/fsaverage
+# fi
 
-END_Time="$(date -u +%s)"
+# END_Time="$(date -u +%s)"
 
 
-${RUN} ${BRCDIR}/Show_version.sh \
-      --showdiff="yes" \
-      --start=${Start_Time} \
-      --end=${END_Time} \
-      --subject=${Sub_ID} \
-      --type=1 \
-      --logfile=${logT1Folder}
+# ${RUN} ${BRCDIR}/Show_version.sh \
+#       --showdiff="yes" \
+#       --start=${Start_Time} \
+#       --end=${END_Time} \
+#       --subject=${Sub_ID} \
+#       --type=1 \
+#       --logfile=${logT1Folder}
 
 #: <<'COMMENT'

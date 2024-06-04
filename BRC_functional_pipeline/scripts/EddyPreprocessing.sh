@@ -210,10 +210,16 @@ log_Msg 2 "EDDY_arg: $EDDY_arg"
 if [ $CLUSTER_MODE = "YES" ] ; then
 
     module load fsl-img/5.0.11
+    if [ ${CLUSTER_MODE} = "YES" ] ; then
+        module load cuda-img/9.2
+    fi
 
     $FSLDIR/bin/eddy_cuda  ""$EDDY_arg""
 
-    module load fsl-img/6.0.3
+    module load fsl-img/6.0.5
+    if [ ${CLUSTER_MODE} = "YES" ] ; then
+        module load cuda-img/9.1
+    fi
 
 else
 
