@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 09/06/2020
+# Last update: 04/07/2024
 
 # Authors: Stefan Pszczolkowski, Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -17,8 +17,8 @@ getopt1()
     for fn in $@ ; do
       if [ `echo $fn | grep -- "^${sopt}=" | wc -w` -gt 0 ] ; then
 	       echo $fn | sed "s/^${sopt}=//"
-	    return 0
-    fi
+	       return 0
+      fi
     done
 }
 
@@ -70,10 +70,10 @@ $FSLDIR/bin/convertwarp --ref=${STD_template} \
 log_Msg 3 "Computing template to ASL transformation"
 $FSLDIR/bin/invwarp -w ${WD}/${aslMRI2StandardOutputTransform} \
                     -o ${WD}/${Standard2aslMRIOutputTransform} \
-                    -r ${Inputasl}
+                    -r ${Inputasl}_CBF
 
 log_Msg 3 "Transforming ASL data into template space"
-$FSLDIR/bin/applywarp -i ${Inputasl} \
+$FSLDIR/bin/applywarp -i ${Inputasl}_CBF \
                       -r ${STD_template} \
                       -w ${WD}/${aslMRI2StandardOutputTransform} \
                       -o ${PVCFolder}/${NameOfaslMRI}2std

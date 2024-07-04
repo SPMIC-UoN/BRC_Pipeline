@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 12/07/2021
+# Last update: 04/07/2024
 
 # Authors: Stefan Pszczolkowski, Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -15,16 +15,21 @@ Usage()
 {
   echo " "
   echo " "
-  echo "`basename $0`: Description"
+  echo "`basename $0`: Process single-TI pseudo-continuous arterial spin labelling data (difference and calibration images)"
   echo " "
   echo "Usage: `basename $0`"
   echo "Compulsory arguments (You MUST set one or more of):"
-  echo " --input <path>                       full path of the filename of perfusion-weighted or CBF image"
+  echo " --input_pwi <path>                   full path of the filename of difference (perfusion-weighted) image"
+  echo " --input_m0 <path>                    full path of the filename of calibration (M0) image"
   echo " --path <path>                        output directory"
   echo " --subject <subject name>             output directory is a subject name folder in input image directory"
   echo " "
   echo "Optional arguments (You may optionally specify one or more of):"
-  echo " --pvcmethod <method>                 Partial volume correction method"
+  echo " --tr                                 Repetition time (TR) of calibration data (default 3.2 sec)"
+  echo " --ti                                 Inversion time (TI) of calibration data (default 3.0 sec)"
+  echo " --bolus                              Bolus (labelling) duration (default 1)"
+  echo " --cgain                              Relative gain between calibration and ASL image (default 1)"
+  echo " --pvcmethod <method>                 Partial volume correction method on quantified CBF map"
   echo "                                      Values: MLTS and NONE (default)"
   echo " --name <folder name>                 Output folder name of the functional analysis pipeline. Default: aslMRI"
   echo " --help                               help"
@@ -40,10 +45,16 @@ if [ $# -eq 0 ] ; then Usage; exit 0; fi
 log=`echo "$@"`
 
 # default values
+TR="3.2"
+TI="3"
+Bolus="1"
+Cgain="1"
 PartialVolumeCorrection="NONE"
 OutFolderName="aslMRI"
-dof=6
-superlevel=4
+dof="6"
+superlevel="4"
+PathOfaslMRI=
+PathOfM0aslMRI=
 
 opts_DefaultOpt()
 {
@@ -60,8 +71,28 @@ while [ "$1" != "" ]; do
                               Subject=$1
                               ;;
 
-      --input )               shift
+      --input_pwi )           shift
                               PathOfaslMRI=$1
+                              ;;
+
+      --input_m0 )            shift
+                              PathOfM0aslMRI=$1
+                              ;;
+
+      --tr )                  shift
+                              TR=$1
+                              ;;
+
+      --ti )                  shift
+                              TI=$1
+                              ;;
+
+      --bolus )               shift
+                              Bolus=$1
+                              ;;
+
+      --cgain )               shift
+                              Cgain=$1
                               ;;
 
       --pvcmethod )           shift
@@ -89,9 +120,16 @@ done
 ###                          Sanity checking of arguments
 #=====================================================================================
 
-if [ X$Path = X ] || [ X$Subject = X ] || [ X$PathOfaslMRI = X ] ; then
+if [ X$Path = X ] || [ X$Subject = X ] || [ X$PathOfaslMRI = X ] || [ X$PathOfM0aslMRI = X ] ; then
     echo ""
-    echo "All of the compulsory arguments --path, --subject and --input MUST be used"
+    echo "All of the compulsory arguments --path, --subject, --input_pwi and --input_m0 MUST be used"
+    echo ""
+    exit 1;
+fi
+
+if [[ "$PartialVolumeCorrection" != "NONE" ]] && [[ "$PartialVolumeCorrection" != "MLTS" ]]; then
+    echo ""
+    echo "Invalid partial volume correction method: $PartialVolumeCorrection. Valud values are MLTS and NONE"
     echo ""
     exit 1;
 fi
@@ -198,6 +236,7 @@ log_Msg 2 "Parsing Command Line Options"
 log_Msg 2 "Path: $Path"
 log_Msg 2 "Subject: $Subject"
 log_Msg 2 "PathOfaslMRI: $PathOfaslMRI"
+log_Msg 2 "PathOfM0aslMRI: $PathOfM0aslMRI"
 log_Msg 2 "PartialVolumeCorrection: $PartialVolumeCorrection"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -205,17 +244,14 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ###                                   DO WORK
 #=====================================================================================
 
-#if [ $CLUSTER_MODE = "YES" ] ; then
-#    module load fsl-img/5.0.11
-#fi
-
 log_Msg 3 "OutputDir is: ${aslMRIFolder}"
 
-$FSLDIR/bin/imcp ${PathOfaslMRI} ${aslMRIrawFolder}/${OrigASLName}
+$FSLDIR/bin/imcp ${PathOfaslMRI} ${aslMRIrawFolder}/${OrigASLName}_PWI.nii.gz
+$FSLDIR/bin/imcp ${PathOfM0aslMRI} ${aslMRIrawFolder}/${OrigASLName}_M0.nii.gz
 
 if [ $CLUSTER_MODE = "YES" ] ; then
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_PMRI_${Subject} -t 00:30:00 -m 60 -c "${BRC_PMRI_SCR}/aslMRI_preproc_part_1.sh --aslmrirawfolder=${aslMRIrawFolder} --origaslname=${OrigASLName} --nameofaslmri=${NameOfaslMRI} --sinchanfolder=${SinChanT1Folder} --pvcmethod=${PartialVolumeCorrection} --owarp=${aslMRI2strOutputTransform} --oinwarp=${str2aslMRIOutputTransform} --outasl2stdtrans=${aslMRI2StandardTransform} --outstd2asltrans=${Standard2aslMRITransform} --pvcfolder=${PVCFolder} --datat1folder=${dataT1Folder} --regfolder=${regFolder} --regt1folder=${regT1Folder} --preprocfolder=${preprocFolder} --processedfolder=${processedFolder} --dof=${dof} --superlevel=${superlevel} --subject=${Subject} --start=${Start_Time} --logfile=${logFolder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_PMRI_${Subject} -t 00:30:00 -m 60 -c "${BRC_PMRI_SCR}/aslMRI_preproc_part_1.sh --aslmrirawfolder=${aslMRIrawFolder} --origaslname=${OrigASLName} --nameofaslmri=${NameOfaslMRI} --sinchanfolder=${SinChanT1Folder} --pvcmethod=${PartialVolumeCorrection} --owarp=${aslMRI2strOutputTransform} --oinwarp=${str2aslMRIOutputTransform} --outasl2stdtrans=${aslMRI2StandardTransform} --outstd2asltrans=${Standard2aslMRITransform} --pvcfolder=${PVCFolder} --datat1folder=${dataT1Folder} --regfolder=${regFolder} --regt1folder=${regT1Folder} --preprocfolder=${preprocFolder} --processedfolder=${processedFolder} --tr=${TR} --ti=${TI} --bolus=${Bolus} --cgain=${Cgain} --dof=${dof} --superlevel=${superlevel} --subject=${Subject} --start=${Start_Time} --logfile=${logFolder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 
@@ -237,6 +273,10 @@ else
                     --regt1folder=${regT1Folder} \
                     --preprocfolder=${preprocFolder} \
                     --processedfolder=${processedFolder} \
+                    --tr=${TR} \
+                    --ti=${TI} \
+                    --bolus=${Bolus} \
+                    --cgain=${Cgain} \
                     --dof=${dof} \
                     --superlevel=${superlevel} \
                     --subject=${Subject} \

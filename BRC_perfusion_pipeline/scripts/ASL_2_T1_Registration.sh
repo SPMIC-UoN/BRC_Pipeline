@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 12/07/2021
+# Last update: 04/07/2024
 
 # Authors: Stefan Pszczolkowski, Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -49,6 +49,7 @@ log_Msg 3 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 log_Msg 2 "WD:$WD"
 log_Msg 2 "Inputasl:$Inputasl"
+log_Msg 2 "InputT1:$InputT1"
 log_Msg 2 "NameOfaslMRI:$NameOfaslMRI"
 log_Msg 2 "WMseg:$WMseg"
 log_Msg 2 "WMpve:$WMpve"
@@ -63,7 +64,7 @@ log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 log_Msg 3 "Registering ASL to bias corrected brain extracted T1"
-$FSLDIR/bin/flirt -in ${Inputasl} \
+$FSLDIR/bin/flirt -in ${Inputasl}_CBF \
                   -ref ${InputT1} \
                   -omat ${WD}/${aslMRI2strOutputTransform} \
 				  -wmseg ${WMseg} \
@@ -77,8 +78,8 @@ $FSLDIR/bin/convert_xfm -omat ${WD}/${str2aslMRIOutputTransform} \
 
 log_Msg 3 "Applying warp to structural grey matter partial volume estimation"
 $FSLDIR/bin/applywarp -i ${GMpve} \
-                      -r ${Inputasl} \
-                      -o ${WD}/T1_pve_GM_${NameOfaslMRI}.nii.gz \
+                      -r ${Inputasl}_CBF \
+                      -o ${WD}/T1_pve_GM_${NameOfaslMRI} \
                       --premat=${WD}/${str2aslMRIOutputTransform} \
                       --super \
                       --superlevel=${superlevel} \
@@ -86,8 +87,8 @@ $FSLDIR/bin/applywarp -i ${GMpve} \
 
 log_Msg 3 "Applying warp to structural white matter partial volume estimation"
 $FSLDIR/bin/applywarp -i ${WMpve} \
-                      -r ${Inputasl} \
-                      -o ${WD}/T1_pve_WM_${NameOfaslMRI}.nii.gz \
+                      -r ${Inputasl}_CBF \
+                      -o ${WD}/T1_pve_WM_${NameOfaslMRI} \
                       --premat=${WD}/${str2aslMRIOutputTransform} \
                       --super \
                       --superlevel=${superlevel} \

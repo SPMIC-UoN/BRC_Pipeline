@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 12/07/2021
+# Last update: 04/07/2024
 
 # Authors: Stefan Pszczolkowski, Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -31,6 +31,10 @@ SinChanT1Folder=`getopt1 "--sinchanfolder" $@`
 PartialVolumeCorrection=`getopt1 "--pvcmethod" $@`
 PVCFolder=`getopt1 "--pvcfolder" $@`
 dataT1Folder=`getopt1 "--datat1folder" $@`
+TR=`getopt1 "--tr" $@`
+TI=`getopt1 "--ti" $@`
+Bolus=`getopt1 "--bolus" $@`
+Cgain=`getopt1 "--cgain" $@`
 dof=`getopt1 "--dof" $@`
 superlevel=`getopt1 "--superlevel" $@`
 preprocFolder=`getopt1 "--preprocfolder" $@`
@@ -50,6 +54,15 @@ log_SetPath "${logFile}"
 #=====================================================================================
 ###                                   DO WORK
 #=====================================================================================
+
+log_Msg 3 "CBF quantification"
+${BRC_PMRI_SCR}/Image_Quantification.sh \
+              --inputasl=${aslMRIrawFolder}/${OrigASLName} \
+              --tr=${TR} \
+              --ti=${TI} \
+              --bolus=${Bolus} \
+              --cgain=${Cgain} \
+              --logfile=${logFile}
 
 log_Msg 3 "ASL to T1 registration"
 ${BRC_PMRI_SCR}/ASL_2_T1_Registration.sh \

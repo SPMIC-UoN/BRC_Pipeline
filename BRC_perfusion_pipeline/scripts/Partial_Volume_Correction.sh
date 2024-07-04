@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 09/06/2020
+# Last update: 04/07/2024
 
 # Authors: Stefan Pszczolkowski, Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -57,18 +57,20 @@ case $PartialVolumeCorrection in
         ;;
 
     MLTS)
+        if [ ${CLUSTER_MODE} = "YES" ] ; then
+            module load brcpython-img
+        else
+            module load brcpython
+        fi
+
         log_Msg 3 "Performing Modified Partial Least Squares partial volume correction"
         # perform PVC based on published algorithm (Liang et al, DOI: 10.1002/mrm.24279)
-        python ${BRC_PMRI_SCR}/mlts_partial_volume_correction.py --nifti-input ${Inputasl}.nii.gz \
+        python ${BRC_PMRI_SCR}/mlts_partial_volume_correction.py --nifti-input ${Inputasl}_CBF.nii.gz \
                                                                  --nifti-pve-gm ${regFolder}/T1_pve_GM_${NameOfaslMRI}.nii.gz \
                                                                  --nifti-pve-wm ${regFolder}/T1_pve_WM_${NameOfaslMRI}.nii.gz \
                                                                  --nifti-output-gm ${WD}/${NameOfaslMRI}_pvc_gm.nii.gz \
                                                                  --nifti-output-wm ${WD}/${NameOfaslMRI}_pvc_wm.nii.gz
          ;;
-
-    *)
-        log_Msg 3 "UNKNOWN PARTIAL VOLUME CORRECTION METHOD: ${PartialVolumeCorrection}"
-        exit 1
 esac
 
 log_Msg 3 ""

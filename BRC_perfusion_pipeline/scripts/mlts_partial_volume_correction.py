@@ -110,11 +110,11 @@ if __name__ == '__main__':
             sys.stderr.write('\nError: All input images have to be in the same space.\n\n')
             sys.exit()
 
-    img_data = nii_img.get_data()
+    img_data = nii_img.get_fdata()
 
     img_size = img_data.shape
-    pve_gm_data = nii_pve_gm.get_data().reshape(img_size)
-    pve_wm_data = nii_pve_wm.get_data().reshape(img_size)
+    pve_gm_data = nii_pve_gm.get_fdata().reshape(img_size)
+    pve_wm_data = nii_pve_wm.get_fdata().reshape(img_size)
 
     kernel_radius = int((kernel_size - 1) / 2)
 
