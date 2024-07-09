@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 04/07/2024
+# Last update: 09/07/2024
 
 # Authors: Stefan Pszczolkowski, Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -65,11 +65,20 @@ case $PartialVolumeCorrection in
 
         log_Msg 3 "Performing Modified Partial Least Squares partial volume correction"
         # perform PVC based on published algorithm (Liang et al, DOI: 10.1002/mrm.24279)
-        python ${BRC_PMRI_SCR}/mlts_partial_volume_correction.py --nifti-input ${Inputasl}_CBF.nii.gz \
-                                                                 --nifti-pve-gm ${regFolder}/T1_pve_GM_${NameOfaslMRI}.nii.gz \
-                                                                 --nifti-pve-wm ${regFolder}/T1_pve_WM_${NameOfaslMRI}.nii.gz \
-                                                                 --nifti-output-gm ${WD}/${NameOfaslMRI}_pvc_gm.nii.gz \
-                                                                 --nifti-output-wm ${WD}/${NameOfaslMRI}_pvc_wm.nii.gz
+
+        if [ $FSLOUTPUTTYPE = "NIFTI" ] ; then
+            python ${BRC_PMRI_SCR}/mlts_partial_volume_correction.py --nifti-input ${Inputasl}_CBF.nii \
+                                                                    --nifti-pve-gm ${regFolder}/T1_pve_GM_${NameOfaslMRI}.nii \
+                                                                    --nifti-pve-wm ${regFolder}/T1_pve_WM_${NameOfaslMRI}.nii \
+                                                                    --nifti-output-gm ${WD}/${NameOfaslMRI}_pvc_gm.nii \
+                                                                    --nifti-output-wm ${WD}/${NameOfaslMRI}_pvc_wm.nii
+        elif [ $FSLOUTPUTTYPE = "NIFTI_GZ" ] ; then
+            python ${BRC_PMRI_SCR}/mlts_partial_volume_correction.py --nifti-input ${Inputasl}_CBF.nii.gz \
+                                                                    --nifti-pve-gm ${regFolder}/T1_pve_GM_${NameOfaslMRI}.nii.gz \
+                                                                    --nifti-pve-wm ${regFolder}/T1_pve_WM_${NameOfaslMRI}.nii.gz \
+                                                                    --nifti-output-gm ${WD}/${NameOfaslMRI}_pvc_gm.nii.gz \
+                                                                    --nifti-output-wm ${WD}/${NameOfaslMRI}_pvc_wm.nii.gz
+        fi
          ;;
 esac
 
@@ -78,3 +87,4 @@ log_Msg 3 "                    END: Partial Volume Correction"
 log_Msg 3 "                    END: `date`"
 log_Msg 3 "=========================================================================="
 log_Msg 3 "                             ===============                              "
+

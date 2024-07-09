@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 04/07/2024
+# Last update: 09/07/2024
 
 # Authors: Stefan Pszczolkowski, Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -127,9 +127,20 @@ if [ X$Path = X ] || [ X$Subject = X ] || [ X$PathOfaslMRI = X ] || [ X$PathOfM0
     exit 1;
 fi
 
-if [[ "$PartialVolumeCorrection" != "NONE" ]] && [[ "$PartialVolumeCorrection" != "MLTS" ]]; then
+if [ ! $PartialVolumeCorrection = "NONE" ] && [ ! $PartialVolumeCorrection = "MLTS" ] ; then
     echo ""
-    echo "Invalid partial volume correction method: $PartialVolumeCorrection. Valud values are MLTS and NONE"
+    echo "Invalid partial volume correction method: $PartialVolumeCorrection. Valid values are MLTS and NONE"
+    echo ""
+    exit 1;
+fi
+
+#=====================================================================================
+###                          Sanity checking of filetype
+#=====================================================================================
+
+if [ ! $FSLOUTPUTTYPE = "NIFTI" ] && [ ! $FSLOUTPUTTYPE = "NIFTI_GZ" ] ; then
+    echo ""
+    echo "This pipeline only works with Nifti files. Please set-up FSL's FSLOUTPUTTYPE environment varialbe to 'NIFTI' or 'NIfTI_GZ' before running (currently '$FSLOUTPUTTYPE')"
     echo ""
     exit 1;
 fi
