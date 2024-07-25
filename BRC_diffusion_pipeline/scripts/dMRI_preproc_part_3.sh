@@ -36,6 +36,7 @@ do_WMTI=`getopt1 "--dowmti" $@`
 do_FWDTI=`getopt1 "--dofwdti" $@`
 b0maxbval=`getopt1 "--b0maxbval" $@`
 DTIMaxShell=`getopt1 "--dtimaxshell" $@`
+skip_preproc=`getopt1 "--skip_preproc" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 #=====================================================================================
@@ -55,4 +56,5 @@ ${BRC_DMRI_SCR}/eddy_postproc.sh \
       --dofwdti=${do_FWDTI} \
       --b0maxbval=${b0maxbval} \
       --dtimaxshell=${DTIMaxShell} \
+      --skip_preproc=${skip_preproc} \
       --logfile=${LogFile}

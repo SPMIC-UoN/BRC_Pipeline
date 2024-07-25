@@ -33,6 +33,7 @@ Slice2Volume=`getopt1 "--slice2vol" $@`
 SliceSpec=`getopt1 "--slspec" $@`
 MoveBySusceptibility=`getopt1 "--movebysuscept" $@`
 HIRES=`getopt1 "--hires" $@`
+skip_preproc=`getopt1 "--skip_preproc" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 #=====================================================================================
@@ -49,4 +50,5 @@ ${BRC_DMRI_SCR}/run_eddy.sh \
       --slspec=${SliceSpec} \
       --movebysuscept=${MoveBySusceptibility} \
       --hires=${HIRES} \
+      --skip_preproc=${skip_preproc} \
       --logfile=${LogFile}

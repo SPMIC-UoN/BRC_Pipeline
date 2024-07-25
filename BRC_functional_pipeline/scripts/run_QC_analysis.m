@@ -52,6 +52,6 @@ DVARSreg(Idx+1) = 1;
 dlmwrite(strcat(work_dir , '/Idx.txt') , Idx , 'delimiter' , ' ' , 'precision' , '%4d');
 dlmwrite(strcat(work_dir , '/DVARSreg.txt') , DVARSreg , 'delimiter' , ' ' , 'precision' , '%4d');
 
-f_hdl=figure('visible', 'off' , 'position' , [10 , 10 , 1600 , 2400]);
-fMRIDiag_plot(V , DVARS_Stat , 'BOLD' , Y , 'FD' , FDts , 'AbsMov' , [FD_Stat.AbsRot FD_Stat.AbsTrans] , 'figure' , f_hdl)
-print(strcat(work_dir , '/movemen_parameters.png') , '-dpng' , '-r300');
+%f_hdl=figure('visible', 'off' , 'position' , [10 , 10 , 1600 , 2400]);
+%fMRIDiag_plot(V , DVARS_Stat , 'BOLD' , Y , 'FD' , FDts , 'AbsMov' , [FD_Stat.AbsRot FD_Stat.AbsTrans] , 'figure' , f_hdl)
+%print(strcat(work_dir , '/movemen_parameters.png') , '-dpng' , '-r300');

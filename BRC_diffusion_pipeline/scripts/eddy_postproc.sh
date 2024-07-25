@@ -35,6 +35,7 @@ do_WMTI=`getopt1 "--dowmti" $@`
 do_FWDTI=`getopt1 "--dofwdti" $@`
 b0maxbval=`getopt1 "--b0maxbval" $@`
 DTIMaxShell=`getopt1 "--dtimaxshell" $@`
+skip_preproc=`getopt1 "--skip_preproc" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -58,52 +59,57 @@ log_Msg 2 "do_WMTI:$do_WMTI"
 log_Msg 2 "do_FWDTI:$do_FWDTI"
 log_Msg 2 "b0maxbval:$b0maxbval"
 log_Msg 2 "DTIMaxShell:$DTIMaxShell"
+log_Msg 2 "skip_preproc:$skip_preproc"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 log_Msg 3 `date`
 
-if [ ${CombineMatchedFlag} -eq 2 ]; then
-    ${FSLDIR}/bin/imcp  ${eddydir}/eddy_unwarped_images ${datadir}/data
+if [[ ${skip_preproc} == "no" ]]; then
 
-    if [ $Apply_Topup = yes ] ; then
-        cp ${eddydir}/Pos_Neg.bvals ${datadir}/bvals
-        cp ${eddydir}/Pos_Neg.bvecs ${datadir}/bvecs
+    if [ ${CombineMatchedFlag} -eq 2 ]; then
+        ${FSLDIR}/bin/imcp  ${eddydir}/eddy_unwarped_images ${datadir}/data
+
+        if [ $Apply_Topup = yes ] ; then
+            cp ${eddydir}/Pos_Neg.bvals ${datadir}/bvals
+            cp ${eddydir}/Pos_Neg.bvecs ${datadir}/bvecs
+        else
+            cp ${eddydir}/Pos.bval ${datadir}/bvals
+            cp ${eddydir}/Pos.bvec ${datadir}/bvecs
+        fi
+
     else
-        cp ${eddydir}/Pos.bval ${datadir}/bvals
-        cp ${eddydir}/Pos.bvec ${datadir}/bvecs
+        PosVols=`wc ${eddydir}/Pos.bval | awk {'print $2'}`
+        ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Pos 0 ${PosVols}
+
+        if [ $Apply_Topup = yes ] ; then
+            NegVols=`wc ${eddydir}/Neg.bval | awk {'print $2'}`    #Split Pos and Neg Volumes
+            ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Neg ${PosVols} ${NegVols}
+        else
+            NegVols=$PosVols
+            ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Neg $((${PosVols} - 1)) 1
+
+            touch ${eddydir}/Neg.bval
+            touch ${eddydir}/Neg.bvec
+        fi
+
+        ${BRC_DMRI_SCR}/eddy_combine.sh ${eddydir}/eddy_unwarped_Pos ${eddydir}/Pos.bval ${eddydir}/Pos.bvec ${eddydir}/Pos_SeriesVolNum.txt \
+                                        ${eddydir}/eddy_unwarped_Neg ${eddydir}/Neg.bval ${eddydir}/Neg.bvec ${eddydir}/Neg_SeriesVolNum.txt ${datadir} ${CombineMatchedFlag}
+
+        ${FSLDIR}/bin/imrm ${eddydir}/eddy_unwarped_Neg
+        ${FSLDIR}/bin/imrm ${eddydir}/eddy_unwarped_Pos
     fi
 
-else
-    PosVols=`wc ${eddydir}/Pos.bval | awk {'print $2'}`
-    ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Pos 0 ${PosVols}
-
-    if [ $Apply_Topup = yes ] ; then
-        NegVols=`wc ${eddydir}/Neg.bval | awk {'print $2'}`    #Split Pos and Neg Volumes
-        ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Neg ${PosVols} ${NegVols}
+    #Remove negative intensity values (caused by spline interpolation) from final data
+    ${FSLDIR}/bin/fslmaths ${datadir}/data -thr 0 ${datadir}/data
+    if [ $HIRES = "yes" ] ; then
+        ${FSLDIR}/bin/bet ${datadir}/data ${datadir}/nodif_brain -m -f 0.15
     else
-        NegVols=$PosVols
-        ${FSLDIR}/bin/fslroi ${eddydir}/eddy_unwarped_images ${eddydir}/eddy_unwarped_Neg $((${PosVols} - 1)) 1
-
-        touch ${eddydir}/Neg.bval
-        touch ${eddydir}/Neg.bvec
+        ${FSLDIR}/bin/bet ${datadir}/data ${datadir}/nodif_brain -m -f 0.20
     fi
+    ${FSLDIR}/bin/fslroi ${datadir}/data ${datadir}/nodif 0 1
 
-    ${BRC_DMRI_SCR}/eddy_combine.sh ${eddydir}/eddy_unwarped_Pos ${eddydir}/Pos.bval ${eddydir}/Pos.bvec ${eddydir}/Pos_SeriesVolNum.txt \
-                                    ${eddydir}/eddy_unwarped_Neg ${eddydir}/Neg.bval ${eddydir}/Neg.bvec ${eddydir}/Neg_SeriesVolNum.txt ${datadir} ${CombineMatchedFlag}
-
-    ${FSLDIR}/bin/imrm ${eddydir}/eddy_unwarped_Neg
-    ${FSLDIR}/bin/imrm ${eddydir}/eddy_unwarped_Pos
 fi
-
-#Remove negative intensity values (caused by spline interpolation) from final data
-${FSLDIR}/bin/fslmaths ${datadir}/data -thr 0 ${datadir}/data
-if [ $HIRES = "yes" ] ; then
-    ${FSLDIR}/bin/bet ${datadir}/data ${datadir}/nodif_brain -m -f 0.15
-else
-    ${FSLDIR}/bin/bet ${datadir}/data ${datadir}/nodif_brain -m -f 0.20
-fi
-${FSLDIR}/bin/fslroi ${datadir}/data ${datadir}/nodif 0 1
 
 if [[ $do_DKI == "yes" ]] || [[ ${do_WMTI} == "yes" ]] || [[ ${do_FWDTI} == "yes" ]]; then
 
@@ -197,14 +203,16 @@ else
 fi
 
 #Cleaning up unnecessary files
-rm -rf ${workingdir}/raw
+if [[ ${skip_preproc} == "no" ]]; then
+    rm -rf ${workingdir}/raw
 
-if [ $Apply_Topup = yes ] ; then
-    ${FSLDIR}/bin/imrm ${eddydir}/Pos_Neg
-else
-    ${FSLDIR}/bin/imrm ${eddydir}/Pos
+    if [ $Apply_Topup = yes ] ; then
+        ${FSLDIR}/bin/imrm ${eddydir}/Pos_Neg
+    else
+        ${FSLDIR}/bin/imrm ${eddydir}/Pos
+    fi
+    #${FSLDIR}/bin/imrm ${eddydir}/eddy_unwarped_images
 fi
-#${FSLDIR}/bin/imrm ${eddydir}/eddy_unwarped_images
 
 log_Msg 3 ""
 log_Msg 3 "                        END: Eddy Post-processing"

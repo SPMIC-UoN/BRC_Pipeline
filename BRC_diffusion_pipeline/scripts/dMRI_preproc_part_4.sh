@@ -41,8 +41,10 @@ do_TBSS=`getopt1 "--dotbss" $@`
 dMRIFolder=`getopt1 "--workingdir" $@`
 tbssFolder=`getopt1 "--tbssfolder" $@`
 do_NODDI=`getopt1 "--donoddi" $@`
+do_ALPS=`getopt1 "--doalps" $@`
 Start_Time=`getopt1 "--start" $@`
 Subject=`getopt1 "--subject" $@`
+SliceSpec=`getopt1 "--slspec" $@`
 
 LogFile=`getopt1 "--logfile" $@`
 
@@ -85,6 +87,18 @@ if [[ $do_TBSS == "yes" ]]; then
 
 fi
 
+if [[ $do_ALPS == "yes" ]]; then
+
+    ${BRC_DMRI_SCR}/run_alps.sh \
+        --datafolder=${dataFolder} \
+        --t1=${T1wImage} \
+        --regfolder=${regFolder} \
+        --regt1folder=${regT1Folder} \
+        --subject=${Subject} \
+        --slspec=${SliceSpec} \
+        --logfile=${LogFile}
+
+fi
 
 END_Time="$(date -u +%s)"
 
