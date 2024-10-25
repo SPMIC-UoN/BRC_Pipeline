@@ -41,6 +41,7 @@ do_DKI=`getopt1 "--dodki" $@`
 do_WMTI=`getopt1 "--dowmti" $@`
 do_FWDTI=`getopt1 "--dofwdti" $@`
 do_MPPCA=`getopt1 "--domppca" $@`
+do_UNRING=`getopt1 "--dounring" $@`
 USE_TOPUP_PATH=`getopt1 "--usetopuppath" $@`
 LogFile=`getopt1 "--logfile" $@`
 
@@ -74,6 +75,7 @@ ${BRC_DMRI_SCR}/basic_preproc.sh \
               --pifactor=${PIFactor} \
               --applytopup=${Apply_Topup} \
               --domppca=${do_MPPCA} \
+              --dounring=${do_UNRING} \
               --logfile=${LogFile}
 
 if [ ${Apply_Topup} = yes ] ; then
