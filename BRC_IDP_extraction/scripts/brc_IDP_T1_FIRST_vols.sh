@@ -23,6 +23,7 @@ shapeFolderName="shape"
 origDir=`pwd`
 scriptName=`basename "$0"`
 direc=$1
+IDP_folder_name=$2
 
 T1wSubjFolder=${direc}/${AnalysisFolderName}/${AnatMRIFolderName}/${T1FolderName}
 
@@ -38,5 +39,5 @@ if [ -f ${filename} ] ; then
     result=`${FSLDIR}/bin/fslstats ${filename} -H 58 0.5 58.5 | sed 's/\.000000//g' | awk 'BEGIN { ORS = " " } { print }'| awk '{print $10 " " $49 " " $11 " " $50 " " $12 " " $51 " " $13 " " $52 " " $17 " " $53 " " $18 " " $54 " " $26 " " $58 " " $16 }' `
 fi
 
-echo $result > ${direc}/${AnalysisFolderName}/IDP_files/${scriptName%.*}.txt
+echo $result > ${direc}/${AnalysisFolderName}/${IDP_folder_name}/${scriptName%.*}.txt
 echo $result

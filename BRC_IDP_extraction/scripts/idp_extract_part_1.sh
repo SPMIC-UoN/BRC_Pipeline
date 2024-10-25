@@ -52,7 +52,7 @@ for Subject in $(cat ${ListFolder}/${SubjectList_name}) ; do
         if [ -f ${IDPFolder}/${elem}.txt ] ; then
             result="$result `cat ${IDPFolder}/${elem}.txt`"
         else
-            result="$result `${BRC_IDPEXTRACT_SCR}/${elem}.sh ${InputDIR}/${Subject}`"
+            result="$result `${BRC_IDPEXTRACT_SCR}/${elem}.sh ${InputDIR}/${Subject} ${IDP_folder_name}`"
         fi
     done
 

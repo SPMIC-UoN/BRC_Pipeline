@@ -20,6 +20,7 @@ tbssFolderName="tbss"
 origDir=`pwd`
 scriptName=`basename "$0"`
 direc=$1
+IDP_folder_name=$2
 
 dMRIFolder=${direc}/${AnalysisFolderName}/${dMRIFolderName}
 TBSSFolder=${dMRIFolder}/${preprocessFolderName}/${tbssFolderName}
@@ -50,9 +51,5 @@ for i in FA MD MO L1 L2 L3 ICVF ISOVF ODI ; do
     result="$result $miniResult"
 done
 
-#mkdir -p IDP_files
-
-echo $result > ${direc}/${AnalysisFolderName}/IDP_files/${scriptName%.*}.txt
+echo $result > ${direc}/${AnalysisFolderName}/${IDP_folder_name}/${scriptName%.*}.txt
 echo $result
-
-#cd $origDir

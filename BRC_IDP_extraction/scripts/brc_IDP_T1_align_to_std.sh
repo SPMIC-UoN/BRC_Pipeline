@@ -25,16 +25,14 @@ regFolderName="reg"
 ST=$FSLDIR/data/standard
 MC=$FSLDIR/etc/flirtsch/measurecost1.sch
 
-origDir=`pwd`
 scriptName=`basename "$0"`
 direc=$1
+IDP_folder_name=$2
 
 T1wSubjFolder=${direc}/${AnalysisFolderName}/${AnatMRIFolderName}/${T1FolderName}
 DataSubjFolder=${T1wSubjFolder}/${processedFolderName}/${dataFolderName}
 RegSubjFolder=${T1wSubjFolder}/${preprocFolderName}/${regFolderName}
 Data2StdSubjFolder=${T1wSubjFolder}/${processedFolderName}/${data2stdFolderName}
-
-baseT1="T1"
 
 result1="NaN"
 result2="NaN"
@@ -56,5 +54,5 @@ fi
 
 result="$result1 $result2 $result3"
 
-echo $result > ${direc}/${AnalysisFolderName}/IDP_files/${scriptName%.*}.txt
+echo $result > ${direc}/${AnalysisFolderName}/${IDP_folder_name}/${scriptName%.*}.txt
 echo $result

@@ -23,6 +23,7 @@ regFolderName="reg"
 origDir=`pwd`
 scriptName=`basename "$0"`
 direc=$1
+IDP_folder_name=$2
 
 T1wSubjFolder=${direc}/${AnalysisFolderName}/${AnatMRIFolderName}/${T1FolderName}
 
@@ -43,7 +44,7 @@ if [ -f ${filename1} ] ; then
     fi
 fi
 
-echo $result > ${direc}/${AnalysisFolderName}/IDP_files/${scriptName%.*}.txt
+echo $result > ${direc}/${AnalysisFolderName}/${IDP_folder_name}/${scriptName%.*}.txt
 echo $result
 
 ################################################################################################

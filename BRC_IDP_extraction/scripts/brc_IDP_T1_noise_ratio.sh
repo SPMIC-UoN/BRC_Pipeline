@@ -22,6 +22,7 @@ dataFolderName="data"
 origDir=`pwd`
 scriptName=`basename "$0"`
 direc=$1
+IDP_folder_name=$2
 
 T1wSubjFolder=${direc}/${AnalysisFolderName}/${AnatMRIFolderName}/${T1FolderName}
 DataSubjFolder=${T1wSubjFolder}/${processedFolderName}/${dataFolderName}
@@ -49,5 +50,5 @@ if [ -f ${FastSubjFolder}/T1_pveseg.nii.gz ] ; then
     result="${TheSNRrecip} ${TheCNRrecip}"
 fi
 
-echo $result > ${direc}/${AnalysisFolderName}/IDP_files/${scriptName%.*}.txt
+echo $result > ${direc}/${AnalysisFolderName}/${IDP_folder_name}/${scriptName%.*}.txt
 echo $result
