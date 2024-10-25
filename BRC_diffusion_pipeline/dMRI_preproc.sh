@@ -74,6 +74,7 @@ Usage()
   echo "                                      NOTE: requires multi-shell data."
   echo " --alps                          Turn on steps that computes the diffusion along perivascular spaces (ALPS) metric."
   echo " --mppca                         Perform denoising using Marcenko-Pastur PCA. Default: No denoising"
+  echo " --unring                        Remove Gibbs ringing artefacts from MRI images using MRTrix. Default: No unringing"
   echo " --use_topup <path>              If one wants to skip the TOPUP step of the pipeline and use the previously prepared folder. Please provide absolute path."
   echo " --help                          help"
   echo " "
@@ -107,6 +108,7 @@ do_DKI="no"
 do_WMTI="no"
 do_FWDTI="no"
 do_MPPCA="no"
+do_UNRING="no"
 do_ALPS="no"
 Apply_Topup="yes"
 dof=6
@@ -194,6 +196,9 @@ while [ "$1" != "" ]; do
                                 ;;
 
         --mppca )           	do_MPPCA="yes"
+                                ;;
+
+        --unring )           	do_UNRING="yes"
                                 ;;
 
         --use_topup )           shift
@@ -386,6 +391,7 @@ log_Msg 2 "do_DKI: $do_DKI"
 log_Msg 2 "do_WMTI: $do_WMTI"
 log_Msg 2 "do_ALPS: $do_ALPS"
 log_Msg 2 "do_MPPCA: $do_MPPCA"
+log_Msg 2 "do_UNRING: $do_UNRING"
 log_Msg 2 "Slice2Volume: $Slice2Volume"
 log_Msg 2 "SliceSpec: $SliceSpec"
 log_Msg 2 "echospacing: $echospacing"
@@ -415,11 +421,11 @@ if [ $CLUSTER_MODE = "YES" ] ; then
         MEM_3=60
         MEM_4=100
     else
-        TIME_LIMIT_1=01:40:00
+        TIME_LIMIT_1=03:00:00
         TIME_LIMIT_2=06:00:00
-        TIME_LIMIT_3=03:00:00
-        TIME_LIMIT_4=03:00:00
-        MEM_1=20
+        TIME_LIMIT_3=04:00:00
+        TIME_LIMIT_4=04:00:00
+        MEM_1=30
         MEM_2=60
         MEM_3=20
         MEM_4=20
@@ -427,11 +433,11 @@ if [ $CLUSTER_MODE = "YES" ] ; then
 
     if [[ ${skip_preproc} == "no" ]]; then
 
-        jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_dMRI_${Subject} -t ${TIME_LIMIT_1} -m ${MEM_1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh --dmrirawfolder=${dMRIrawFolder} --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --inputimage=${InputImages} --inputimage2=${InputImages2} --pedirection=${PEdir} --applytopup=${Apply_Topup} --echospacing=${echospacing} --b0dist=${b0dist} --b0maxbval=${b0maxbval} --pifactor=${PIFactor} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --domppca=${do_MPPCA} --usetopuppath=${USE_TOPUP_PATH} --logfile=${logFolder}/${log_Name}" &`
+        jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_dMRI_${Subject} -t ${TIME_LIMIT_1} -m ${MEM_1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh --dmrirawfolder=${dMRIrawFolder} --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --inputimage=${InputImages} --inputimage2=${InputImages2} --pedirection=${PEdir} --applytopup=${Apply_Topup} --echospacing=${echospacing} --b0dist=${b0dist} --b0maxbval=${b0maxbval} --pifactor=${PIFactor} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --domppca=${do_MPPCA} --dounring=${do_UNRING} --usetopuppath=${USE_TOPUP_PATH} --logfile=${logFolder}/${log_Name}" &`
         jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
         echo "jobID_1: ${jobID1}"
 
-        jobID2=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_2_dMRI_${Subject} -t ${TIME_LIMIT_2} -m ${MEM_2} -w ${jobID1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_2.sh --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --applytopup=${Apply_Topup} --doqc=${do_QC} --qcdir=${qcFolder} --slice2vol=${Slice2Volume} --slspec=${SliceSpec} --movebysuscept=${MoveBySusceptibility} --hires=${HIRES} --logfile=${logFolder}/${log_Name}" &`
+        jobID2=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_2_dMRI_${Subject} -t ${TIME_LIMIT_2} -m ${MEM_2} -w ${jobID1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_2.sh --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --applytopup=${Apply_Topup} --doqc=${do_QC} --qcdir=${qcFolder} --slice2vol=${Slice2Volume} --slspec=${SliceSpec} --movebysuscept=${MoveBySusceptibility} --hires=${HIRES} --skip_preproc=${skip_preproc} --logfile=${logFolder}/${log_Name}" &`
         jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
         echo "jobID_2: ${jobID2}"
 
@@ -473,6 +479,7 @@ else
                         --dowmti=${do_WMTI} \
                         --dofwdti=${do_FWDTI} \
                         --domppca=${do_MPPCA} \
+                        --dounring=${do_UNRING} \
                         --usetopuppath=${USE_TOPUP_PATH} \
                         --logfile=${logFolder}/${log_Name}
 
