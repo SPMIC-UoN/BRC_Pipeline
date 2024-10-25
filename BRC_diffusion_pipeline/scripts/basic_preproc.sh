@@ -38,6 +38,7 @@ b0maxbval=`getopt1 "--b0maxbval" $@`
 GRAPPA=`getopt1 "--pifactor" $@`
 Apply_Topup=`getopt1 "--applytopup" $@`
 do_MPPCA=`getopt1 "--domppca" $@`
+do_UNRING=`getopt1 "--dounring" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -59,6 +60,7 @@ log_Msg 2 "b0maxbval:$b0maxbval"
 log_Msg 2 "GRAPPA:$GRAPPA"
 log_Msg 2 "Apply_Topup:$Apply_Topup"
 log_Msg 2 "do_MPPCA:$do_MPPCA"
+log_Msg 2 "do_UNRING:$do_UNRING"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -123,6 +125,30 @@ if [[ ${do_MPPCA} == "yes" ]]; then
 
     $FSLDIR/bin/imrm ${rawdir}/data
     $FSLDIR/bin/imrm ${rawdir}/data_denoised
+fi
+
+################################################################################################
+## Unringing
+################################################################################################
+
+if [[ ${do_UNRING} == "yes" ]]; then
+
+    log_Msg 3 "Unringing ..."
+
+    for entry in ${Files}  #For each series, get the mean b0 and rescale to match the first series baseline
+    do
+        basename=`imglob ${entry}`
+        echo ${basename}
+
+        mrdegibbs "${basename}.nii.gz" "${basename}_unring.nii.gz"
+
+        # $FSLDIR/bin/fslchfiletype ${basename}_unring.nii.gz ${basename}_unring.nii.gz
+        $FSLDIR/bin/imrm  "${basename}.nii.gz"
+        $FSLDIR/bin/immv  "${basename}_unring.nii.gz" "${basename}.nii.gz"
+        $FSLDIR/bin/imrm  "${basename}_unring.nii.gz"
+
+    done
+
 fi
 
 ################################################################################################
