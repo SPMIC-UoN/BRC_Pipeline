@@ -113,13 +113,6 @@ if [ $RegType == 2 ]; then
                         --iout=${WD}/T1_tmp4.nii.gz \
                         --interp=spline
 
-#    printf "2" > ${LogFile%/*}/RegType.txt
-
-#    log_Msg 3 `date`
-#    log_Msg 3 "Combine the transformations into one and then apply it."
-#    ${FSLDIR}/bin/convertwarp --ref=$FSLDIR/data/standard/MNI152_T1_1mm --premat=${WD}/T1_orig_ud_to_T1.mat --warp1=${WD}/T1_to_MNI_nonlin_field --out=${WD}/T1_orig_to_MNI_warp
-#    ${FSLDIR}/bin/applywarp --rel -i ${T1input} -r $FSLDIR/data/standard/MNI152_T1_1mm -w ${WD}/T1_orig_to_MNI_warp -o ${WD}/T1_brain_to_MNI --interp=spline
-
 elif [ $RegType == 3 ]; then
 
     log_Msg 3 `date`
@@ -272,12 +265,6 @@ fi
 # Remove negative intensity values (from eddy) from final data
 ${FSLDIR}/bin/fslmaths ${regTempT1Folder}/T1_to_MNI_linear -thr 0 ${regTempT1Folder}/T1_to_MNI_linear
 ${FSLDIR}/bin/fslmaths ${regTempT1Folder}/T1_brain_to_MNI_linear -thr 0 ${regTempT1Folder}/T1_brain_to_MNI_linear
-
-#args=""
-#if [ $RegType == 2 ] ; then
-#    args=" --rel"
-#fi
-#args=" --rel"
 
 if [ $RegType == 2 ] || [ $RegType == 3 ] ; then
 

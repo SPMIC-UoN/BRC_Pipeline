@@ -251,14 +251,46 @@ if [[ $T2_exist == yes ]]; then
 
         $FSLDIR/bin/fast -o ${MultiChanFolder}/FAST -g -N -S 2 ${dataT1folder}/T1_brain  ${dataT2Folder}/T2_brain
 
-        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pve_0  ${MultChanFolder}/T1_pve_CSF
-        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pve_1  ${MultChanFolder}/T1_pve_WM
-        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pve_2  ${MultChanFolder}/T1_pve_GM
-        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pveseg  ${MultChanFolder}/T1_pveseg
-        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg_0  ${MultChanFolder}/T1_CSF_mask
-        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg_1  ${MultChanFolder}/T1_WM_mask
-        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg_2  ${MultChanFolder}/T1_GM_mask
-        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg  ${MultChanFolder}/T1_seg
+        # Compute mean intensity for each partial volume estimate
+        mean0=$($FSLDIR/bin/fslstats ${MultiChanFolder}/FAST_pve_0 -M)
+        mean1=$($FSLDIR/bin/fslstats ${MultiChanFolder}/FAST_pve_1 -M)
+        mean2=$($FSLDIR/bin/fslstats ${MultiChanFolder}/FAST_pve_2 -M)
+
+        # Identify CSF, GM, WM based on expected intensity characteristics
+        # CSF usually has lowest intensity, GM medium, WM highest in T1
+
+        # Sort the means and assign labels. Create an array of means
+        means=($mean0 $mean1 $mean2)
+
+        # Find indices of sorted order
+        sorted=($(printf "%s\n" "${means[@]}" | awk '{ print $1, NR-1 }' | sort -n | awk '{ print $2 }'))
+
+        csf_idx=${sorted[0]}
+        gm_idx=${sorted[1]}
+        wm_idx=${sorted[2]}
+
+        # Rename the pve files
+        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pve_${csf_idx} ${MultChanFolder}/T1_pve_CSF
+        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pve_${gm_idx} ${MultChanFolder}/T1_pve_GM
+        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pve_${wm_idx} ${MultChanFolder}/T1_pve_WM
+
+        # Rename the seg masks
+        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg_${csf_idx} ${MultChanFolder}/T1_CSF_mask
+        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg_${gm_idx} ${MultChanFolder}/T1_GM_mask
+        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg_${wm_idx} ${MultChanFolder}/T1_WM_mask
+
+        # Rename the segmentation summary
+        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pveseg ${MultChanFolder}/T1_pveseg
+        $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg ${MultChanFolder}/T1_seg
+
+        # $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pve_0  ${MultChanFolder}/T1_pve_CSF
+        # $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pve_1  ${MultChanFolder}/T1_pve_WM
+        # $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pve_2  ${MultChanFolder}/T1_pve_GM
+        # $FSLDIR/bin/immv ${MultiChanFolder}/FAST_pveseg  ${MultChanFolder}/T1_pveseg
+        # $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg_0  ${MultChanFolder}/T1_CSF_mask
+        # $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg_1  ${MultChanFolder}/T1_WM_mask
+        # $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg_2  ${MultChanFolder}/T1_GM_mask
+        # $FSLDIR/bin/immv ${MultiChanFolder}/FAST_seg  ${MultChanFolder}/T1_seg
 
     fi
 
@@ -269,7 +301,7 @@ if [[ $T2_exist == yes ]]; then
     mv ${BiancaTempFolder}/*  ${BiancaT2Folder}/
     ${FSLDIR}/bin/imrm ${BiancaT2Folder}/T1_*
     ${FSLDIR}/bin/imrm ${BiancaT2Folder}/bianca_*
-    ${FSLDIR}/bin/imrm ${BiancaT2Folder}/final_*
+    # ${FSLDIR}/bin/imrm ${BiancaT2Folder}/final_*
     rm ${BiancaT2Folder}/conf_*
 
 fi
