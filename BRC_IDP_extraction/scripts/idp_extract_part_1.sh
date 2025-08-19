@@ -56,12 +56,18 @@ for Subject in $(cat ${ListFolder}/${SubjectList_name}) ; do
         fi
     done
 
+    # Run Python script to get FreeSurfer IDPs and append to result
+    fs_result=$(${BRC_IDPEXTRACT_SCR}/brc_FS_get_IDPs.py ${InputDIR} ${Subject} ${IDP_folder_name})
+    result="$result $fs_result"
+
     result=`echo $result | sed 's/  / /g'`
 
     echo $result > ${IDPFolder}/IDPs.txt
     echo $result
-
     echo $result >> ${GroupIDPFolder}/IDPs.txt
+
+    # # Call the new Python script (additional functionality)
+    # ${BRC_IDPEXTRACT_SCR}/brc_FS_get_IDPs.py ${InputDIR}/${Subject} ${Subject} ${IDP_folder_name}
 
 done
 
