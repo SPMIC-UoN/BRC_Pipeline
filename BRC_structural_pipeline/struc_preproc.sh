@@ -439,6 +439,7 @@ else
                       --dosubseg=${do_Sub_seg} \
                       --tempt1folder=${TempT1Folder} \
                       --tempt2folder=${TempT2Folder} \
+                      --regtempt2folder=${regTempT2Folder} \
                       --rawt2folder=${rawT2Folder} \
                       --dotissueseg=${do_tissue_seg} \
                       --dodefacing=${do_defacing} \
