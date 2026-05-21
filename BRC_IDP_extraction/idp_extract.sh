@@ -132,14 +132,14 @@ if [ ${CLUSTER_MODE} = "YES" ] ; then
 
     NSub=`wc -l ${InputList}`
     NSub=`echo -e $NSub | awk '{ print $1 }'`
-    minutes=$(( ${NSub} * 4 ))
+    minutes=$(( ${NSub} * 5 ))
 
     if [ "${minutes}" -lt 25 ] ; then
         hour=0
     else
-        ((hour=${minutes}/60))
+        hour=$(( ${minutes}/60 ))
     fi
-    ((min=${minutes}-${hour}*60))
+    min=$(( ${minutes}-${hour}*60 ))
     Time_Limit=${hour}:${min}:00
 
     jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_IDPEx -t ${Time_Limit} -m 10 -c "${BRC_IDPEXTRACT_SCR}/idp_extract_part_1.sh --inputlist=${InputList} --listfolder=${ListFolder} --subjectlist_name=${SubjectList_name} --inputdir=${InputDIR} --analysisfoldername=${AnalysisFolderName} --idp_folder_name=${IDP_folder_name} --groupidpfolder=${GroupIDPFolder} --starttime=${Start_Time} --logidpfolder=${logFolder}/${log_Name}" &`

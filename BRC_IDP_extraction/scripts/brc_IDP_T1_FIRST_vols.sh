@@ -36,7 +36,10 @@ done
 
 filename=${T1wSubjFolder}/${processedFolderName}/${segFolderName}/${subFolderName}/${shapeFolderName}/T1_first_all_fast_firstseg.nii.gz
 if [ -f ${filename} ] ; then
-    result=`${FSLDIR}/bin/fslstats ${filename} -H 58 0.5 58.5 | sed 's/\.000000//g' | awk 'BEGIN { ORS = " " } { print }'| awk '{print $10 " " $49 " " $11 " " $50 " " $12 " " $51 " " $13 " " $52 " " $17 " " $53 " " $18 " " $54 " " $26 " " $58 " " $16 }' `
+    dx=`${FSLDIR}/bin/fslval ${filename} pixdim1`
+    dy=`${FSLDIR}/bin/fslval ${filename} pixdim2`
+    dz=`${FSLDIR}/bin/fslval ${filename} pixdim3`
+    result=`${FSLDIR}/bin/fslstats ${filename} -H 58 0.5 58.5 | sed 's/\.000000//g' | awk 'BEGIN { ORS = " " } { print }' | awk -v dx="$dx" -v dy="$dy" -v dz="$dz" '{vv=dx*dy*dz; print $10*vv " " $49*vv " " $11*vv " " $50*vv " " $12*vv " " $51*vv " " $13*vv " " $52*vv " " $17*vv " " $53*vv " " $18*vv " " $54*vv " " $26*vv " " $58*vv " " $16*vv}' `
 fi
 
 echo $result > ${direc}/${AnalysisFolderName}/${IDP_folder_name}/${scriptName%.*}.txt

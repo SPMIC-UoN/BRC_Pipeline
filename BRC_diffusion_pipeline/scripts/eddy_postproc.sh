@@ -178,7 +178,7 @@ else
     log_Msg 3 "DTIFIT model"
 
     ${FSLDIR}/bin/dtifit -k ${datadir}/data_dti \
-                         -m ${datadir}/nodif_brain \
+                         -m ${datadir}/nodif_brain_mask \
                          -r ${datadir}/data_dti.bvec \
                          -b ${datadir}/data_dti.bval \
                          -o ${datadir}/dti \

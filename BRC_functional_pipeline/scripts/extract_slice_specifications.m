@@ -16,8 +16,11 @@ i1 = strfind(cfcont,'SliceTiming');
 if (isempty(i1))
     return
 end
+i1 = i1(1);  % use first occurrence (strfind returns a vector)
 i2 = strfind(cfcont(i1:end),'[');
+i2 = i2(1);  % use first '[' after SliceTiming key
 i3 = strfind(cfcont((i1+i2):end),']');
+i3 = i3(1);  % use first ']' (closing bracket of SliceTiming array)
 
 cslicetimes = cfcont((i1+i2+1):(i1+i2+i3-2));
 slicetimes = textscan(cslicetimes,'%f','Delimiter',',');

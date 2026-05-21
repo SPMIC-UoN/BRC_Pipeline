@@ -16,7 +16,7 @@
 #                                         #
 ###########################################
 
-export CLUSTER_MODE="NO"                                                            #TO BE MODIFIED BY USER, "YES"/"NO"
+export CLUSTER_MODE="YES"                                                            #TO BE MODIFIED BY USER, "YES"/"NO"
 
 if [ $CLUSTER_MODE = "YES" ] ; then
     export JOBSUBpath="/gpfs01/software/imaging/jobsub"                             #TO BE MODIFIED BY USER
@@ -41,7 +41,7 @@ else
 fi
 
 #ENV VARIABLES FOR THE BRC_PIPELINE
-export BRCDIR="/home/mszam12/main/BRC_Pipeline"                                     #TO BE MODIFIED BY USER
+export BRCDIR="/gpfs01/home/mszam12/main/BRC_Pipeline_1_7_3"                                     #TO BE MODIFIED BY USER
 export BRC_SCTRUC_DIR=${BRCDIR}/BRC_structural_pipeline
 export BRC_DMRI_DIR=${BRCDIR}/BRC_diffusion_pipeline
 export BRC_FMRI_DIR=${BRCDIR}/BRC_functional_pipeline
@@ -59,10 +59,10 @@ export BRC_GLOBAL_SCR=${BRC_GLOBAL_DIR}/scripts
 export CUDIMOT="${BRC_GLOBAL_DIR}/libs/cuDIMOT"
 
 #SETUP MATLAB and LIBRARIES
-export SPMpath="/usr/local/SPM/spm12"                                               #TO BE MODIFIED BY USER
-export DVARSpath="/usr/local/DVARS"                                                 #TO BE MODIFIED BY USER
-export ANTSPATH="/usr/local/ANTs/ants-2.1.0-redhat/"                                #TO BE MODIFIED BY USER
-export C3DPATH="/usr/local/c3d/bin"                                                 #TO BE MODIFIED BY USER
+export SPMpath="/gpfs01/software/imaging/spm12"                                     #TO BE MODIFIED BY USER
+export DVARSpath="/gpfs01/software/imaging/DVARS"                                   #TO BE MODIFIED BY USER
+export ANTSPATH="/gpfs01/software/imaging/ANTs/2.3.5/bin/"                          #TO BE MODIFIED BY USER
+export C3DPATH="/gpfs01/software/imaging/c3d/c3d-1.3.0-Linux-gcc64/bin"             #TO BE MODIFIED BY USER
 
 #ADD ENV VARIABLES TO THE PATH
 PATH=$PATH:$BRC_SCTRUC_DIR:$BRC_DMRI_DIR:$BRC_FMRI_DIR:$BRC_PMRI_DIR:$BRC_FMRI_GP_DIR:$BRC_IDPEXTRACT_DIR

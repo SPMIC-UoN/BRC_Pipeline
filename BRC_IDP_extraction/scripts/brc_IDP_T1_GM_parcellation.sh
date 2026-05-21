@@ -40,7 +40,7 @@ filename2="${T1wSubjFolder}/${processedFolderName}/seg/tissue/sing_chan/T1_pve_G
 if [ -f ${filename1} ] ; then
     if [ -f ${filename2} ] ; then
         ${FSLDIR}/bin/applywarp -i ${BRC_GLOBAL_DIR}/templates/GMatlas -o ${T1wSubjFolder}/${tempFolderName}/GMatlas_to_T1 -r ${T1wSubjFolder}/processed/data/T1 -w ${filename1} --interp=nn
-        result=`${FSLDIR}/bin/fslstats -K ${T1wSubjFolder}/${tempFolderName}/GMatlas_to_T1.nii.gz ${filename2} -m -v | xargs -n 3 | awk '{print "("$1"*"$2")"}' | bc `
+        result=`${FSLDIR}/bin/fslstats -K ${T1wSubjFolder}/${tempFolderName}/GMatlas_to_T1.nii.gz ${filename2} -m -v | xargs -n 3 | awk '{print "("$1"*"$3")"}' | bc `
     fi
 fi
 

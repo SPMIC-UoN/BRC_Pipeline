@@ -376,3 +376,6 @@ if [[ $DistortionCorrection == "NONE" ]] ; then
     ${FSLDIR}/bin/imrm ${SpinEchoPhaseEncodeNegative}
 fi
 #: <<'COMMENT'
+
+logDir="$(dirname "$logFile")"
+touch "${logDir}/.FMRI_SUCCESS"

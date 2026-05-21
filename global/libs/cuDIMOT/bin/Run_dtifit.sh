@@ -18,7 +18,7 @@ Usage() {
     echo ""
     echo "Usage: Run_dtifit <subject_directory> <output>"
     echo ""
-    echo "expects to find data, nodif_brain_mask, bvals and bvecs in subject directory"
+    echo "expects to find data_dti, nodif_brain_mask, data_dti.bval and data_dti.bvec in subject directory"
     echo ""
     exit 1
 }
@@ -28,10 +28,10 @@ Usage() {
 subjdir=$1
 output=$2
 
-${FSLDIR}/bin/dtifit -k ${subjdir}/data \
+${FSLDIR}/bin/dtifit -k ${subjdir}/data_dti \
                      -m ${subjdir}/nodif_brain_mask \
-                     -r ${subjdir}/bvecs \
-                     -b ${subjdir}/bvals \
+                     -r ${subjdir}/data_dti.bvec \
+                     -b ${subjdir}/data_dti.bval \
                      -o ${output}/Dtifit/dtifit \
                      --save_tensor
 

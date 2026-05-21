@@ -127,3 +127,6 @@ ${RUN} ${BRCDIR}/Show_version.sh \
       --subject=${Sub_ID} \
       --type=1 \
       --logfile=${logT1Folder}
+
+logDir="$(dirname "$logT1Folder")"
+touch "${logDir}/.STRUCT_SUCCESS"

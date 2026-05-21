@@ -43,7 +43,7 @@ if [ -f ${FastSubjFolder}/T1_pveseg.nii.gz ] ; then
     ${FSLDIR}/bin/imrm ${T1wSubjFolder}/${tempFolderName}/temp
     TheBrain=`echo "1 k ${TheGrey} ${TheWhite} + 2 / p" | dc -`
     TheContrast=`echo "1 k ${TheWhite} ${TheGrey} - p" | dc -`
-    TheThresh=`echo "${TheBrain} 10 / p" | dc -`
+    TheThresh=`echo "1 k ${TheBrain} 10 / p" | dc -`
     TheNoise=`${FSLDIR}/bin/fslstats ${DataSubjFolder}/T1 -l 0.001 -u ${TheThresh} -s`
     TheSNRrecip=`echo "10 k ${TheNoise} ${TheBrain}    / p" | dc -`
     TheCNRrecip=`echo "10 k ${TheNoise} ${TheContrast} / p" | dc -`

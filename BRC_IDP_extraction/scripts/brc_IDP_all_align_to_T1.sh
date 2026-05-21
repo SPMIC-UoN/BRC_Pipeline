@@ -27,6 +27,8 @@ scriptName=`basename "$0"`
 direc=$1
 IDP_folder_name=$2
 
+result=""
+
 T1wSubjFolder=${direc}/${AnalysisFolderName}/${AnatMRIFolderName}/${T1FolderName}
 T1wDataSubjFolder=${T1wSubjFolder}/${processedFolderName}/${dataFolderName}
 T2wSubjFolder=${direc}/${AnalysisFolderName}/${AnatMRIFolderName}/${T2FolderName}

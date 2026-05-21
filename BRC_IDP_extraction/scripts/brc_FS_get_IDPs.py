@@ -94,6 +94,17 @@ def generate_FS_IDP_files(SUBJECTS_DIR, subject_ID, subject, dataDir):
 
 def fix_aseg_data(data_dict, subjectDir):
 
+    # FreeSurfer 7.x renamed Left/Right-Thalamus-Proper to Left/Right-Thalamus.
+    # Normalize to FS6 names so downstream header matching works for both versions.
+    # fs7_to_fs6.get(h, h) is a no-op for FS6 labels, so both versions are handled.
+    fs7_to_fs6 = {
+        'Left-Thalamus': 'Left-Thalamus-Proper',
+        'Right-Thalamus': 'Right-Thalamus-Proper',
+    }
+    for key in ['aseg_1', 'aseg_intensity']:
+        if key in data_dict and len(data_dict[key]) > 0:
+            data_dict[key][0] = [fs7_to_fs6.get(h, h) for h in data_dict[key][0]]
+
     #Split aseg_1 into aseg_global and aseg_volume
     data_dict['aseg_global'] = [[],[]]
     data_dict['aseg_global'][0] = [data_dict['aseg_1'][0][0]] + data_dict['aseg_1'][0][46:]
@@ -199,14 +210,15 @@ def gen_subsegmentation(data_dict, subjectDir, subject):
             with open(os.environ["BRC_GLOBAL_DIR"]+'/config/FS_sub_headers/' + \
                       struct + '.txt') as f:
                 data_dict[struct][0] = [x.replace('\n','') for x in f.readlines()]
-                data_dict[struct][0] = ['NaN'] * len(data_dict[struct][0])
+                data_dict[struct][1] = ['NaN'] * len(data_dict[struct][0])
         data_dict[struct][0]=['ID'] + data_dict[struct][0]
         data_dict[struct][1]=[subject] + data_dict[struct][1]
     return data_dict
 
 
 def bool_FLAIR(data_dict, subjectDir):
-    if os.path.isfile(subjectDir + '/mri/FLAIR.mgz'):
+    if os.path.isfile(subjectDir + '/mri/FLAIR.mgz') or \
+       os.path.isfile(subjectDir + '/mri/T2.mgz'):
         data_dict['FLAIR'] = [['Use-T2-FLAIR-for-FreeSurfer'],['1']]
     else:
         data_dict['FLAIR'] = [['Use-T2-FLAIR-for-FreeSurfer'],['0']]
@@ -475,7 +487,7 @@ def brc_FS_get_IDPs(direc, subject, IDP_folder_name):
     # print("3- gen_aparc_special")
     data_dict = gen_aparc_special(data_dict, subjectDir)
     # print("4- gen_subsegmentation")
-    # data_dict = gen_subsegmentation(data_dict, subjectDir, subject)
+    data_dict = gen_subsegmentation(data_dict, subjectDir, subject)
     # print("5- bool_FLAIR")
     data_dict = bool_FLAIR(data_dict, subjectDir)
     # print("6- fix_aparc_data")
@@ -501,8 +513,8 @@ if __name__ == "__main__":
     subject = sys.argv[2]
     outdir = sys.argv[3]
 
-    # direc = '/gpfs01/home/mszam12/main/analysis'
-    # subject = 'Sue_001'
+    # direc = '/gpfs01/imgshare/HCP-Disease/EP_study/output'
+    # subject = 'hcpya_test_1066'
     # outdir = "IDP_files"
 
     result = brc_FS_get_IDPs(direc, subject, outdir)

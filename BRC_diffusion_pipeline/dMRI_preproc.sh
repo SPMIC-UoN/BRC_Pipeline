@@ -73,6 +73,13 @@ Usage()
   echo " --wmti                          Turn on steps that generates microstructural maps using white matter tract integrity model."
   echo "                                      NOTE: requires multi-shell data."
   echo " --alps                          Turn on steps that computes the diffusion along perivascular spaces (ALPS) metric."
+  echo " --autoptx                       Run BedpostX GPU fibre orientation estimation followed by AutoPtx automated"
+  echo "                                      probabilistic tractography."
+  echo "                                      NOTE: requires --tbss (TBSS warps must be available) and a CUDA-capable GPU."
+  echo " --xtract                        Run BedpostX GPU fibre orientation estimation followed by XTRACT automated"
+  echo "                                      white matter tractography."
+  echo "                                      NOTE: requires --reg (REG warps must be available) and a CUDA-capable GPU."
+  echo "                                      NOTE: --autoptx and --xtract can be combined to run both."
   echo " --mppca                         Perform denoising using Marcenko-Pastur PCA. Default: No denoising"
   echo " --unring                        Remove Gibbs ringing artefacts from MRI images using MRTrix. Default: No unringing"
   echo " --use_topup <path>              If one wants to skip the TOPUP step of the pipeline and use the previously prepared folder. Please provide absolute path."
@@ -110,6 +117,8 @@ do_FWDTI="no"
 do_MPPCA="no"
 do_UNRING="no"
 do_ALPS="no"
+do_AUTOPTX="no"
+do_XTRACT="no"
 Apply_Topup="yes"
 dof=6
 Opt_args=""
@@ -160,6 +169,12 @@ while [ "$1" != "" ]; do
                                 ;;
 
         --alps )           	    do_ALPS="yes"
+                                ;;
+
+        --autoptx )             do_AUTOPTX="yes"
+                                ;;
+
+        --xtract )              do_XTRACT="yes"
                                 ;;
 
         --slice2vol )           Slice2Volume="yes"
@@ -270,6 +285,9 @@ processedFolderName="processed"
 topupFolderName="topup"
 eddyFolderName="eddy"
 tbssFolderName="tbss"
+bedpostxFolderName="bedpostx"
+autoptxFolderName="data.autoptx"
+xtractFolderName="data.xtract"
 regFolderName="reg"
 qcFolderName="qc"
 dataFolderName="data"
@@ -317,9 +335,12 @@ processedFolder=${dMRIFolder}/${processedFolderName}
 topupFolder=${preprocFolder}/${topupFolderName}
 eddyFolder=${preprocFolder}/${eddyFolderName}
 tbssFolder=${preprocFolder}/${tbssFolderName}
+bedpostxFolder=${preprocFolder}/${bedpostxFolderName}
 qcFolder=${preprocFolder}/${qcFolderName}
 regFolder=${preprocFolder}/${regFolderName}
 dataFolder=${processedFolder}/${dataFolderName}
+autoptxFolder=${dataFolder}/${autoptxFolderName}
+xtractFolder=${dataFolder}/${xtractFolderName}
 data2strFolder=${processedFolder}/${data2strFolderName}
 data2stdFolder=${processedFolder}/${data2stdFolderName}
 
@@ -349,6 +370,18 @@ fi
 
 if [[ $do_TBSS == "yes" ]]; then
     if [ ! -d ${tbssFolder} ]; then mkdir ${tbssFolder}; fi
+fi
+
+if [[ $do_AUTOPTX == "yes" || $do_XTRACT == "yes" ]]; then
+    if [ -d ${bedpostxFolder} ]; then rm -rf ${bedpostxFolder}; fi; mkdir -p ${bedpostxFolder}
+fi
+
+if [[ $do_AUTOPTX == "yes" ]]; then
+    if [ -d ${autoptxFolder} ]; then rm -rf ${autoptxFolder}; fi; mkdir -p ${autoptxFolder}
+fi
+
+if [[ $do_XTRACT == "yes" ]]; then
+    if [ -d ${xtractFolder} ]; then rm -rf ${xtractFolder}; fi; mkdir -p ${xtractFolder}
 fi
 
 if [[ $do_REG == "yes" ]]; then
@@ -390,6 +423,8 @@ log_Msg 2 "do_NODDI: $do_NODDI"
 log_Msg 2 "do_DKI: $do_DKI"
 log_Msg 2 "do_WMTI: $do_WMTI"
 log_Msg 2 "do_ALPS: $do_ALPS"
+log_Msg 2 "do_AUTOPTX: $do_AUTOPTX"
+log_Msg 2 "do_XTRACT: $do_XTRACT"
 log_Msg 2 "do_MPPCA: $do_MPPCA"
 log_Msg 2 "do_UNRING: $do_UNRING"
 log_Msg 2 "Slice2Volume: $Slice2Volume"
@@ -416,19 +451,25 @@ if [ $CLUSTER_MODE = "YES" ] ; then
         TIME_LIMIT_2=20:00:00
         TIME_LIMIT_3=8:00:00
         TIME_LIMIT_4=20:00:00
+        TIME_LIMIT_5=24:00:00  # bedpostX + autoptx + xtract: ~8-17h on GPU for hires
+
         MEM_1=30
         MEM_2=90
         MEM_3=60
         MEM_4=100
+        MEM_5=32
     else
         TIME_LIMIT_1=03:00:00
         TIME_LIMIT_2=06:00:00
         TIME_LIMIT_3=04:00:00
         TIME_LIMIT_4=04:00:00
+        TIME_LIMIT_5=12:00:00  # bedpostX + autoptx + xtract: ~4-9h on GPU for standard data
+
         MEM_1=30
         MEM_2=60
         MEM_3=20
         MEM_4=20
+        MEM_5=32
     fi
 
     if [[ ${skip_preproc} == "no" ]]; then
@@ -453,9 +494,15 @@ if [ $CLUSTER_MODE = "YES" ] ; then
     jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
     echo "jobID_3: ${jobID3}"
 
-    jobID4=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_4_dMRI_${Subject} -t ${TIME_LIMIT_4} -m ${MEM_4} -w ${jobID3} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_4.sh --doreg=${do_REG} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --datafolder=${dataFolder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --dotbss=${do_TBSS} --workingdir=${dMRIFolder} --tbssfolder=${tbssFolder} --donoddi=${do_NODDI} --doalps=${do_ALPS} --start=${Start_Time} --subject=${Subject} --slspec=${SliceSpec} --logfile=${logFolder}/${log_Name}" &`
+    jobID4=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_4_dMRI_${Subject} -t ${TIME_LIMIT_4} -m ${MEM_4} -w ${jobID3} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_4.sh --doreg=${do_REG} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --datafolder=${dataFolder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --dotbss=${do_TBSS} --workingdir=${dMRIFolder} --tbssfolder=${tbssFolder} --donoddi=${do_NODDI} --doalps=${do_ALPS} --doautoptx=${do_AUTOPTX} --doxtract=${do_XTRACT} --start=${Start_Time} --subject=${Subject} --slspec=${SliceSpec} --logfile=${logFolder}/${log_Name}" &`
     jobID4=`echo -e $jobID4 | awk '{ print $NF }'`
     echo "jobID_4: ${jobID4}"
+
+    if [[ $do_AUTOPTX == "yes" || $do_XTRACT == "yes" ]]; then
+        jobID5=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_5_dMRI_${Subject} -t ${TIME_LIMIT_5} -m ${MEM_5} -w ${jobID4} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_5.sh --datafolder=${dataFolder} --bedpostxfolder=${bedpostxFolder} --regfolder=${regFolder} --tbssfolder=${tbssFolder} --autoptxfolder=${autoptxFolder} --xtractfolder=${xtractFolder} --doautoptx=${do_AUTOPTX} --doxtract=${do_XTRACT} --start=${Start_Time} --subject=${Subject} --logfile=${logFolder}/${log_Name}" &`
+        jobID5=`echo -e $jobID5 | awk '{ print $NF }'`
+        echo "jobID_5: ${jobID5}"
+    fi
 
 else
 
@@ -535,8 +582,26 @@ else
                     --tbssfolder=${tbssFolder} \
                     --donoddi=${do_NODDI} \
                     --doalps=${do_ALPS} \
+                    --doautoptx=${do_AUTOPTX} \
+                    --doxtract=${do_XTRACT} \
                     --slspec=${SliceSpec} \
                     --start=${Start_Time} \
                     --subject=${Subject} \
                     --logfile=${logFolder}/${log_Name}
+
+    if [[ $do_AUTOPTX == "yes" || $do_XTRACT == "yes" ]]; then
+        ${BRC_DMRI_SCR}/dMRI_preproc_part_5.sh \
+            --datafolder=${dataFolder} \
+            --bedpostxfolder=${bedpostxFolder} \
+            --regfolder=${regFolder} \
+            --tbssfolder=${tbssFolder} \
+            --autoptxfolder=${autoptxFolder} \
+            --xtractfolder=${xtractFolder} \
+            --doautoptx=${do_AUTOPTX} \
+            --doxtract=${do_XTRACT} \
+            --start=${Start_Time} \
+            --subject=${Subject} \
+            --logfile=${logFolder}/${log_Name}
+    fi
+
 fi

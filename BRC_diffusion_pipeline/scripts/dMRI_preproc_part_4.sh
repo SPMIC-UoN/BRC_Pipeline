@@ -42,6 +42,8 @@ dMRIFolder=`getopt1 "--workingdir" $@`
 tbssFolder=`getopt1 "--tbssfolder" $@`
 do_NODDI=`getopt1 "--donoddi" $@`
 do_ALPS=`getopt1 "--doalps" $@`
+do_AUTOPTX=`getopt1 "--doautoptx" $@`
+do_XTRACT=`getopt1 "--doxtract" $@`
 Start_Time=`getopt1 "--start" $@`
 Subject=`getopt1 "--subject" $@`
 SliceSpec=`getopt1 "--slspec" $@`
@@ -100,13 +102,19 @@ if [[ $do_ALPS == "yes" ]]; then
 
 fi
 
-END_Time="$(date -u +%s)"
+if [[ $do_AUTOPTX != "yes" && $do_XTRACT != "yes" ]]; then
 
+    END_Time="$(date -u +%s)"
 
-${BRCDIR}/Show_version.sh \
-      --showdiff="yes" \
-      --start=${Start_Time} \
-      --end=${END_Time} \
-      --subject=${Subject} \
-      --type=2 \
-      --logfile=${LogFile}
+    ${BRCDIR}/Show_version.sh \
+          --showdiff="yes" \
+          --start=${Start_Time} \
+          --end=${END_Time} \
+          --subject=${Subject} \
+          --type=2 \
+          --logfile=${LogFile}
+
+    logDir="$(dirname "$LogFile")"
+    touch "${logDir}/.DIFF_SUCCESS"
+
+fi
