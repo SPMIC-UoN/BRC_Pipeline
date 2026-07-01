@@ -10,11 +10,16 @@ set -e
 # function for parsing options
 getopt1()
 {
-    sopt="$1"
+    local sopt="$1"
     shift 1
-
-    for fn in $@ ; do
-      	if [ `echo $fn | grep -- "^${sopt}=" | wc -w` -gt 0 ] ; then
+    local fn
+    for fn in "$@" ; do
+        case "$fn" in
+            "${sopt}"=*) printf '%s
+' "${fn#*=}"; return 0 ;;
+        esac
+    done
+}=" | wc -w` -gt 0 ] ; then
       	    echo $fn | sed "s/^${sopt}=//"
       	    return 0
       	fi

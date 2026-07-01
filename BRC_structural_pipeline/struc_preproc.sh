@@ -345,7 +345,7 @@ if [ $CLUSTER_MODE = "YES" ] ; then
         TIME_LIMIT3=07:30:00
         MEM3=60
     else
-        TIME_LIMIT3=00:15:00
+        TIME_LIMIT3=00:30:00
         MEM3=10
     fi
 

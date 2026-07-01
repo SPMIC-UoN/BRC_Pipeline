@@ -132,7 +132,7 @@ if [ ${CLUSTER_MODE} = "YES" ] ; then
 
     NSub=`wc -l ${InputList}`
     NSub=`echo -e $NSub | awk '{ print $1 }'`
-    minutes=$(( ${NSub} * 5 ))
+    minutes=$(( ${NSub} * 10 ))
 
     if [ "${minutes}" -lt 25 ] ; then
         hour=0
