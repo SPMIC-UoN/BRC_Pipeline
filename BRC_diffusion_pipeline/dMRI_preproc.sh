@@ -66,6 +66,7 @@ Usage()
   echo " --qc                            Turn on steps that do quality control of dMRI data."
   echo " --reg                           Turn on steps that do registration to standard (FLIRT and FNIRT)."
   echo " --tbss                          Turn on steps that run TBSS analysis."
+  echo " --tbssregmethod <fnirt|ants>    Registration method for TBSS FA-to-MNI registration (default: fnirt)."
   echo " --noddi                         Turn on steps that run NODDI analysis. NOTE: requires multi-shell data."
   echo "                                      NOTE: The pipeline always generates the DTI model maps."
   echo " --dki                           Turn on steps that generates microstructural maps using diffusion kurtosis model."
@@ -110,6 +111,7 @@ skip_preproc="no"
 do_QC="no"
 do_REG="no"
 do_TBSS="no"
+TBSS_Reg_Method="fnirt"
 do_NODDI="no"
 do_DKI="no"
 do_WMTI="no"
@@ -154,6 +156,10 @@ while [ "$1" != "" ]; do
                                 ;;
 
         --tbss )           	    do_TBSS="yes"
+                                ;;
+
+        --tbssregmethod )       shift
+                                TBSS_Reg_Method=$1
                                 ;;
 
         --noddi )           	do_NODDI="yes"
@@ -472,6 +478,15 @@ if [ $CLUSTER_MODE = "YES" ] ; then
         MEM_5=32
     fi
 
+    # part_3 (dMRI_preproc_part_3.sh / eddy_postproc.sh) only needs a GPU for the
+    # NODDI fit (CUDIMOT); DKI/WMTI/FWDTI and dtifit are CPU-only, so only request
+    # a GPU allocation for it when NODDI was actually requested.
+    if [[ ${do_NODDI} == "yes" ]]; then
+        Part3QueueArgs="-q gpu -p 1 -g 1"
+    else
+        Part3QueueArgs="-q cpu -p 1"
+    fi
+
     if [[ ${skip_preproc} == "no" ]]; then
 
         jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_1_dMRI_${Subject} -t ${TIME_LIMIT_1} -m ${MEM_1} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_1.sh --dmrirawfolder=${dMRIrawFolder} --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --inputimage=${InputImages} --inputimage2=${InputImages2} --pedirection=${PEdir} --applytopup=${Apply_Topup} --echospacing=${echospacing} --b0dist=${b0dist} --b0maxbval=${b0maxbval} --pifactor=${PIFactor} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --domppca=${do_MPPCA} --dounring=${do_UNRING} --usetopuppath=${USE_TOPUP_PATH} --logfile=${logFolder}/${log_Name}" &`
@@ -482,19 +497,19 @@ if [ $CLUSTER_MODE = "YES" ] ; then
         jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
         echo "jobID_2: ${jobID2}"
 
+        jobID3=`${JOBSUBpath}/jobsub ${Part3QueueArgs} -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --b0maxbval=${b0maxbval} --dtimaxshell=${DTIMaxShell} --skip_preproc=${skip_preproc} --logfile=${logFolder}/${log_Name}" &`
+        jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
+        echo "jobID_3: ${jobID3}"
+
     elif [[ ${skip_preproc} == "yes" ]]; then
 
-        jobID2=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_1_dMRI_${Subject} -t ${TIME_LIMIT_2} -m ${MEM_2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_2.sh --eddyfolder=${eddyFolder} --topupfolder=${topupFolder} --applytopup=${Apply_Topup} --doqc=${do_QC} --qcdir=${qcFolder} --slice2vol=${Slice2Volume} --slspec=${SliceSpec} --movebysuscept=${MoveBySusceptibility} --hires=${HIRES} --skip_preproc=${skip_preproc} --logfile=${logFolder}/${log_Name}" &`
-        jobID2=`echo -e $jobID2 | awk '{ print $NF }'`
-        echo "jobID_2: ${jobID2}"
+        jobID3=`${JOBSUBpath}/jobsub ${Part3QueueArgs} -s BRC_1_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --b0maxbval=${b0maxbval} --dtimaxshell=${DTIMaxShell} --skip_preproc=${skip_preproc} --logfile=${logFolder}/${log_Name}" &`
+        jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
+        echo "jobID_3: ${jobID3}"
 
     fi
 
-    jobID3=`${JOBSUBpath}/jobsub -q gpu -p 1 -g 1 -s BRC_3_dMRI_${Subject} -t ${TIME_LIMIT_3} -m ${MEM_3} -w ${jobID2} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh --workingdir=${dMRIFolder} --eddyfolder=${eddyFolder} --datafolder=${dataFolder} --combinematched=${CombineMatched} --applytopup=${Apply_Topup} --hires=${HIRES} --donoddi=${do_NODDI} --dodki=${do_DKI} --dowmti=${do_WMTI} --dofwdti=${do_FWDTI} --b0maxbval=${b0maxbval} --dtimaxshell=${DTIMaxShell} --skip_preproc=${skip_preproc} --logfile=${logFolder}/${log_Name}" &`
-    jobID3=`echo -e $jobID3 | awk '{ print $NF }'`
-    echo "jobID_3: ${jobID3}"
-
-    jobID4=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_4_dMRI_${Subject} -t ${TIME_LIMIT_4} -m ${MEM_4} -w ${jobID3} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_4.sh --doreg=${do_REG} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --datafolder=${dataFolder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --dotbss=${do_TBSS} --workingdir=${dMRIFolder} --tbssfolder=${tbssFolder} --donoddi=${do_NODDI} --doalps=${do_ALPS} --doautoptx=${do_AUTOPTX} --doxtract=${do_XTRACT} --start=${Start_Time} --subject=${Subject} --slspec=${SliceSpec} --logfile=${logFolder}/${log_Name}" &`
+    jobID4=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_4_dMRI_${Subject} -t ${TIME_LIMIT_4} -m ${MEM_4} -w ${jobID3} -c "${BRC_DMRI_SCR}/dMRI_preproc_part_4.sh --doreg=${do_REG} --multchant1folder=${MultChanT1Folder} --sinchant1folder=${SinChanT1Folder} --datafolder=${dataFolder} --regfolder=${regFolder} --t1=${dataT1Folder}/${T1wImage} --t1restore=${dataT1Folder}/${T1wRestoreImage} --t1brain=${dataT1Folder}/${T1wRestoreImageBrain} --dof=${dof} --datat1folder=${dataT1Folder} --regt1folder=${regT1Folder} --outstr=${data2strFolder} --outstd=${data2stdFolder} --dotbss=${do_TBSS} --tbssregmethod=${TBSS_Reg_Method} --workingdir=${dMRIFolder} --tbssfolder=${tbssFolder} --donoddi=${do_NODDI} --doalps=${do_ALPS} --doautoptx=${do_AUTOPTX} --doxtract=${do_XTRACT} --start=${Start_Time} --subject=${Subject} --slspec=${SliceSpec} --logfile=${logFolder}/${log_Name}" &`
     jobID4=`echo -e $jobID4 | awk '{ print $NF }'`
     echo "jobID_4: ${jobID4}"
 
@@ -530,9 +545,7 @@ else
                         --usetopuppath=${USE_TOPUP_PATH} \
                         --logfile=${logFolder}/${log_Name}
 
-    fi
-
-    ${BRC_DMRI_SCR}/dMRI_preproc_part_2.sh \
+        ${BRC_DMRI_SCR}/dMRI_preproc_part_2.sh \
                     --eddyfolder=${eddyFolder} \
                     --topupfolder=${topupFolder} \
                     --applytopup=${Apply_Topup} \
@@ -545,6 +558,7 @@ else
                     --skip_preproc=${skip_preproc} \
                     --logfile=${logFolder}/${log_Name}
 
+    fi
 
     ${BRC_DMRI_SCR}/dMRI_preproc_part_3.sh \
                     --workingdir=${dMRIFolder} \
@@ -578,6 +592,7 @@ else
                     --outstr=${data2strFolder} \
                     --outstd=${data2stdFolder} \
                     --dotbss=${do_TBSS} \
+                    --tbssregmethod=${TBSS_Reg_Method} \
                     --workingdir=${dMRIFolder} \
                     --tbssfolder=${tbssFolder} \
                     --donoddi=${do_NODDI} \

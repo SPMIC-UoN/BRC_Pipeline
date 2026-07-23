@@ -17,18 +17,13 @@ getopt1()
     local fn
     for fn in "$@" ; do
         case "$fn" in
-            "${sopt}"=*) printf '%s
-' "${fn#*=}"; return 0 ;;
+            "${sopt}"=*) printf '%s\n' "${fn#*=}"; return 0 ;;
         esac
-    done
-}=" | wc -w` -gt 0 ] ; then
-            echo $fn | sed "s/^${sopt}=//"
-            return 0
-        fi
     done
 }
 
 # parse arguments
+TBSS_Reg_Method=`getopt1 "--tbssregmethod" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -48,7 +43,30 @@ parameterName="${BRC_GLOBAL_DIR}/config/oxford"
 output="${input}_to_${ref}"
 invOutput="${ref}_to_${input}"
 
-if [ ! -f ${o}_warp.msf ] ; then
+if [ "${TBSS_Reg_Method}" == "ants" ] ; then
+
+    if [ ! -f ${output}_ants0GenericAffine.mat ] ; then
+
+        log_Msg 3 "Registering FA to MNI standard space using ANTs SyN"
+        ${ANTSPATH}/antsRegistrationSyN.sh -d 3 \
+                                           -f ${TARGET}.nii.gz \
+                                           -m ${input}.nii.gz \
+                                           -o ${output}_ants \
+                                           -n 8 \
+                                           -j 1
+
+    fi
+
+    log_Msg 3 "Applying ANTs transform to produce MNI-space FA"
+    ${ANTSPATH}/antsApplyTransforms -d 3 \
+                                    -n Linear \
+                                    -i ${input}.nii.gz \
+                                    -r ${TARGET}.nii.gz \
+                                    -o ${output}.nii.gz \
+                                    -t ${output}_ants1Warp.nii.gz \
+                                    -t ${output}_ants0GenericAffine.mat
+
+elif [ ! -f ${o}_warp.msf ] ; then
 
     #New Optimal Registration
     ${FSLDIR}/bin/flirt -ref "$ref" -in "$input" -inweight "$input"_mask -omat "$output"_affine.mat

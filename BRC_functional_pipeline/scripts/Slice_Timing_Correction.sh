@@ -17,14 +17,8 @@ getopt1()
     local fn
     for fn in "$@" ; do
         case "$fn" in
-            "${sopt}"=*) printf '%s
-' "${fn#*=}"; return 0 ;;
+            "${sopt}"=*) printf '%s\n' "${fn#*=}"; return 0 ;;
         esac
-    done
-}=" | wc -w` -gt 0 ] ; then
-	       echo $fn | sed "s/^${sopt}=//"
-	    return 0
-    fi
     done
 }
 

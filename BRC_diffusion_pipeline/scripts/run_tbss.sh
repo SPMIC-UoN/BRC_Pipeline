@@ -17,14 +17,8 @@ getopt1()
     local fn
     for fn in "$@" ; do
         case "$fn" in
-            "${sopt}"=*) printf '%s
-' "${fn#*=}"; return 0 ;;
+            "${sopt}"=*) printf '%s\n' "${fn#*=}"; return 0 ;;
         esac
-    done
-}=" | wc -w` -gt 0 ] ; then
-            echo $fn | sed "s/^${sopt}=//"
-            return 0
-        fi
     done
 }
 
@@ -32,6 +26,7 @@ getopt1()
 workingdir=`getopt1 "--workingdir" $@`
 tbssdir=`getopt1 "--tbssfolder" $@`
 datadir=`getopt1 "--datafolder" $@`
+TBSS_Reg_Method=`getopt1 "--tbssregmethod" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -46,6 +41,7 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 log_Msg 2 "workingdir:$workingdir"
 log_Msg 2 "tbssdir:$tbssdir"
 log_Msg 2 "datadir:$datadir"
+log_Msg 2 "TBSS_Reg_Method:$TBSS_Reg_Method"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
@@ -63,9 +59,11 @@ ${BRC_DMRI_SCR}/tbss_step_1_preproc.sh \
                   --logfile=${LogFile}
 
 "${BRC_DMRI_SCR}"/tbss_step_2_reg.sh \
+                  --tbssregmethod=${TBSS_Reg_Method} \
                   --logfile=${LogFile}
 
 "${BRC_DMRI_SCR}"/tbss_step_3_postreg.sh \
+                  --tbssregmethod=${TBSS_Reg_Method} \
                   --logfile=${LogFile}
 
 "${BRC_DMRI_SCR}"/tbss_step_4_prestats.sh \
@@ -74,6 +72,7 @@ ${BRC_DMRI_SCR}/tbss_step_1_preproc.sh \
 
 "${BRC_DMRI_SCR}"/tbss_non_FA.sh \
                   --datadir=${datadir} \
+                  --tbssregmethod=${TBSS_Reg_Method} \
                   --logfile=${LogFile}
 
 cd "${direc}"

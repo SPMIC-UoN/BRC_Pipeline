@@ -17,18 +17,13 @@ getopt1()
     local fn
     for fn in "$@" ; do
         case "$fn" in
-            "${sopt}"=*) printf '%s
-' "${fn#*=}"; return 0 ;;
+            "${sopt}"=*) printf '%s\n' "${fn#*=}"; return 0 ;;
         esac
-    done
-}=" | wc -w` -gt 0 ] ; then
-            echo $fn | sed "s/^${sopt}=//"
-            return 0
-        fi
     done
 }
 
 # parse arguments
+TBSS_Reg_Method=`getopt1 "--tbssregmethod" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -50,7 +45,9 @@ mkdir -p ../stats
 
 f='dti_FA'
 
-${FSLDIR}/bin/applywarp -i ${f} -o ${f}_to_MNI -r MNI -w ${f}_to_MNI_warp --rel
+if [ "${TBSS_Reg_Method}" != "ants" ] ; then
+    ${FSLDIR}/bin/applywarp -i ${f} -o ${f}_to_MNI -r MNI -w ${f}_to_MNI_warp --rel
+fi
 
 log_Msg 3 "merging all upsampled FA images into single 4D image"
 cd ../stats
