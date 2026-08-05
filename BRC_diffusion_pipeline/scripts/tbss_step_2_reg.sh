@@ -23,7 +23,9 @@ getopt1()
 }
 
 # parse arguments
-TBSS_Reg_Method=`getopt1 "--tbssregmethod" $@`
+regFolder=`getopt1 "--regfolder" $@`
+regT1Folder=`getopt1 "--regt1folder" $@`
+TARGET=`getopt1 "--target" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -31,55 +33,21 @@ log_SetPath "${LogFile}"
 log_Msg 3 "tbss_step_2_reg"
 log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-TARGET="${FSLDIR}/data/standard/FMRIB58_FA_1mm"
-
-$FSLDIR/bin/imcp "$TARGET" FA/MNI
-
 cd FA
 
-ref="MNI"
 input="dti_FA"
-parameterName="${BRC_GLOBAL_DIR}/config/oxford"
-output="${input}_to_${ref}"
-invOutput="${ref}_to_${input}"
+output="${input}_to_MNI"
+invOutput="MNI_to_${input}"
 
-if [ "${TBSS_Reg_Method}" == "ants" ] ; then
+log_Msg 3 "Concatenating dMRI-to-T1 and T1-to-standard registrations"
+${FSLDIR}/bin/convertwarp --relout --ref=${TARGET} --premat=${regFolder}/diff_2_T1.mat \
+    --warp1=${regT1Folder}/T1_2_std_warp_field --out=${output}_warp
 
-    if [ ! -f ${output}_ants0GenericAffine.mat ] ; then
+log_Msg 3 "Applying combined warp to FA"
+${FSLDIR}/bin/applywarp --rel --interp=trilinear --in=${input} --ref=${TARGET} \
+    -w ${output}_warp --out=${output}
 
-        log_Msg 3 "Registering FA to MNI standard space using ANTs SyN"
-        ${ANTSPATH}/antsRegistrationSyN.sh -d 3 \
-                                           -f ${TARGET}.nii.gz \
-                                           -m ${input}.nii.gz \
-                                           -o ${output}_ants \
-                                           -n 8 \
-                                           -j 1
+# Remove negative intensity values
+${FSLDIR}/bin/fslmaths ${output} -thr 0 ${output}
 
-    fi
-
-    log_Msg 3 "Applying ANTs transform to produce MNI-space FA"
-    ${ANTSPATH}/antsApplyTransforms -d 3 \
-                                    -n Linear \
-                                    -i ${input}.nii.gz \
-                                    -r ${TARGET}.nii.gz \
-                                    -o ${output}.nii.gz \
-                                    -t ${output}_ants1Warp.nii.gz \
-                                    -t ${output}_ants0GenericAffine.mat
-
-elif [ ! -f ${o}_warp.msf ] ; then
-
-    #New Optimal Registration
-    ${FSLDIR}/bin/flirt -ref "$ref" -in "$input" -inweight "$input"_mask -omat "$output"_affine.mat
-
-    # perform FNIRT cascade of registrations
-    $FSLDIR/bin/fnirt --ref="$ref" --in="$input" --cout="$output"_warp_s1 --config="$parameterName"_s1.cnf --aff="$output"_affine.mat --intout="$output"_int --logout="$logFile"_1.log
-    $FSLDIR/bin/fnirt --ref="$ref" --in="$input" --cout="$output"_warp_s2 --config="$parameterName"_s2.cnf --inwarp="$output"_warp_s1 --intin="$output"_int.txt --logout="$logFile"_2.log
-    $FSLDIR/bin/fnirt --ref="$ref" --in="$input" --cout="$output"_warp --iout="$output" --config="$parameterName"_s3.cnf --inwarp="$output"_warp_s2 --intin="$output"_int.txt --logout="$logFile"_3.log
-    $FSLDIR/bin/invwarp -w "$output"_warp -r "$input" -o "$invOutput"_warp
-
-    # now estimate the mean deformation
-    ${FSLDIR}/bin/fslmaths "$output"_warp -sqr -Tmean "$output"_tmp
-    ${FSLDIR}/bin/fslstats "$output"_tmp -M -P 50 > "$output"_warp.msf
-    ${FSLDIR}/bin/imrm "$output"_tmp
-
-fi
+${FSLDIR}/bin/invwarp --rel -w ${output}_warp -r ${input} -o ${invOutput}_warp

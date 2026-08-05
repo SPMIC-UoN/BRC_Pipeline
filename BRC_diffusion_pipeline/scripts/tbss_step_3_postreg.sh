@@ -23,7 +23,8 @@ getopt1()
 }
 
 # parse arguments
-TBSS_Reg_Method=`getopt1 "--tbssregmethod" $@`
+TARGET=`getopt1 "--target" $@`
+SKELETON=`getopt1 "--skeleton" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -31,31 +32,15 @@ log_SetPath "${LogFile}"
 log_Msg 3 "tbss_step_3_postreg"
 log_Msg 3 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-SKELETON=1
-
-cd FA
-
-/bin/rm -f all.msf
-
-best=MNI
-
-echo ${best} > best.msf
-
-mkdir -p ../stats
-
-f='dti_FA'
-
-if [ "${TBSS_Reg_Method}" != "ants" ] ; then
-    ${FSLDIR}/bin/applywarp -i ${f} -o ${f}_to_MNI -r MNI -w ${f}_to_MNI_warp --rel
-fi
+mkdir -p stats
 
 log_Msg 3 "merging all upsampled FA images into single 4D image"
-cd ../stats
+cd stats
 ${FSLDIR}/bin/imcp ../FA/dti_FA_to_MNI all_FA
 
 # create mean FA
 log_Msg 3 "creating valid mask and mean FA"
-${FSLDIR}/bin/fslmaths all_FA -bin -mul ${FSLDIR}/data/standard/FMRIB58_FA_1mm -bin mean_FA_mask
+${FSLDIR}/bin/fslmaths all_FA -bin -mul ${TARGET} -bin mean_FA_mask
 ${FSLDIR}/bin/fslmaths all_FA -mas mean_FA_mask all_FA
-${FSLDIR}/bin/fslmaths ${FSLDIR}/data/standard/FMRIB58_FA_1mm -mas mean_FA_mask mean_FA
-${FSLDIR}/bin/fslmaths ${FSLDIR}/data/standard/FMRIB58_FA-skeleton_1mm -mas mean_FA_mask mean_FA_skeleton
+${FSLDIR}/bin/fslmaths ${TARGET} -mas mean_FA_mask mean_FA
+${FSLDIR}/bin/fslmaths ${SKELETON} -mas mean_FA_mask mean_FA_skeleton

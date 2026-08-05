@@ -26,7 +26,8 @@ getopt1()
 workingdir=`getopt1 "--workingdir" $@`
 tbssdir=`getopt1 "--tbssfolder" $@`
 datadir=`getopt1 "--datafolder" $@`
-TBSS_Reg_Method=`getopt1 "--tbssregmethod" $@`
+regFolder=`getopt1 "--regfolder" $@`
+regT1Folder=`getopt1 "--regt1folder" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -41,11 +42,29 @@ log_Msg 2 "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 log_Msg 2 "workingdir:$workingdir"
 log_Msg 2 "tbssdir:$tbssdir"
 log_Msg 2 "datadir:$datadir"
-log_Msg 2 "TBSS_Reg_Method:$TBSS_Reg_Method"
+log_Msg 2 "regFolder:$regFolder"
+log_Msg 2 "regT1Folder:$regT1Folder"
 log_Msg 2 "LogFile:$LogFile"
 log_Msg 2 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 log_Msg 3 `date`
+
+TARGET="${FSLDIR}/data/standard/FSL_HCP1065_FA_1mm"
+SKELETON="${BRC_GLOBAL_DIR}/templates/FSL_HCP1065_FA_skeleton_1mm"
+
+if [ `${FSLDIR}/bin/imtest ${TARGET}` != 1 ] ; then
+    echo ""
+    echo "TBSS target template not found: ${TARGET}"
+    echo ""
+    exit 1
+fi
+
+if [ `${FSLDIR}/bin/imtest ${SKELETON}` != 1 ] ; then
+    echo ""
+    echo "TBSS target skeleton not found: ${SKELETON}"
+    echo ""
+    exit 1
+fi
 
 direc="$PWD"
 cd "${tbssdir}"
@@ -59,20 +78,23 @@ ${BRC_DMRI_SCR}/tbss_step_1_preproc.sh \
                   --logfile=${LogFile}
 
 "${BRC_DMRI_SCR}"/tbss_step_2_reg.sh \
-                  --tbssregmethod=${TBSS_Reg_Method} \
+                  --regfolder=${regFolder} \
+                  --regt1folder=${regT1Folder} \
+                  --target=${TARGET} \
                   --logfile=${LogFile}
 
 "${BRC_DMRI_SCR}"/tbss_step_3_postreg.sh \
-                  --tbssregmethod=${TBSS_Reg_Method} \
+                  --target=${TARGET} \
+                  --skeleton=${SKELETON} \
                   --logfile=${LogFile}
 
 "${BRC_DMRI_SCR}"/tbss_step_4_prestats.sh \
-                  --thresh=2000 \
+                  --thresh=0.2 \
                   --logfile=${LogFile}
 
 "${BRC_DMRI_SCR}"/tbss_non_FA.sh \
                   --datadir=${datadir} \
-                  --tbssregmethod=${TBSS_Reg_Method} \
+                  --target=${TARGET} \
                   --logfile=${LogFile}
 
 cd "${direc}"

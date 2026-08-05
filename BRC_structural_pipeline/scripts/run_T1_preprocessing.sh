@@ -140,6 +140,10 @@ elif [ $RegType == 3 ]; then
 #    ${FSLDIR}/bin/applywarp -i ${WD}/T1 -r ${FSLDIR}/data/standard/MNI152_T1_1mm -w ${WD}/total_warp_fsl -o ${WD}/T1w_warped
     ${FSLDIR}/bin/invwarp -r ${WD}/T1 -w ${WD}/total_warp_fsl -o ${WD}/T1_to_MNI_nonlin_coeff_inv
 
+    log_Msg 3 `date`
+    log_Msg 3 "Computing Jacobian determinant of the non-linear warp"
+    ${ANTSPATH}/CreateJacobianDeterminantImage 3 ${WD}/SynOut1Warp.nii.gz ${WD}/T1_to_MNI_nonlin_jac.nii.gz 0 0
+
     ${FSLDIR}/bin/immv ${WD}/total_warp_fsl ${WD}/T1_to_MNI_nonlin_field
     mv ${WD}/affine_fsl.mat ${WD}/T1_to_MNI_linear.mat
 

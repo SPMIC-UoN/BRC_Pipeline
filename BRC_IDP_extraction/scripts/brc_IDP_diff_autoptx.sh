@@ -60,7 +60,7 @@ for metric in FA MD MO L1 L2 L3 ICVF ISOVF ODI ; do
         if [ -f "${tractMask}" ] && [ -f "${metricMap}" ] ; then
             ${FSLDIR}/bin/applywarp \
                 -i "${tractMask}" \
-                -r "${FSLDIR}/data/standard/FMRIB58_FA_1mm" \
+                -r "${FSLDIR}/data/standard/FSL_HCP1065_FA_1mm" \
                 -w "${fa2mniWarp}" \
                 -o "${tmpdir}/tract_mni" \
                 --interp=trilinear

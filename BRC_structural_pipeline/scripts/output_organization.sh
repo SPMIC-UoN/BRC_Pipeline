@@ -185,10 +185,8 @@ if [ $RegType == 2 ] || [ $RegType == 3 ]; then
 
     if [ $RegType == 2 ]; then
         $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_coeff  ${regT1Folder}/T1_2_std_warp_coeff
-        $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_jac  ${regT1Folder}/T1_2_std_warp_jac
-#    elif [ $RegType == 3 ]; then
-#        $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_warp_fsl  ${regT1Folder}/T1_2_std_warp_field
     fi
+    $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_jac  ${regT1Folder}/T1_2_std_warp_jac
 
     $FSLDIR/bin/imcp ${regTempT1Folder}/T1_to_MNI_nonlin_field  ${regT1Folder}/T1_2_std_warp_field
     $FSLDIR/bin/immv ${regTempT1Folder}/T1_to_MNI_nonlin_coeff_inv  ${regT1Folder}/std_2_T1_warp_field

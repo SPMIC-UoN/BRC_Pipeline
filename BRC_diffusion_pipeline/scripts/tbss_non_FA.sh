@@ -24,7 +24,7 @@ getopt1()
 
 # parse arguments
 datadir=`getopt1 "--datadir" $@`
-TBSS_Reg_Method=`getopt1 "--tbssregmethod" $@`
+TARGET=`getopt1 "--target" $@`
 LogFile=`getopt1 "--logfile" $@`
 
 log_SetPath "${LogFile}"
@@ -36,48 +36,31 @@ cd stats
 
 dtifitDir=${datadir}
 
-suffix="L1 L2 L3 MO MD"
-
-for elem in ${suffix} ; do
+# diffusivities: must be non-negative
+for elem in L1 L2 L3 MD ; do
     if [ -e ${dtifitDir}/data.dti/dti_${elem}.nii.gz ] ; then
-
-        if [ "${TBSS_Reg_Method}" == "ants" ] ; then
-            ${ANTSPATH}/antsApplyTransforms -d 3 \
-                                            -n Linear \
-                                            -i ${dtifitDir}/data.dti/dti_${elem}.nii.gz \
-                                            -r ${FSLDIR}/data/standard/FMRIB58_FA_1mm.nii.gz \
-                                            -o all_${elem}.nii.gz \
-                                            -t ../FA/dti_FA_to_MNI_ants1Warp.nii.gz \
-                                            -t ../FA/dti_FA_to_MNI_ants0GenericAffine.mat
-        else
-            ${FSLDIR}/bin/applywarp --rel -i ${dtifitDir}/data.dti/dti_${elem} -o all_${elem} -r ${FSLDIR}/data/standard/FMRIB58_FA_1mm -w ../FA/dti_FA_to_MNI_warp
-        fi
+        ${FSLDIR}/bin/applywarp --rel --interp=trilinear -i ${dtifitDir}/data.dti/dti_${elem} -o all_${elem} -r ${TARGET} -w ../FA/dti_FA_to_MNI_warp
+        ${FSLDIR}/bin/fslmaths all_${elem} -thr 0 all_${elem}
         ${FSLDIR}/bin/fslmaths all_${elem} -mas mean_FA_skeleton_mask all_${elem}_skeletonised
         ${FSLDIR}/bin/fslstats -K ${FSLDIR}/data/atlases/JHU/JHU-ICBM-labels-1mm all_${elem}_skeletonised.nii.gz -M >JHUrois_${elem}.txt
-
     fi
 done
 
-suffix="ICVF ISOVF ODI"
+# tensor mode: bounded [-1, 1]
+elem=MO
+if [ -e ${dtifitDir}/data.dti/dti_${elem}.nii.gz ] ; then
+    ${FSLDIR}/bin/applywarp --rel --interp=trilinear -i ${dtifitDir}/data.dti/dti_${elem} -o all_${elem} -r ${TARGET} -w ../FA/dti_FA_to_MNI_warp
+    ${FSLDIR}/bin/fslmaths all_${elem} -thr -1 -uthr 1 all_${elem}
+    ${FSLDIR}/bin/fslmaths all_${elem} -mas mean_FA_skeleton_mask all_${elem}_skeletonised
+    ${FSLDIR}/bin/fslstats -K ${FSLDIR}/data/atlases/JHU/JHU-ICBM-labels-1mm all_${elem}_skeletonised.nii.gz -M >JHUrois_${elem}.txt
+fi
 
-for elem in ${suffix} ; do
+# NODDI parameters: bounded [0, 1]
+for elem in ICVF ISOVF ODI ; do
     if [ -e ${dtifitDir}/data.noddi/NODDI_${elem}.nii.gz ] ; then
-
-        if [ "${TBSS_Reg_Method}" == "ants" ] ; then
-            ${ANTSPATH}/antsApplyTransforms -d 3 \
-                                            -n Linear \
-                                            -i ${dtifitDir}/data.noddi/NODDI_${elem}.nii.gz \
-                                            -r ${FSLDIR}/data/standard/FMRIB58_FA_1mm.nii.gz \
-                                            -o all_${elem}.nii.gz \
-                                            -t ../FA/dti_FA_to_MNI_ants1Warp.nii.gz \
-                                            -t ../FA/dti_FA_to_MNI_ants0GenericAffine.mat
-        else
-            ${FSLDIR}/bin/applywarp --rel -i ${dtifitDir}/data.noddi/NODDI_${elem} -o all_${elem} -r ${FSLDIR}/data/standard/FMRIB58_FA_1mm -w ../FA/dti_FA_to_MNI_warp
-        fi
+        ${FSLDIR}/bin/applywarp --rel --interp=trilinear -i ${dtifitDir}/data.noddi/NODDI_${elem} -o all_${elem} -r ${TARGET} -w ../FA/dti_FA_to_MNI_warp
+        ${FSLDIR}/bin/fslmaths all_${elem} -thr 0 -uthr 1 all_${elem}
         ${FSLDIR}/bin/fslmaths all_${elem} -mas mean_FA_skeleton_mask all_${elem}_skeletonised
         ${FSLDIR}/bin/fslstats -K ${FSLDIR}/data/atlases/JHU/JHU-ICBM-labels-1mm all_${elem}_skeletonised.nii.gz -M >JHUrois_${elem}.txt
-
     fi
 done
-
-cd ..

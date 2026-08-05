@@ -85,7 +85,8 @@ if [[ $do_TBSS == "yes" ]]; then
         --tbssfolder=${tbssFolder} \
         --datafolder=${dataFolder} \
         --donoddi=${do_NODDI} \
-        --tbssregmethod=${TBSS_Reg_Method} \
+        --regfolder=${regFolder} \
+        --regt1folder=${regT1Folder} \
         --logfile=${LogFile}
 
 fi

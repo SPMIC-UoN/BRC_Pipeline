@@ -65,8 +65,8 @@ Usage()
   echo "                                      NOTE: user can add --qc, --reg, --tbss, --noddi, --dki, --wmti, and --alps as the input(s) of the pipeline"
   echo " --qc                            Turn on steps that do quality control of dMRI data."
   echo " --reg                           Turn on steps that do registration to standard (FLIRT and FNIRT)."
-  echo " --tbss                          Turn on steps that run TBSS analysis."
-  echo " --tbssregmethod <fnirt|ants>    Registration method for TBSS FA-to-MNI registration (default: fnirt)."
+  echo " --tbss                          Turn on steps that run TBSS analysis. NOTE: requires --reg (REG warps must be available)."
+  echo " --tbssregmethod <fnirt|ants>    DEPRECATED and ignored; kept for backwards compatibility."
   echo " --noddi                         Turn on steps that run NODDI analysis. NOTE: requires multi-shell data."
   echo "                                      NOTE: The pipeline always generates the DTI model maps."
   echo " --dki                           Turn on steps that generates microstructural maps using diffusion kurtosis model."
@@ -358,6 +358,27 @@ TissueT1Folder=${segT1Folder}/${TissueFolderName}
 SinChanT1Folder=${TissueT1Folder}/${SingChanFolderName}
 MultChanT1Folder=${TissueT1Folder}/${MultChanFolderName}
 regT1Folder=${preprocT1Folder}/${regFolderName}
+
+if [[ $do_TBSS == "yes" ]] && [[ $do_REG == "no" ]] && [ ! -f ${regFolder}/diff_2_T1.mat ] ; then
+    echo ""
+    echo "--tbss requires --reg (either in this call, or already run previously). Please add --reg, or run it first."
+    echo ""
+    exit;
+fi
+
+if [[ $do_TBSS == "yes" ]] && [ ! -f ${regT1Folder}/T1_2_std_warp_field.nii.gz ] ; then
+    echo ""
+    echo "--tbss requires a non-linear T1-to-standard warp from structural preprocessing (--regtype 2 or 3)."
+    echo ""
+    exit;
+fi
+
+if [[ $do_AUTOPTX == "yes" ]] && [[ $do_TBSS == "no" ]] && [ ! -f ${tbssFolder}/FA/dti_FA_to_MNI_warp.nii.gz ] ; then
+    echo ""
+    echo "--autoptx requires --tbss (either in this call, or already run previously)."
+    echo ""
+    exit;
+fi
 
 if [[ $skip_preproc == "no" ]]; then
 
