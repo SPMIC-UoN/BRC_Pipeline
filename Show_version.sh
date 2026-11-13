@@ -92,7 +92,7 @@ if [[ ${ShowDiff} == "yes" ]]; then
         ;;
     esac
 
-		DIFFSEC=`expr ${SEC2} - ${SEC1}`
+		DIFFSEC=$(( ${SEC2} - ${SEC1} ))
 
 		log_Msg 3 "                 End Time: `date`"
 		log_Msg 3 "                       Run Time (H:M:S): `date +%H:%M:%S -ud @${DIFFSEC}`"

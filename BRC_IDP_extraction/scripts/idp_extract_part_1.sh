@@ -1,8 +1,11 @@
 #!/bin/bash
-# Last update: 26/03/2025
+# Last update: 13/10/2026
 
-# -e  Exit immediately if a command exits with a non-zero status.
-set -e
+# Extract the IDPs of ONE subject and save them in <inputdir>/<subject>/<analysis>/<IDP folder>/IDPs.txt
+# The group-level files (IDPs.txt and IDPs.tsv) are generated afterwards by idp_extract_part_2.sh
+#
+# If one of the IDP scripts fails, its IDPs are set to NaN and the remaining IDPs are still extracted.
+# This script always exits with status 0, so that a failure never blocks the merging step.
 
 source $BRC_GLOBAL_SCR/log.shlib  # Logging related functions
 
@@ -20,52 +23,29 @@ getopt1()
 }
 
 # parse arguments
-InputList=`getopt1 "--inputlist" $@`
-ListFolder=`getopt1 "--listfolder" $@`
-SubjectList_name=`getopt1 "--subjectlist_name" $@`
+Subject=`getopt1 "--subject" $@`
 InputDIR=`getopt1 "--inputdir" $@`
 AnalysisFolderName=`getopt1 "--analysisfoldername" $@`
 IDP_folder_name=`getopt1 "--idp_folder_name" $@`
-GroupIDPFolder=`getopt1 "--groupidpfolder" $@`
-Start_Time=`getopt1 "--starttime" $@`
-logIDPFolder=`getopt1 "--logidpfolder" $@`
+logSubjFile=`getopt1 "--logfile" $@`
 
-log_SetPath "${logIDPFolder}"
+log_SetPath "${logSubjFile}"
 
-#=====================================================================================
-###                          Build the header row (once, before the subject loop)
-#=====================================================================================
-
-# --- Part 1: shell-script IDPs from IDP_list.txt (column 2 = IDP short name) ---
-shell_headers=`awk '{print $2}' ${BRC_GLOBAL_DIR}/config/IDP_list.txt | tr '\n' ' '`
-
-# --- Part 2: FreeSurfer IDPs from FS_headers.txt (skip first entry "ID" as
-#             subject ID is already in column 1 of the output) ---
-fs_headers=`tail -n +2 ${BRC_GLOBAL_DIR}/config/FS_headers.txt | tr '\n' ' '`
-
-# --- Part 3: rfMRI IDPs from rfMRI_headers.txt ---
-rfmri_headers=`cat ${BRC_GLOBAL_DIR}/config/rfMRI_headers.txt | tr '\n' ' '`
-
-# Assemble full header: SubjectID + all IDP names
-full_header="SubjectID ${shell_headers}${fs_headers}${rfmri_headers}"
-full_header=`echo $full_header | sed 's/  */ /g'`
-
-# Write headers to group-level TSV (tab-separated with header)
-echo "$full_header" | tr ' ' '\t' > ${GroupIDPFolder}/IDPs.tsv
-
-# Plain text file (no header, space-separated — preserves backward compatibility)
-if [ -e ${GroupIDPFolder}/IDPs.txt ] ; then rm ${GroupIDPFolder}/IDPs.txt; fi
-
-log_Msg 2 "Header row written to IDPs.tsv (${GroupIDPFolder}/IDPs.tsv)"
+# Generate a string of n NaNs
+nan_string()
+{
+    printf 'NaN %.0s' $(seq 1 $1)
+}
 
 #=====================================================================================
 ###                                   DO WORK
 #=====================================================================================
 
-#Generate two different list for the subjects and their status
-cut -d' ' -f1 < ${InputList} > ${ListFolder}/${SubjectList_name}
+extract_subject()
+{
+    # -e  Exit immediately if a command exits with a non-zero status.
+    set -e
 
-for Subject in $(cat ${ListFolder}/${SubjectList_name}) ; do
     log_Msg 3 "${Subject}"
 
     IDPFolder=${InputDIR}/${Subject}/${AnalysisFolderName}/${IDP_folder_name}
@@ -77,39 +57,48 @@ for Subject in $(cat ${ListFolder}/${SubjectList_name}) ; do
     for elem in `cat ${BRC_GLOBAL_DIR}/config/IDP_list.txt | awk '{print $3}' | uniq` ; do
         if [ -f ${IDPFolder}/${elem}.txt ] ; then
             result="$result `cat ${IDPFolder}/${elem}.txt`"
+        elif elem_result=`${BRC_IDPEXTRACT_SCR}/${elem}.sh ${InputDIR}/${Subject} ${IDP_folder_name}` ; then
+            result="$result ${elem_result}"
         else
-            result="$result `${BRC_IDPEXTRACT_SCR}/${elem}.sh ${InputDIR}/${Subject} ${IDP_folder_name}`"
+            log_Msg 2 "${Subject}: ${elem} failed, its IDPs will be NaN"
+            result="$result `nan_string $(awk -v e=${elem} '$3==e' ${BRC_GLOBAL_DIR}/config/IDP_list.txt | wc -l)`"
         fi
     done
 
     # --- FreeSurfer IDPs ---
-    fs_result=$(${BRC_IDPEXTRACT_SCR}/brc_FS_get_IDPs.py ${InputDIR} ${Subject} ${IDP_folder_name})
-    result="$result $fs_result"
+    if fs_result=$(${BRC_IDPEXTRACT_SCR}/brc_FS_get_IDPs.py ${InputDIR} ${Subject} ${IDP_folder_name}) ; then
+        result="$result $fs_result"
+    else
+        log_Msg 2 "${Subject}: brc_FS_get_IDPs failed, its IDPs will be NaN"
+        result="$result `nan_string $(tail -n +2 ${BRC_GLOBAL_DIR}/config/FS_headers.txt | wc -l)`"
+    fi
+
+    # --- rfMRI network matrices (inputs of the rfMRI IDPs) ---
+    if ! ${BRC_IDPEXTRACT_SCR}/brc_IDP_rfMRI_netmats.sh ${InputDIR}/${Subject} ${logSubjFile} ; then
+        log_Msg 2 "${Subject}: generating the rfMRI network matrices failed, the rfMRI IDPs will be NaN"
+    fi
 
     # --- rfMRI IDPs ---
-    rfmri_result=$(${BRC_IDPEXTRACT_SCR}/brc_IDP_rfMRI.sh ${InputDIR}/${Subject} ${IDP_folder_name})
-    result="$result $rfmri_result"
+    if rfmri_result=$(${BRC_IDPEXTRACT_SCR}/brc_IDP_rfMRI.sh ${InputDIR}/${Subject} ${IDP_folder_name}) ; then
+        result="$result $rfmri_result"
+    else
+        log_Msg 2 "${Subject}: brc_IDP_rfMRI failed, its IDPs will be NaN"
+        result="$result `nan_string $(cat ${BRC_GLOBAL_DIR}/config/rfMRI_headers.txt | wc -w)`"
+    fi
 
     result=`echo $result | sed 's/  */ /g'`
 
     # Write per-subject plain text file (no header)
     echo $result > ${IDPFolder}/IDPs.txt
     echo $result
+}
 
-    # Append to group-level plain text file (no header, backward compatible)
-    echo $result >> ${GroupIDPFolder}/IDPs.txt
+# Run in a subshell, so that an unexpected error only stops this subject
+( extract_subject )
+status=$?
 
-    # Append to group-level TSV (tab-separated, has header from above)
-    echo $result | tr ' ' '\t' >> ${GroupIDPFolder}/IDPs.tsv
+if [ ${status} -ne 0 ] ; then
+    log_Msg 3 "${Subject}: IDP extraction failed (exit status ${status}), the subject will be NaN in the group files"
+fi
 
-done
-
-
-END_Time="$(date -u +%s)"
-
-${RUN} ${BRCDIR}/Show_version.sh \
-      --showdiff="yes" \
-      --start=${Start_Time} \
-      --end=${END_Time} \
-      --type=5 \
-      --logfile=${logIDPFolder}
+exit 0

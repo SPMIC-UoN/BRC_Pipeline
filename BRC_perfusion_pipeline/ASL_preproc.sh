@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 09/07/2024
+# Last update: 13/11/2026
 
 # Authors: Stefan Pszczolkowski, Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -262,7 +262,7 @@ $FSLDIR/bin/imcp ${PathOfM0aslMRI} ${aslMRIrawFolder}/${OrigASLName}_M0.nii.gz
 
 if [ $CLUSTER_MODE = "YES" ] ; then
 
-    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_PMRI_${Subject} -t 00:30:00 -m 60 -c "${BRC_PMRI_SCR}/aslMRI_preproc_part_1.sh --aslmrirawfolder=${aslMRIrawFolder} --origaslname=${OrigASLName} --nameofaslmri=${NameOfaslMRI} --sinchanfolder=${SinChanT1Folder} --pvcmethod=${PartialVolumeCorrection} --owarp=${aslMRI2strOutputTransform} --oinwarp=${str2aslMRIOutputTransform} --outasl2stdtrans=${aslMRI2StandardTransform} --outstd2asltrans=${Standard2aslMRITransform} --pvcfolder=${PVCFolder} --datat1folder=${dataT1Folder} --regfolder=${regFolder} --regt1folder=${regT1Folder} --preprocfolder=${preprocFolder} --processedfolder=${processedFolder} --tr=${TR} --ti=${TI} --bolus=${Bolus} --cgain=${Cgain} --dof=${dof} --superlevel=${superlevel} --subject=${Subject} --start=${Start_Time} --logfile=${logFolder}/${log_Name}" &`
+    jobID1=`${JOBSUBpath}/jobsub -q cpu -p 1 -s BRC_PMRI_${Subject} -t 01:00:00 -m 60 -c "${BRC_PMRI_SCR}/aslMRI_preproc_part_1.sh --aslmrirawfolder=${aslMRIrawFolder} --origaslname=${OrigASLName} --nameofaslmri=${NameOfaslMRI} --sinchanfolder=${SinChanT1Folder} --pvcmethod=${PartialVolumeCorrection} --owarp=${aslMRI2strOutputTransform} --oinwarp=${str2aslMRIOutputTransform} --outasl2stdtrans=${aslMRI2StandardTransform} --outstd2asltrans=${Standard2aslMRITransform} --pvcfolder=${PVCFolder} --datat1folder=${dataT1Folder} --regfolder=${regFolder} --regt1folder=${regT1Folder} --preprocfolder=${preprocFolder} --processedfolder=${processedFolder} --tr=${TR} --ti=${TI} --bolus=${Bolus} --cgain=${Cgain} --dof=${dof} --superlevel=${superlevel} --subject=${Subject} --start=${Start_Time} --logfile=${logFolder}/${log_Name}" &`
     jobID1=`echo -e $jobID1 | awk '{ print $NF }'`
     echo "jobID_1: ${jobID1}"
 

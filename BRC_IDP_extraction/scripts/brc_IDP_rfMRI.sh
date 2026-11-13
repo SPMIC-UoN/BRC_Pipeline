@@ -1,5 +1,5 @@
 #!/bin/bash
-# Last update: 26/03/2025
+# Last update: 13/10/2026
 
 # Authors: Ali-Reza Mohammadi-Nejad, & Stamatios N Sotiropoulos
 #
@@ -11,13 +11,13 @@ set -e
 AnalysisFolderName="analysis"
 rfMRIFolderName="rfMRI"
 processedFolderName="processed"
-dataFolderName="data"
+netmatsFolderName="netmats"
 
 scriptName=`basename "$0"`
 direc=$1
 IDP_folder_name=$2
 
-rfMRIDataSubjFolder=${direc}/${AnalysisFolderName}/${rfMRIFolderName}/${processedFolderName}/${dataFolderName}
+rfMRIDataSubjFolder=${direc}/${AnalysisFolderName}/${rfMRIFolderName}/${processedFolderName}/${netmatsFolderName}
 
 # Number of expected values per file (based on actual node counts after noise removal)
 # d25 decomposition: 21 nodes retained
